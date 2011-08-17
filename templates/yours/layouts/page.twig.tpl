@@ -1,0 +1,1 @@
+{% extends 'default/layouts/page.twig.tpl' %}

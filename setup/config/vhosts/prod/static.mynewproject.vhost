@@ -1,0 +1,22 @@
+<VirtualHost *:80>
+		ServerName static.mynewproject.com
+		ServerAlias static1.myproject.com static2.myproject.com static3.myproject.com static4.myproject.com
+		DocumentRoot "/var/www/mynewproject/public/"
+
+		<Directory "/var/www/mynewproject/public/">
+			
+			<IfModule mod_headers.c>
+			
+				# Remove cookies from headers
+				RequestHeader unset Cookie
+				Header unset Set-Cookie
+			
+			</IfModule>
+		
+		</Directory>
+		
+		Include sites-available/performances.conf
+		Include sites-available/security.conf
+		Include sites-available/tweaks.conf
+		
+</VirtualHost>

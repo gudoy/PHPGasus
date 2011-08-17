@@ -1,0 +1,5 @@
+<?php
+
+$_columns = array();
+
+?>

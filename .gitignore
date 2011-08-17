@@ -1,0 +1,14 @@
+*.class
+*.merge-left*
+*.merge-right*
+*.mine
+*.prej
+*.project
+*.pyc
+*.pyo
+*.working
+.svn
+_svn
+svn-commit*.tmp
+config/yours/env/*.php
+config/yours/vhosts/*

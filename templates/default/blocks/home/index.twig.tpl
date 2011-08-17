@@ -1,0 +1,1 @@
+Block home page content
