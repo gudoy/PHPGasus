@@ -1,5 +1,6 @@
 WHAT IS PHPGasus
-PHPGasus is an another PHP Framework which aims to allow quick and smart web developements being the more easy to learn than possible. It's based on the following principles :
+PHPGasus is another PHP Framework which aims to allow quick and smart web developements being the more easy to learn & use than possible. 
+It's based on well known principles
 
 PRINCIPLES
 - REST 
@@ -9,9 +10,8 @@ PRINCIPLES
 - KISS
 - MVC
 - Conventions over configuration
-- less is more
-* the content is the interface
-*“Perfection is achieved, not when there is nothing left to add, but when there is nothing left to remove.” (Antoine de Saint-Exupéry)
+- less is more (“Perfection is achieved, not when there is nothing left to add, but when there is nothing left to remove.” (Antoine de Saint-Exupéry))
+- the content is the interface
 
 INSPIRATION
 - RESTful web services: http://www.amazon.fr/Restful-Web-Services-Leonard-Richardson/dp/0596529260/ref=sr_1_1?ie=UTF8&qid=1311161813&sr=8-1
@@ -82,7 +82,7 @@ condider the following arborescence for controllers folder: [TODO: replace this 
 /Controllers/products/CProducs.class.php (with index() and retrieve() methods)
 /Controllers/users/CUsers.class.php (with index() and me() methods)
 
-VERB PATH     							  CONTROLLER CALLED 										  MODEL CALLED
+VERB PATH         						  CONTROLLER CALLED 										  MODEL CALLED
 GET /                                       => /CHome->index() 										 => no model call
 GET /notAMethod                             => /CHome->error404('notAMethod') 						  => no model call
 GET /hello/world                        	=> /CHome->hello('world') 								  => no model call
@@ -175,6 +175,8 @@ Magic request params
 
 REFERENCE
 $this->
+    debug
+        * boolean   // enable debug (allow logging & debug toolbar in templates)
 	_extendedDatamodel
 		resources <=== &$this->resources
 		groups
@@ -380,13 +382,11 @@ $this->
     		* default to null
         parts
 		knownExtensions
-			array('html','xhtml','json','jsonp','xml','plist','yaml','csv','qr','plistxml','yamltxt','jsontxt','jsonreport')
+			* values: 'html','xhtml','json','jsonp','xml','plist','yaml','csv','qr','plistxml','yamltxt','jsontxt','jsonreport'
         outputFormat
             * default to html
-        knownExtensions
-            array('html','xhtml','json','jsonp','xml','plist','yaml','csv','qr','plistxml','yamltxt','jsontxt','jsonreport')
         knownMimes
-            array(
+            * values
             	'text/html' 				=> 'html',
             	'application/xhtml+xml' 	=> 'xhtml',
             	'application/json' 			=> 'json',
@@ -415,7 +415,7 @@ $this->
         getParam()
     	platform
 			name
-				* recognized ('Windows','Mac OS','linux','freebsd','iPhone','iPod','iPad','Android','BlackBerry','Bada','AdobeAIR','tabbee','mobile','j2me')
+				* values: 'Windows','Mac OS','linux','freebsd','iPhone','iPod','iPad','Android','BlackBerry','Bada','AdobeAIR','tabbee','mobile','j2me','unknownPlatform'
 			version
 		browser
 			name
@@ -428,43 +428,11 @@ $this->
 				revision
 			versionFull
 			engine
-				* recognized ('trident', 'webkit', 'presto', 'gecko', 'mango')
+				* values: ('trident', 'webkit', 'presto', 'gecko', 'mango', 'unknownBrowser')
 			identifier
 			displayName
-	events
-	logged
-	notifications
-		success
-		errors
-		warnings
-		infos
-	succes (ref to $this->notifications->success)
-	errors (ref to $this->notifications->errors)
-	data
-		_current
-			resource
-			menu
-			url
-			urlParams
-			offset
-			limit
-			sortBy
-			orderBy
-		search	
-	model
-	m (ref to $this->application->model)
-	view
-        _magic
-            name
-            classes
-            css
-            js
-            cacheId
-		headers
-		env
-		options
-			method
-				* accepted ('create','retrieve','update','delete','index','duplicate','search')
+    	env???
+		options???? TODO: move/merge with params?
 			viewType
 			offset
 			limit
@@ -480,18 +448,53 @@ $this->
 			successes
 			warnings
 			notifications
-		debug ????
-		logged ??? (ref to $this->application->logged)
-		method
+	events
+	notifications
+		success
+		errors
+		warnings
+		infos
+	success (alias to $this->notifications->success)
+    warnings (alias to $this->notifications->success)
+	errors (alias to $this->notifications->warnings)
+    infos (alias to $this->notifications->infos)
+	data
+		_current
+			resource
+			menu
+			url
+			urlParams
+			offset
+			limit
+			sortBy
+			orderBy
+		search	
+	model
+	view
+        _magic
+            name
+            classes
+            css
+            js
+            cacheId
+		headers????
 		layout
 		template
 		css
+            * boolean
+            * or string (csv css group names)
+            * or array of css group names
+            * (group names can be just a css file or existing group names in config/*/css.php)
+            * (a group name or a css file can be prefixed with -- to be removed from the final loaded css list)
 		js
+            * boolean
+            * or string (csv js group names)
+            * or array of js group names
+            * (group names can be just a js file or existing group names in config/*/css.php)
+            * (a group name or a js file can be prefixed with -- to be removed from the final loaded js list)
 		name
 		title
 		meta
-		smartname
-		smartclasses
 		description
 		keywords
         cache

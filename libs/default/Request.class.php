@@ -115,6 +115,56 @@ class Request
 		$_SESSION['lang'] 	= $language . '_' . $territory;
 	}
 
+	public function getMagicData()
+	{
+		// Set default values
+		$this->_magic = array(
+			'objects' 	=> array(),
+			'name' 		=> null,
+			'classes' 	=> array(),
+			//'css' 		=> null,
+			'jsCalls' 	=> null,
+			'cacheId' 	=> null,
+		);
+		
+		$_rq 			= &$this->request; 				// Shortcut for request
+		$_ctr 			= &$this->controller; 			// Shortcut for request controller
+		$_mg 			= &$this->_magic; 				// Shortcut for view magic data
+		
+		$jsSample 		= 'if ( foo && foo.init && typeof foo.init == function() ){ foo.init(); }';
+		$jsSample2 		= 'if ( foo && typeof foo == function() ){ foo(); }';
+		$_mg['jsCalls'] .= PHP_EOL;
+		
+		// Loop over the breacrumbs parts
+		$camel 			= '';
+		$pointed 		= '';
+		foreach ( $this->breadcrumbs as $item)
+		{
+			$camel 				.= !empty($camel) ? ucfirst($item) : $item; 		// Get current camelcased concatenation of all parts
+			$pointed 			.= !empty($pointed) ? '.' . $item : $item; 			// Get current pointed notation concatenation of all parts
+			$_mg['classes'][] 	= $item; 											// Set the current item as a magic class
+			$_mg['objects'][] 	= $camel;  											// Set the current concatenation as a magic object
+			$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample) . PHP_EOL;
+		}
+		
+		// Add the called controller raw name
+		$camel 				.= !empty($camel) ? ucfirst($_ctr->rawName) : $_ctr->rawName;
+		$pointed 			.= !empty($pointed) ? '.' . $_ctr->rawName : $_ctr->rawName;
+		$_mg['classes'][] 	= $_ctr->rawName; 					
+		$_mg['objects'][] 	= $camel;
+		$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample) . PHP_EOL;
+		
+		// Add the called method name
+		$camel 				.= !empty($camel) ? ucfirst($_ctr->calledMethod) : $_ctr->calledMethod;
+		$pointed 			.= !empty($pointed) ? '.' . $_ctr->calledMethod : $_ctr->calledMethod;
+		$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample2) . PHP_EOL;
+		
+		// Set the magic view name
+		$_mg['name'] 		= $camel;
+		
+		return $_mg;
+	}
+
 	public function sniffPlatformData()
 	{
 		// Default values

@@ -162,6 +162,10 @@ class Controller implements ControllerInterface
 	
 	public function renderHTML()
 	{
+		// Extract some magic data from the request
+		$this->request->getMagicData();
+		
+		// Merge some default properties with user defined ones 
 		$this->view = new ArrayObject(array_merge(array(
 			// Caching
 			'cache' 					=> _APP_TEMPLATES_CACHING,
@@ -187,19 +191,10 @@ class Controller implements ControllerInterface
 			'viewportIniScale' 			=> _APP_VIEWPORT_INI_SCALE,
 			'viewportMaxScale' 			=> _APP_VIEWPORT_MAX_SCALE,
 			'viewportUserScalable' 		=> _APP_VIEWPORT_USER_SCALABLE,
-		),
-		(array) $this->view // User defined properties
-		/*, array(
-			'_magic' 					=> $this->getMagicData(),
-			'layout' 					=> $this->getLayout(),
-			'template' 					=> $this->getTemplate(),
-			'name' 						=> $this->getName(),
-			'classes' 					=> $this->getClasses(),
-			'css' 						=> $this->getCSS(),
-			'js' 						=> $this->getJS(),			
-		)*/), 2);
+		), (array) $this->view), 2);
 		
-		$this->getMagicData();
+//var_dump($this->request);
+		
 		$this->getName();
 		$this->getLayout();
 		$this->getTemplate();
@@ -268,8 +263,6 @@ class Controller implements ControllerInterface
 
 	public function getClasses()
 	{
-		$_rq 		= &$this->request;
-		$_rqc 		= &$_rq->controller;
 		$_b 		= &$_rq->browser;
 		$classes 	= '';
 		
@@ -291,8 +284,8 @@ class Controller implements ControllerInterface
  		if ( empty($this->view['classes']) )
  		{
  			$classes .= 
- 				' ' . join(' ', $this->view['_magic']['classes']) .
-				' ' . join(' ', $this->view['_magic']['objects']) .
+ 				' ' . join(' ', $this->request->_magic['classes']) .
+				' ' . join(' ', $this->request->_magic['objects']) .
 				' ' . $this->view['name']
 			;
 		}
@@ -313,132 +306,103 @@ class Controller implements ControllerInterface
 	public function getTemplate()
 	{
 		$this->view->template = !empty($this->view['template']) ? !empty($this->view['template']) : 'yours/pages/' 
-			. ( $this->view['_magic']['classes'] ? join('/', $this->view['_magic']['classes']) . '/' : '' )
+			. ( $this->request->_magic['classes'] ? join('/', $this->request->_magic['classes']) . '/' : '' )
 			. $this->request->controller->calledMethod . '.' . _APP_TEMPLATES_EXTENSION;
 	}
 	
 	public function getName()
 	{
-		$this->view->name = !empty($this->view->name) ? $this->view->name : $this->view['_magic']['name'];
+		$this->view->name = !empty($this->view->name) ? $this->view->name : $this->request->_magic['name'];
 		
 		return $this->view->name;
 	}
 	
-	public function getCSS()
+	public function getCSS(){ return $this->getAssets('css'); }
+	public function getJS(){ return $this->getAssets('js'); }
+	public function getAssets($type)
 	{
 		$ret 		= array();
 		$_v 		= &$this->view; // Shortcut for view
-		$_vm 		= &$this->view['_magic']; // Shortcut for view
+		$_mg 		= &$this->request->_magic; // Shortcut for view
 		
 		// If the view is explicitely specified as not containing css, do not continue
-		if ( isset($_v['css']) && $v['css'] === false ){ return $ret; }
-
-		// Load css file
-		isset($_css) || require(_PATH_CONFIG . 'yours/css.php');
+		if ( isset($_v[$type]) && $v[$type] === false ){ return $ret; }
 		
 		// Get group names to loop over
 		// Use user defined groups if specified
 		// Otherwise, get magic ones
-		$groups 		= !empty($v['css']) ? Tools::toArray($v['css']) : array_merge( 						 
+		$groups 		= !empty($v[$type]) ? Tools::toArray($v[$type]) : array_merge( 						 
 			array('common'), 
-			$_vm['objects'], 
-			$_vm['classes'],
-			array($_vm['name'])
+			(array) $_mg['objects'], 
+			(array) $_mg['classes'],
+			array($_mg['name'])
 		);
 		
 		$groups = array_unique($groups);
 		
-$groups[] = array('test1.css','test2.js','test3.sass' => array('foo','bar'));
-		
-var_dump($groups);
+		//$this->css = self::parseCSSGroup($groups);
+		$method = 'parse' . strtoupper($type) . 'Group';
+		$this->$type = self::$method($groups);
 
-		
-		// 
-		//class_exists(cssGroupsIterator) || require(_PATH_LIBS . 'default/css/cssGroupsIterator.class.php');
-		//$this->requireLibs('cssGroupsIterator', 'css/');
-		$this->requireLibs(array('cssGroupsIterator' => 'css/'));
-		$iterator = new RecursiveArrayIterator(new ArrayObject($groups));
-		$cssGpIterator = new cssGroupsIterator($iterator);
-		//$cssGpIterator = new RecursiveIteratorIterator($iterator);
-		
-//var_dump($iterator);
+var_dump($this->$type);
 
-		foreach ($cssGpIterator as $k => $v)
-		{
-//var_dump($k);
-var_dump($v);
-//var_dump($cssGpIterator);
-//var_dump($iterator);
-//var_dump($iterator->current());
-//var_dump($cssGpIterator->current());
-//var_dump(preg_match('/^.*\.(css|scss|sass|less)$/', $cssGpIterator->current()));
-//var_dump($cssGpIterator->valid());
-//var_dump($cssGpIterator->valid());
-//var_dump($rIterator->key());
-//var_dump($rIterator->next());
-//var_dump($ri->current());
-			//if ( $k === 'test3' ){ RecursiveIteratorIterator::endIteration(); }
-//echo $k . ': ' . $v . '<br />';
-		}
-
-		/*
-		// Try to find smartGroups using smartClasses if found, otherwise try to use view name
-		// If nothing is found, will keep defaut css group
-		$smartGroups 	= !empty($v['smartclasses']) ? explode(' ',$v['smartclasses']) : ( !empty($v['name']) ? (array) $v['name'] : array() );
-		$i 				= count($smartGroups);					
-		while ($i--)
-		{
-			// Only process existing css groups 
-			if ( empty($smartGroups[$i]) || empty($cssAssoc[$smartGroups[$i]]) ){ continue; }
-			else { $defCssGroup = $smartGroups[$i]; break; }
-		} 
-		
-		// If specific css have been defined
-		if ( !empty($specCss) ) 
-		{			
-			foreach ( $specCss as $val )
-			{
-				// Do not process empty values
-				if 		( empty($val) )													{ continue; }
-				
-				// If the value does not contains .css, assume it's a css group name
-				//else if ( strpos($val, '.css') === false && !empty($cssAssoc[$val]) ) 	{ $this->css += $cssAssoc[$val]; }
-				else if ( strpos($val, '.css') === false && !empty($cssAssoc[$val]) ) 	{ $this->getCSSgroup($val); }
-				
-				// If the value is prefixed by '--', remove the css from the list
-				else if ( strpos($val, '--') !== false )
-				{
-					$k = array_search(str_replace('--','',$val), $this->css);
-					if ($k !== false) { unset($this->css[$k]); }
-				}
-				
-				// Otherwise, and if not already present, add it to the css array
-				else if ( empty($this->css[$val]) )									{ $this->css[] = $val; }
-			}	
-		}
-		// Otherwise, use css group
-		else
-		{
-			$this->getCSSgroup($defCssGroup);
-		}
-		
-		// Specific case
-		if ( _SUBDOMAIN === 'iphone' || $this->platform['name'] === 'iphone' ){ $this->getCSSgroup('iphone'); }
-		else if ( _SUBDOMAIN === 'ipad' || $this->platform['name'] === 'ipad' ){ $this->getCSSgroup('ipad'); }
-		else if ( _SUBDOMAIN === 'android' || $this->platform['name'] === 'android' ){ $this->getCSSgroup('android'); }
-		
-		return $this->css;
-		*/
 		return $ret;
 	}
 	
-	public function getJS()
+	static function parseCSSGroup($cssGroup){ return self::parseAssetsGroup('css',$cssGroup); }
+	static function parseJSGroup($jsGroup){ return self::parseAssetsGroup('js',$jsGroup); }
+	static function parseAssetsGroup($type, $assetsGroup)
 	{
-		$ret = array();
+//var_dump(__METHOD__);
 		
-		// TODO
+		// Load css file
+		isset(${'_' . $type}) || require(_PATH_CONFIG . 'yours/' . $type . '.php');
 		
-		return $ret;
+		$_gp 		= &${'_' . $type};
+		$files 		= array();
+		$pattern 	= '/^.*\.(' . constant('_ALLOWED_' . strtoupper($type) . '_EXT_PATTERN') . ')$/';
+		
+		foreach ( (array) $assetsGroup as $k => $v)
+		{
+			// Do not process empty values
+			if 	( empty($v) ){ continue; }
+			
+			//$isFile 		= preg_match('/^.*\.(css|scss|sass|less)$/', $v);
+			$isFile 		= preg_match($pattern, $v);
+			$gpExists 		= !$isFile && !empty($_gp[$v]);
+			$toBeRemoved 	= $isFile && strpos($v, '--') !== false;
+			
+//var_dump($k);
+//var_dump($v);
+//var_dump('    isFile: ' . $isFile);
+//var_dump('    gpExists: ' . $gpExists);
+//continue;
+
+			// If the group exists, recursively parse it and if files where returned
+			$method = 'parse' . strtoupper($type) . 'Group';
+			if ( $gpExists && ($gpFiles = self::$method($_gp[$v])) && $gpFiles )
+			{
+				// Add them
+				//$files[] = $gpFiles;
+				
+				$files += $gpFiles;
+				//continue;
+			}
+			// Or if the item is a file
+			elseif ( $isFile )
+			{
+				// If the file already exists, remove it to be able to re-add it preserving cascading definition order
+				// If the file is marked as to be removed (prefixed with --), do it
+				// Otherwise, add the file to the final set
+				if ( isset($files[$v]) ) 	{ unset($files[$v]); if ( $toBeRemoved ){ continue; } } 
+				else 						{ $files[$v] = $v; }
+			}
+		}
+		
+		// Remove doubles
+		//$ret = array_unique($ret);
+		
+		return $files;
 	}
 	
 	public function loadTemplate()
