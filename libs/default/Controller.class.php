@@ -143,6 +143,11 @@ class Controller implements ControllerInterface
 		// TODO
 	}
 	
+	public function bind()
+	{
+		// TODO
+	}
+	
 	public function render()
 	{		
 		$renderMethod = 'render' . strtoupper($this->request->getOutputFormat());
@@ -191,7 +196,16 @@ class Controller implements ControllerInterface
 			'viewportIniScale' 			=> _APP_VIEWPORT_INI_SCALE,
 			'viewportMaxScale' 			=> _APP_VIEWPORT_MAX_SCALE,
 			'viewportUserScalable' 		=> _APP_VIEWPORT_USER_SCALABLE,
-		), (array) $this->view), 2);
+			
+			'minifyCSS' 				=> _MINIFY_CSS,
+			'minifyJS' 					=> _MINIFY_JS,
+			'minifyHTML' 				=> _MINIFY_HTML,
+		), (array) $this->view,
+		array(
+			'minifyCSS' 				=> isset($_GET['minify']) ? in_array($_GET['minify'], array('css','all')) : $this->view->minifyCSS,
+			'minifyJS' 					=> isset($_GET['minify']) ? in_array($_GET['minify'], array('js','all')) : $this->view->minifyJS,
+			'minifyHTML' 				=> isset($_GET['minify']) ? in_array($_GET['minify'], array('html','all')) : $this->view->minifyHTML,
+		)), 2);
 		
 //var_dump($this->request);
 		
@@ -211,59 +225,10 @@ class Controller implements ControllerInterface
 		$this->debug();
 	}
 
-	public function getMagicData()
-	{
-		// Set default values
-		$this->view['_magic'] = array(
-			'objects' 	=> array(),
-			'name' 		=> null,
-			'classes' 	=> array(),
-			//'css' 		=> null,
-			'jsCalls' 	=> null,
-			'cacheId' 	=> null,
-		);
-		
-		$_rq 			= &$this->request; 							// Shortcut for request
-		$_rqc 			= &$_rq->controller; 						// Shortcut for request controller
-		$_vm 			= &$this->view['_magic']; 					// Shortcut for view magic data
-		
-		$jsSample 		= 'if ( foo && foo.init && typeof foo.init == function() ){ foo.init(); }';
-		$jsSample2 		= 'if ( foo && typeof foo == function() ){ foo(); }';
-		$_vm['jsCalls'] .= PHP_EOL;
-		
-		// Loop over the breacrumbs parts
-		$camel 			= '';
-		$pointed 		= '';
-		foreach ( $_rq->breadcrumbs as $item)
-		{
-			$camel 				.= !empty($camel) ? ucfirst($item) : $item; 		// Get current camelcased concatenation of all parts
-			$pointed 			.= !empty($pointed) ? '.' . $item : $item; 			// Get current pointed notation concatenation of all parts
-			$_vm['classes'][] 	= $item; 											// Set the current item as a magic class
-			$_vm['objects'][] 	= $camel;  											// Set the current concatenation as a magic object
-			$_vm['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample) . PHP_EOL;
-		}
-		
-		// Add the called controller raw name
-		$camel 				.= !empty($camel) ? ucfirst($_rqc->rawName) : $_rqc->rawName;
-		$pointed 			.= !empty($pointed) ? '.' . $_rqc->rawName : $_rqc->rawName;
-		$_vm['classes'][] 	= $_rqc->rawName; 					
-		$_vm['objects'][] 	= $camel;
-		$_vm['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample) . PHP_EOL;
-		
-		// Add the called method name
-		$camel 				.= !empty($camel) ? ucfirst($_rqc->calledMethod) : $_rqc->calledMethod;
-		$pointed 			.= !empty($pointed) ? '.' . $_rqc->calledMethod : $_rqc->calledMethod;
-		$_vm['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample2) . PHP_EOL;
-		
-		// Set the magic view name
-		$_vm['name'] 		= $camel;
-		
-		return $_vm;
-	}
 
 	public function getClasses()
 	{
-		$_b 		= &$_rq->browser;
+		$_b 		= $this->request->browser;
 		$classes 	= '';
 		
 		// Add platform, device & browser data as classes
@@ -272,7 +237,7 @@ class Controller implements ControllerInterface
 		$classes .= 
 			//' ' . _SUBDOMAIN .
 			_SUBDOMAIN .
-			' ' . $_rq->platform['name'] .
+			' ' . $this->request->platform['name'] .
 			' ' . $_b['engine'] .
 			' ' . $_b['alias'] .
 			' ' . $_b['alias'] . $_b['version']['major'] .
@@ -321,12 +286,15 @@ class Controller implements ControllerInterface
 	public function getJS(){ return $this->getAssets('js'); }
 	public function getAssets($type)
 	{
-		$ret 		= array();
-		$_v 		= &$this->view; // Shortcut for view
-		$_mg 		= &$this->request->_magic; // Shortcut for view
+		//$ret 		= array();
+		$_v 		= &$this->view; 			// Shortcut for view
+		$_mg 		= &$this->request->_magic; 	// Shortcut for view
+		$upper 		= strtoupper($type);
 		
-		// If the view is explicitely specified as not containing css, do not continue
-		if ( isset($_v[$type]) && $v[$type] === false ){ return $ret; }
+		// If the view is explicitely specified as not containing css, or if the css param is passed with a falsy value 
+		// do not continue
+		if ( (isset($_v[$type]) && $v[$type] === false)
+			|| ( isset($_GET[$type]) && !in_array($_GET[$type], array('0','false',0,'no')) ) ){ return $ret; }
 		
 		// Get group names to loop over
 		// Use user defined groups if specified
@@ -338,45 +306,57 @@ class Controller implements ControllerInterface
 			array($_mg['name'])
 		);
 		
+		// Remove doubles
 		$groups = array_unique($groups);
 		
-		//$this->css = self::parseCSSGroup($groups);
-		$method = 'parse' . strtoupper($type) . 'Group';
-		$this->$type = self::$method($groups);
+		// Call proper method to parse assets group
+		$parseMethod = 'parse' . $upper . 'Group';
+		$this->view->$type = self::$parseMethod($groups);
+		
+		if ( $this->view->{'minify' . $upper} )
+		{
+			$minMethod 			= 'getMinified' . $upper;
+			$this->view->$type 	= self::$minMethod($this->view->$type);
+		}
 
-var_dump($this->$type);
+		//return $this->view->$type;
+	}
 
-		return $ret;
+	static function getMinifiedCSS($css){ return self::getMinifiedAssets('css', $css); }
+	static function getMinifiedJS($js){ return self::getMinifiedAssets('js', $js); }
+	static function getMinifiedAssets($type, $css)
+	{
+		$url = '';
+		//foreach ((array) $css as $item){ $url .= ( !$url ? '/public/min/?f=' : ',' ) . constant('_URL_' . strtoupper($type) . '_REL') . $item; }
+		foreach ((array) $css as $item)
+		{
+			// TODO: handle '&' escaping for xhtml
+			$url .= ( !$url ? '/public/min/?f=' : ',' ) . $item;
+		}
+		
+		return array($url);
 	}
 	
-	static function parseCSSGroup($cssGroup){ return self::parseAssetsGroup('css',$cssGroup); }
-	static function parseJSGroup($jsGroup){ return self::parseAssetsGroup('js',$jsGroup); }
-	static function parseAssetsGroup($type, $assetsGroup)
+	static function parseCSSGroup($cssGroup){ return self::parseAssetsGroup('css', $cssGroup); }
+	static function parseJSGroup($jsGroup){ return self::parseAssetsGroup('js', $jsGroup); }
+	static function parseAssetsGroup( $type, $assetsGroup)
 	{
-//var_dump(__METHOD__);
-		
 		// Load css file
 		isset(${'_' . $type}) || require(_PATH_CONFIG . 'yours/' . $type . '.php');
 		
 		$_gp 		= &${'_' . $type};
 		$files 		= array();
-		$pattern 	= '/^.*\.(' . constant('_ALLOWED_' . strtoupper($type) . '_EXT_PATTERN') . ')$/';
+		$upper 		= strtoupper($type);
+		$pattern 	= '/^.*\.(' . constant('_ALLOWED_' . $upper . '_EXT_PATTERN') . ')$/';
 		
 		foreach ( (array) $assetsGroup as $k => $v)
 		{
 			// Do not process empty values
 			if 	( empty($v) ){ continue; }
 			
-			//$isFile 		= preg_match('/^.*\.(css|scss|sass|less)$/', $v);
 			$isFile 		= preg_match($pattern, $v);
 			$gpExists 		= !$isFile && !empty($_gp[$v]);
 			$toBeRemoved 	= $isFile && strpos($v, '--') !== false;
-			
-//var_dump($k);
-//var_dump($v);
-//var_dump('    isFile: ' . $isFile);
-//var_dump('    gpExists: ' . $gpExists);
-//continue;
 
 			// If the group exists, recursively parse it and if files where returned
 			$method = 'parse' . strtoupper($type) . 'Group';
@@ -384,9 +364,7 @@ var_dump($this->$type);
 			{
 				// Add them
 				//$files[] = $gpFiles;
-				
 				$files += $gpFiles;
-				//continue;
 			}
 			// Or if the item is a file
 			elseif ( $isFile )
@@ -395,12 +373,20 @@ var_dump($this->$type);
 				// If the file is marked as to be removed (prefixed with --), do it
 				// Otherwise, add the file to the final set
 				if ( isset($files[$v]) ) 	{ unset($files[$v]); if ( $toBeRemoved ){ continue; } } 
-				else 						{ $files[$v] = $v; }
+				//else 						{ $files[$v] = $v; }
+				//else 						{ $files[$v] = constant('_URL_' . $upper . '_REL') . $v; }
+				
+				else 						
+				{
+					// Do not append the asset type base url if the file is external (using protocol relative or http(?)//: scheme )
+					$isExt = preg_match('/^(\/\/|https?:\/\/).*$/', $v);
+					$files[$v] = ( $isExt ? '' : constant('_URL_' . $upper . '_REL') ) . $v;
+				}
 			}
 		}
 		
 		// Remove doubles
-		//$ret = array_unique($ret);
+		//$files = array_unique($files);
 		
 		return $files;
 	}
@@ -414,7 +400,7 @@ var_dump($this->$type);
 			'view' 		=> &$this->view,
 		);
 		
-		$foo = $this->request;
+//$foo = $this->request;
 //var_dump($this->request->url);
 //var_dump($foo::$url);
 		

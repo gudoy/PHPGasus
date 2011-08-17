@@ -7,7 +7,9 @@ $ypages     = 'yours/pages/'; 		// Shortcurt for your pages folder
 
 $_js = array(
 	# Libs
-	'jquery' 				=> array($libs . 'jquery-1.6.2.min.js'),
+	//'jquery' 				=> array($libs . 'jquery-1.6.2.min.js'),
+	'jquery' 				=> array('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'),
+	
 	'jqueryUI'				=> array($libs . 'jquery-ui-1.8.15.custom.min.js'),
 	'jqueryPlusUI' 			=> array('jquery', 'jqueryUI'),
 	'jqueryEasing' 			=> array($libs . 'jquery.easing.1.3.js'),

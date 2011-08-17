@@ -2,21 +2,24 @@
 
 # Base
 define("_URL_HOME", 						_URL);
-define("_URL_PUBLIC_REL", 	 				_URL_REL . 'public/');
-define("_URL_PUBLIC", 	 					_URL_PUBLIC_REL);
-define("_URL_STYLESHEETS",					_URL . 'public/stylesheets/default/');
-define("_URL_JAVASCRIPTS", 	 				_URL . 'public/javascripts/');
-define("_URL_STYLESHEETS_REL",				_URL_REL . 'public/stylesheets/default/');
+define("_URL_PUBLIC", 	 					_URL . 'public/');
+define("_URL_STYLESHEETS",					_URL_PUBLIC . 'stylesheets/default/');
+define("_URL_JAVASCRIPTS", 	 				_URL_PUBLIC . 'javascripts/');
 define("_URL_CSS",							_URL_STYLESHEETS);
-define("_URL_CSS_REL",						_URL_STYLESHEETS_REL);
-define("_URL_JAVASCRIPTS_REL", 	 			_URL_REL . 'public/javascripts/');
-define("_URL_JS_REL", 	 					_URL_JAVASCRIPTS_REL);
 define("_URL_JS", 	 						_URL_JAVASCRIPTS);
-define("_URL_DESIGN", 	 					_URL . 'public/stylesheets/default/images/');
-define("_URL_MEDIA", 	 	 				_URL . 'public/medias/');
-define("_URL_FLASHS", 	 	 				_URL . 'public/medias/flash/');
-define("_URL_IMAGES", 						_URL_STATIC_1 . 'medias/images/');
-define("_URL_AUDIOS", 	 	 				_URL . 'public/medias/audios/');
+define("_URL_MEDIA", 	 	 				_URL_PUBLIC . 'medias/');
+define("_URL_FLASHS", 	 	 				_URL_MEDIAS . 'flash/');
+define("_URL_AUDIOS", 	 	 				_URL_MEDIAS . 'audios/');
+define("_URL_VIDEOS", 	 	 				_URL_MEDIAS . 'videos/');
+//define("_URL_IMAGES", 						_URL_STATIC_1 . 'medias/images/');
+define("_URL_IMAGES", 						_URL_MEDIAS . 'images/');
+
+# Base (relative)
+define("_URL_PUBLIC_REL", 	 				_URL_REL . 'public/');
+define("_URL_STYLESHEETS_REL",				_URL_PUBLIC_REL . 'stylesheets/default/');
+define("_URL_JAVASCRIPTS_REL", 	 			_URL_PUBLIC_REL . 'javascripts/');
+define("_URL_CSS_REL",						_URL_STYLESHEETS_REL);
+define("_URL_JS_REL", 	 					_URL_JAVASCRIPTS_REL);
 
 # Common
 define("_URL_DOWN", 						_URL . 'down/');

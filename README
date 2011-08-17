@@ -448,6 +448,12 @@ $this->
 			successes
 			warnings
 			notifications
+        _magic (only available in templates and only if the ouput is HTML or XHTML)
+            name
+            classes
+            css
+            js
+            cacheId
 	events
 	notifications
 		success
@@ -471,12 +477,6 @@ $this->
 		search	
 	model
 	view
-        _magic
-            name
-            classes
-            css
-            js
-            cacheId
 		headers????
 		layout
 		template
@@ -486,12 +486,14 @@ $this->
             * or array of css group names
             * (group names can be just a css file or existing group names in config/*/css.php)
             * (a group name or a css file can be prefixed with -- to be removed from the final loaded css list)
+            * => will be transformed into an array of css file(s)
 		js
             * boolean
             * or string (csv js group names)
             * or array of js group names
             * (group names can be just a js file or existing group names in config/*/css.php)
             * (a group name or a js file can be prefixed with -- to be removed from the final loaded js list)
+            * => will be transformed into an array of js file(s)
 		name
 		title
 		meta
@@ -508,4 +510,6 @@ $this->
         iosWebappCapable            // boolean [default use _APP_IOS_WEBAPP_CAPABLE]
         iosIniScale                 // float (min 0, max 10) [default = _APP_IOS_INISCALE]
         allowPrerendering           // boolean [default use _APP_ALLOW_PAGE_PRERENDERING]
-	
+        minifyCSS                   // boolean [check for ?minify=css or ?minify=all or default use _MINIFY_CSS]
+        minifyJS                    // boolean [check for ?minify=js or ?minify=all or default use _MINIFY_JS]
+        minifyHTML                  // boolean [check for ?minify=html or ?minify=all or default use _MINIFY_HTML]

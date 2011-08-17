@@ -157,7 +157,8 @@ class Request
 		// Add the called method name
 		$camel 				.= !empty($camel) ? ucfirst($_ctr->calledMethod) : $_ctr->calledMethod;
 		$pointed 			.= !empty($pointed) ? '.' . $_ctr->calledMethod : $_ctr->calledMethod;
-		$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample2) . PHP_EOL;
+		//$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample2) . PHP_EOL;
+		$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample2);
 		
 		// Set the magic view name
 		$_mg['name'] 		= $camel;

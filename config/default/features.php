@@ -94,10 +94,6 @@ define('_APP_META_ROBOTS_IMAGES_INDEXABLE', 	false);						// Allows/prevents sea
 define('_APP_META_GOOGLE_TRANSLATABLE', 		true);						// Allows/prevents Google to offer translation link/feature for your pages
 define('_APP_ALLOW_PAGE_PRERENDERING', 			true);						// Allows/prevents Google Chrome to prepender pages in background 
 define('_APP_USE_CHROME_FRAME', 				true);						// HTML pages require Google Chrome Frame plugin? (if yes, displays plugin installation popup)
-define('_APP_USE_CSS_IE', 						false);		
-define('_APP_USE_CSS_IE6', 						false);		
-define('_APP_USE_CSS_IE7', 						false);		
-define('_APP_USE_CSS_OPERA', 					false);		
 
 
 ### VIEWPORT & WEBAPP ###		
@@ -114,13 +110,15 @@ define('_APP_IPAD_INISCALE', 					'1.0'); 					// Default page scale for ipads (
 define('_APP_IPAD_MAXSCALE', 					'3.0'); 					// Allow ipads to scale up/down pages (default = 1.0)
 
 
-### CSS/JS ###	
+### CSS/JS & MISC PERF CONFS ###
+define('_APP_USE_CSS_IE', 						true); 						// Enable/disable loading of specific css for Internet Explorer
 define("_ALLOWED_CSS_EXT_PATTERN", 				'(s|c|sc|le)ss'); 			// regex pattenr of allowed css file extensions. (=== 'css|scss|sass|less')
 define("_ALLOWED_JS_EXT_PATTERN", 				'js|coffee'); 				// regex pattenr of allowed css file extensions. (=== 'css|scss|sass|less')
 define("_MINIFY_JS", 							true); 						// Enable/disable automatic minification for js
 define("_MINIFY_CSS", 							true); 						// Enable/disable automatic minification for css
-define("_FLUSH_BUFFER_EARLY", 					true); 						// Experimental. Enable/disable flush the buffer at some stategic parts of the templates 
-	
+define("_MINIFY_HTML", 							true); 						// TODO: Enable/disable automatic minification for html
+define("_FLUSH_BUFFER_EARLY", 					true); 						// Experimental. Enable/disable flush the buffer at some stategic parts of the templates
+
 	
 ### THIRD PARTY SERVICES ###	
 	

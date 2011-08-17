@@ -9,8 +9,7 @@
 	{block name='icons'}{include file='default/blocks/head/icons.tpl'}
 	{/block}
 	
-	{*block name='css'}{include file='default/blocks/css/css.tpl'}
-	{/block*}
+	{block name='css'}{include file='default/blocks/css/css.tpl'}{/block}
 	
 	{block name='html5shiv'}{include file='default/blocks/js/html5.tpl'}{/block}
 	{block name='googleAnalytics'}{include file='default/blocks/js/google/analytics/init.tpl'}{/block}
