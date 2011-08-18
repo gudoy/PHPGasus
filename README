@@ -151,6 +151,7 @@ Magic request params
 {anyURL}.xhtml              <== display the html reprensatation of the page data
 {anyURL}.qr                 <== display the qr code containing the url of the page data
 {anyURL}.json               <== return the json representation of the page data
+{anyURL}.jsonp              <== return the json representation of the page data
 {anyURL}.jsontxt            <== return the json representation of the page data, served as plain text
 {anyURL}.jsonreport         <== return the jsonreport (http://ajaxstack.com/jsonreport/) of the page data
 {anyURL}.xml                <== return the xml representation of the page data
@@ -158,13 +159,14 @@ Magic request params
 {anyURL}.plistxml           <== return the plist representation of the page data, served as plain text
 {anyURL}.yaml               <== return the yaml representation of the page data
 ?css=no                     <== disable css
-?js=no                      <== disable css
+?js=no                      <== disable js
 ?minify=all                 <== force minification of js & css (override conf directives)
 ?minify=css                 <== force minification of css
-?minify=js                  <== force minification of css
+?minify=js                  <== force minification of js
+?minify=html                <== force minification of html
 ?tplSelf=1                  <== only return main template content (not the layout) [by default for ajax requests]
 ?limit=100                  <== never return more than 100 items for a resource (unless you explicitely asked for more using 'limit' => -1 params in your code
-?conditions={$conditions}   <== never return more than 100 items for a resource (unless you explicitely asked for more using 'limit' => -1 params in your code
+?conditions={$conditions}   <== 
 ?isIphone           		<== 
 ?emulated           		<== 
 ?isAndroid          		<== 

@@ -1,0 +1,19 @@
+<h2>Vhost or .htaccess</h2>
+<ol>
+	<li>add vhost to your server conf or add the proper .htaccess at the root of your projet</li>
+	<li>edit conf file if necessary (change _PATH & _URL)</li>
+	<li>edit APP_CONTEXT env var with proper value (local/dev/preprod/prod)</li>
+</ol>
+
+
+
+
+<h2>Set permissions</h2>
+<p>
+	Attention : Depending of who owns the folders of your project, you may have to set higher rights (770, 775 or even 777) for the following folders</li>
+</p>
+<ul>
+	<li>templates/_precompiled/ 755</li>
+	<li>[templates/_cache/ 755]] (required if you want to use templates caching)</li>
+	<li>[templates/_minified/ 755] (required if you want to use minified files caching)</li>
+</ul>
