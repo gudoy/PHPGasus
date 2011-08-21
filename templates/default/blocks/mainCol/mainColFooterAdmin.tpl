@@ -1,6 +1,6 @@
 <footer class="menu" id="mainColFooter">
 	{block name='poweredBy'}
-	<div class="block poweredByBlock" id="poweredByBlock">{t escape=no}powered by <a href="http://www.phpgasus.com">PHPGasus</a>{/t}</div>
+	{include file='default/blocks/footer/poweredBy.tpl'}
 	{/block}
 	<ul>
 		<li class="toggler" id="mainColColToggler">

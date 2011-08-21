@@ -92,7 +92,7 @@ define('_APP_META_ROBOTS_INDEXABLE', 			false);						// Allows/prevents pages to
 define('_APP_META_ROBOTS_ARCHIVABLE', 			false);						// Allows/prevents search engines to display "in cache" links in their search results
 define('_APP_META_ROBOTS_IMAGES_INDEXABLE', 	false);						// Allows/prevents search engines to index your images
 define('_APP_META_GOOGLE_TRANSLATABLE', 		true);						// Allows/prevents Google to offer translation link/feature for your pages
-define('_APP_ALLOW_PAGE_PRERENDERING', 			true);						// Allows/prevents Google Chrome to prepender pages in background 
+define('_APP_ALLOW_PAGE_PRERENDERING', 			false);						// Allows/prevents Google Chrome to prepender pages in background 
 define('_APP_USE_CHROME_FRAME', 				true);						// HTML pages require Google Chrome Frame plugin? (if yes, displays plugin installation popup)
 
 

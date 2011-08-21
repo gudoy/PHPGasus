@@ -3,7 +3,7 @@
 	<ul class="resourceGroups">
 		{foreach array_keys($_groups) as $rGpName}
 		<li class="resourceGroup">
-			<span class="name">{$rGpName}</span>
+			<a class="action" href="#"><span class="name">{$rGpName}</span></a>
 			{include file='default/blocks/admin/nav/resources.tpl' resourcesNames=$_groups[$rGpName]['resources']}			
 		</li>
 		{/foreach}

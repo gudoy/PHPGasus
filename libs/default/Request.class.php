@@ -57,6 +57,7 @@ class Request
 		$ext = preg_split('/\./', basename($_SERVER['REDIRECT_URL']));
 		
 		$this->controller = (object) array();
+		//$this->controller = new ArrayObject(array(), 2);
 		
 		$this->sniffPlatformData();
         $this->sniffDeviceData();
