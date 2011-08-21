@@ -1,3 +1,1 @@
-{extends file='yours/layouts/page.tpl'}
-
-{block name='googleAnalytics'}{/block}
+{include file='default/layouts/pageAdmin.tpl'}

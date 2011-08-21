@@ -12,3 +12,9 @@ _svn
 svn-commit*.tmp
 config/yours/env/*.php
 config/yours/vhosts/*
+public/stylesheets/default/devv1.css
+public/logs
+config/yours/htaccess/*
+/.htaccess
+public/stylesheets/default/macaddict.old.css
+public/stylesheets/default/phpgasus.old.css

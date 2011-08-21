@@ -24,21 +24,19 @@ class CDebug extends Controller
 	
 	public function platform()
 	{		
-		if ( !_APP_SNIFF_PLATFORM ) { die('Ooops, Platform sniffing is disabled!'); }
+		if ( !_SNIFF_PLATFORM ) { die('Ooops, Platform sniffing is disabled!'); }
 		
 		var_dump($this->request['platform']);
 	}
 	
 	public function device()
-	{		
-		if ( !_APP_SNIFF_BROWSER ) { die('Ooops, Browser sniffing is disabled!'); }
-		
+	{
 		var_dump($this->request['device']);
 	}
 	
 	public function browser()
 	{		
-		if ( !_APP_SNIFF_BROWSER ) { die('Ooops, Browser sniffing is disabled!'); }
+		if ( !_SNIFF_BROWSER ) { die('Ooops, Browser sniffing is disabled!'); }
 		
 		var_dump($this->request['browser']);
 	}

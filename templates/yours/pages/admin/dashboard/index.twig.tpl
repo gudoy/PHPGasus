@@ -1,5 +1,5 @@
 {% extends 'yours/layouts/pageAdmin.twig.tpl' %}
 
-{% block 'pageContent' %}
+{% block mainContent %}
 {% include 'default/blocks/admin/dashboard/index.twig.tpl' %}
 {% endblock %}

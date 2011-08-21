@@ -27,7 +27,6 @@ class DataModel
 		# Generated
 		// 'exposedColumns' 	=> array()
 		// 'relations'  	=> array('oneToOne','oneToMany','manyToOne', 'manyToMany')
-		
 	);
 	
 	static $columnTypes 					= array(
@@ -688,7 +687,8 @@ class DataModel
 	// Checks that a resource exists
 	static function isResource($string)
 	{
-		return !empty(self::$resources[$string]);
+		//return !empty(self::$resources[$string]);
+		return !empty($_resources[$string]);
 	}
 	
 	// Search for a mispelled resource

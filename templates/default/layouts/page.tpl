@@ -20,11 +20,27 @@
 {block name='body'}<body>{block name='bodyContent'}
 {* block name='onBodyStartFlush'}{include file='default/blocks/misc/flush/onBodyStart.tpl'}{/block *}
 {block name='googleChromeFrameInit'}{include file='default/blocks/js/google/chromeFrame/init.tpl'}{/block}
-	{block name='layout'}<div id="layout">{block name='layoutContent'}
-		{block name='header'}{/block}
-		{block name='pageContent'}{/block}
-		{block name='footer'}{/block}
-	{/block}</div>{/block}{block name='js'}{include file='default/blocks/js/js.tpl'}{/block}
+	{block name='layout'}<div id="layout">
+		{block name='layoutContent'}
+		{block name='notifier'}{include file='default/blocks/common/notifier/notifier.tpl'}{/block}
+		{block name='header'}{include file='default/blocks/header/header.tpl'}{/block}
+		{block name='page'}<div id="body">{block name='pageContent'}
+				{block name='breadcrumbs'}{/block}
+		    	{block name='aside'}{/block}
+		    	{block name='mainCol'}
+		    	<div class="col main" id="mainCol" role="main">
+		    		{block name='mainColHeader'}{/block}
+		    		<div class="colContent mainColContent" id="mainColContent">
+		    			{block name='mainContent'}{/block}
+		    		</div>
+		    		{block name='mainColFooter'}{/block}
+		    	</div>
+		    	{/block}
+    		{/block}</div>{/block}
+    	{block name='footer'}{include file='default/blocks/footer/footer.tpl'}{/block}
+		
+	{/block}</div>{/block}
+	{block name='js'}{include file='default/blocks/js/js.tpl'}{/block}
 {/block}
 </body>{/block}
 </html>

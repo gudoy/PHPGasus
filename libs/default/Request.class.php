@@ -35,10 +35,20 @@ class Request
 	);
 	
 	public function __construct()
-	{		
+	{
+		// In case where the app do not use a hostname but is accessed instead via an IP, we are to remove the app base base from the request URI
+		$this->relative_uri = str_replace(rtrim(_PATH_REL, '/'), '', $_SERVER['REQUEST_URI']);
+		
 		// TODO: bench preg_split + replacedd request uri, preg_split + redirect_url, explode + skiping '/' in dispatch
-		$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']), '/'));
+		//$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']), '/'));
+		$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $this->relative_uri), '/'));
 		//$this->parts = preg_split('/\//', trim($_SERVER['REDIRECT_URL'], '/'));
+
+//var_dump(_PATH_REL);		
+//var_dump($_SERVER['QUERY_STRING']);
+//var_dump($this->parts);
+//phpinfo();
+//die();
 		
 		$this->getURL();
 		
@@ -131,8 +141,8 @@ class Request
 		$_ctr 			= &$this->controller; 			// Shortcut for request controller
 		$_mg 			= &$this->_magic; 				// Shortcut for view magic data
 		
-		$jsSample 		= 'if ( foo && foo.init && typeof foo.init == function() ){ foo.init(); }';
-		$jsSample2 		= 'if ( foo && typeof foo == function() ){ foo(); }';
+		$jsSample 		= "if ( sample && sample.init && typeof sample.init === 'function' ){ sample.init(); }";
+		$jsSample2 		= "if ( sample && typeof sample === 'function' ){ sample(); }";
 		$_mg['jsCalls'] .= PHP_EOL;
 		
 		// Loop over the breacrumbs parts
@@ -144,21 +154,21 @@ class Request
 			$pointed 			.= !empty($pointed) ? '.' . $item : $item; 			// Get current pointed notation concatenation of all parts
 			$_mg['classes'][] 	= $item; 											// Set the current item as a magic class
 			$_mg['objects'][] 	= $camel;  											// Set the current concatenation as a magic object
-			$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample) . PHP_EOL;
+			$_mg['jsCalls'] 	.= str_replace('sample', $pointed, $jsSample) . PHP_EOL;
 		}
 		
 		// Add the called controller raw name
 		$camel 				.= !empty($camel) ? ucfirst($_ctr->rawName) : $_ctr->rawName;
-		$pointed 			.= !empty($pointed) ? '.' . $_ctr->rawName : $_ctr->rawName;
+		$pointed 			.= ( !empty($pointed) ? '.' : '' ) . $_ctr->rawName;
 		$_mg['classes'][] 	= $_ctr->rawName; 					
 		$_mg['objects'][] 	= $camel;
-		$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample) . PHP_EOL;
+		$_mg['jsCalls'] 	.= str_replace('sample', $pointed, $jsSample) . PHP_EOL;
 		
 		// Add the called method name
 		$camel 				.= !empty($camel) ? ucfirst($_ctr->calledMethod) : $_ctr->calledMethod;
-		$pointed 			.= !empty($pointed) ? '.' . $_ctr->calledMethod : $_ctr->calledMethod;
-		//$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample2) . PHP_EOL;
-		$_mg['jsCalls'] 	.= str_replace('foo', $pointed, $jsSample2);
+		$pointed 			.= ( !empty($pointed) ? '.' : '' ) . $_ctr->calledMethod;
+		//$_mg['jsCalls'] 	.= str_replace('sample', $pointed, $jsSample2) . PHP_EOL;
+		$_mg['jsCalls'] 	.= str_replace('sample', $pointed, $jsSample2);
 		
 		// Set the magic view name
 		$_mg['name'] 		= $camel;
@@ -169,26 +179,26 @@ class Request
 	public function sniffPlatformData()
 	{
 		// Default values
-		$this->platform = array(
+		$this->platform = new ArrayObject(array(
 			'name' 		=> 'unknownPlatform',
 			'version' 	=> 'unknownVersion',
-		);
+		), 2);
 		
 		// Do not continue if platform sniffing has been disabled
-		if ( !_APP_SNIFF_PLATFORM ) { return $this; }
+		if ( !_SNIFF_PLATFORM ) { return $this; }
 		
 		// Shortcut for user agent
 		$ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
 		
 		// List of known platforms
-		$knownPlatforms = array(
+		$platforms = array(
 			'Windows','Mac OS','linux','freebsd', 							// OS
 			'iPhone','iPod','iPad','Android','BlackBerry','Bada','mobile', 	// Mobile
 			'hpwOS', 														// Tablets
 			'j2me','AdobeAIR', 												// Specific
 		);
 		
-		foreach ( $knownPlatforms as $p )
+		foreach ( $platforms as $p )
 		{
 			$lower 		= strtolower($p);
 			$urlParam 	= 'is' . ucfirst($lower);
@@ -198,6 +208,7 @@ class Request
 			{
 				$this->platform['name'] = str_replace(' ', '', $lower);
 				
+				// Do not break since a platform can be build on top of another 
 				//break;
 			} 
 		}
@@ -211,42 +222,42 @@ class Request
         $h              = !empty($resol[1]) ? (int) $resol[1] : null;
         
         // Default values
-        $this->device  = array(
-            'resolution'    => array('width' => $w, 'height' => $h),
+        $this->device  = new ArrayObject(array(
+            'resolution'    => new ArrayObject(array('width' => $w, 'height' => $h), 2),
             'isMobile'      => isset($_GET['isMobile']) 
                                 ? in_array($_GET['isMobile'], array('1', 'true',1,true))
                                 : ( !empty($w) ? ($w < 800) : null ),
-            'orientation' => !empty($_SESSION['orientation']) 
+            'orientation' 	=> !empty($_SESSION['orientation']) 
                                 ? $_SESSION['orientation'] 
                                 : ( $w && $h ? ( $w > $h ? 'landscape' : 'portrait') : null),
-        );
+        ), 2);
     }
 
 
 	public function sniffBrowserData()
 	{
 		// Default values
-		$this->browser 	= array(
+		$this->browser 	= new ArrayObject(array(
 			'engine' 		=> 'unknownEngine',
 			'name' 			=> 'unknownBrowser',
-			'version' 		=> array(
+			'version' 		=> new ArrayObject(array(
 				'full' 			=> '?',
 				'major' 		=> '?',
 				'minor' 		=> '?',
 				'build' 		=> '?',
 				'release' 		=> '?',
-			)
+			), 2),
 			//'hasHTML5' 			=> false,
-		);
+		), 2);
 		
 		// Do not continue if browser sniffing has been disabled
-		if ( !_APP_SNIFF_BROWSER ) { return $this; }
+		if ( !_SNIFF_BROWSER ) { return $this; }
 
 		$ua 			= isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''; 	// Shortcut for user agent
 		$_b 			= &$this->browser; 															// Shortcut for browser data
 		
 		// Known browsers data
-		$knownEngines 	= array(
+		$engines 	= array(
 			'Trident' 		=> 'trident', 
 			'MSIE' 			=> 'trident', 
 			'AppleWebKit' 	=> 'webkit', 
@@ -256,7 +267,7 @@ class Request
 			'BlackBerry' 	=> 'mango',
 			'wOSBrowser' 	=> 'webkit',
 		);
-		$knownBrowsers 	= array(
+		$browsers 	= array(
 			'MSIE' 			=> array('name' => 'internetexplorer', 'displayName' => 'Internet Explorer', 'alias' => 'ie', 'versionPattern' => '/.*(MSIE)\s([0-9]*\.[0-9]*);.*/'),
 			'Firefox' 		=> array('alias' => 'ff', 'versionPattern' => '/.*(Firefox|MozillaDeveloperPreview)\/([0-9\.]*).*/'),
 			'Chrome' 		=> array('versionPattern' => '/.*(Chrome)\/([0-9\.]*)\s.*/'),
@@ -267,39 +278,42 @@ class Request
 		);
 				
 		// Try to get the browser data looking in the User Agent for knonw browser keys
-		foreach ($knownBrowsers as $k => $b)
+		foreach ($browsers as $k => $b)
 		{
 			if (strpos($ua, $k) !== false)
 			{
-				$_b = array_merge($_b, array(
+				$_b = new ArrayObject(array_merge((array) $_b, array(
 					'name' 			=> !empty($b['name']) ? $b['name'] : strtolower($k),
-					'identifier' 	=> $k,  
+					'id' 			=> $k,  
 					'displayName' 	=> !empty($b['displayName']) ? $b['displayName'] : $k,
 					'alias' 		=> !empty($b['alias']) ? $b['alias'] : strtolower($k),
-				));
+				)), 2);
 				break;
 			}
 		}
 		
 		// Try to get the browser rendering engine
-		foreach ($knownEngines as $k => $e) { if (strpos($ua, $k) !== false) { $_b['engine'] = $e; break; } }
+		foreach ($engines as $k => $e) { if (strpos($ua, $k) !== false) { $_b['engine'] = $e; break; } }
 		
 		// Try to get the browser version data
-		if ( $_b['identifier'] && ($pattern = $knownBrowsers[$_b['identifier']]['versionPattern']) && $pattern )
+		if ( $_b['id'] && ($pattern = $browsers[$_b['id']]['versionPattern']) && $pattern )
 		{
-			$p 				= explode('.', preg_replace($pattern, '$2', $ua)); 								// Split on '.'
-			array_unshift($p, join('.', $p)); 																// Insert the full version as the 1st element
-			$p 				= array_pad($p, count($_b['version']), null); 									// Force the parts & default version arrays to have same length 
-			$_b['version'] 	= array_merge($_b['version'], array_combine(array_keys($_b['version']), $p)); 	// Assoc default version array keys to found values
-			;
+			$p 				= explode('.', preg_replace($pattern, '$2', $ua)); 	// Split on '.'
+			array_unshift($p, join('.', $p)); 									// Insert the full version as the 1st element
+			$p 				= array_pad($p, count((array) $_b['version']), null); 		// Force the parts & default version arrays to have same length
+			$_b['version'] 	= new ArrayObject(array_merge(
+				(array) $_b['version'], 
+				array_combine(array_keys((array) $_b['version']), $p)
+			), 2); 																// Assoc default version array keys to found values
 		}
 	}
 
 	public function getOutputFormat()
 	{
+		// Do not continue if the outputFormat is already defined
 		if ( !empty($this->outputFormat) ){ return $this->outputFormat; }
         
-		// Shortcut for options
+		// Shortcut for params
 		$p = &$this->params;
 		
 		// If no 'output' param has been passed or if the passed one is not part of the available formats

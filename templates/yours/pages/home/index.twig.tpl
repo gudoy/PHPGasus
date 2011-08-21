@@ -1,5 +1,5 @@
 {% extends 'yours/layouts/page.twig.tpl' %}
 
-{% block pageContent %}
+{% block mainContent %}
 {% include 'default/blocks/home/index.twig.tpl' %}
 {% endblock %}

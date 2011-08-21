@@ -13,24 +13,92 @@ class Controller implements ControllerInterface
 	public $data 	= array();
 	
 	public function __construct($Request)
-	{
-		//$this->request = new ArrayObject ($Request);
+	{		
 		$this->request = &$Request;
 		
-		$this->view = new ArrayObject($this->view, 2);
-		
-		// If we are handling an existing resource
-		if ( isset($this->request->resource) )
+		$this->initDebug();
+		$this->initDataModel();
+		$this->initView();
+		$this->initModel();
+	}
+	
+	public function initDataModel()
+	{
+		( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
+	
+		// Check if the called controller is an existing resource
+		if ( ($rName = DataModel::isResource($this->request->controller->rawname)) && $rName )
 		{
-			( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
-			
-			// Load Resource data
-			$this->_resource = &$_resources[$this->request->resource];
-			
-			// Load Model
-			$mName = ucfirst(_DB_SYSTEM) . 'Model.class.php';
-			${$this->request->resource} = new $mName();
+			$this->request->resource = $this->request->controller->rawname;
+		};
+		
+		$this->_resources 	=& $_resources;
+		$this->_columns 	=& $_columns;
+		$this->_groups 		=& $_groups;
+	}
+	
+	public function initDebug()
+	{
+		// Do not continue if the debug is not activated
+		if ( !$this->debug ){ return; }
+		
+		$this->data['debug'] = array();
+		
+		// For security issues, by default, only allow debug in local & dev environments
+		if ( !in_array(_APP_CONTEXT, array('local','dev')) ){ return; }
+		
+		// Shortcut for browser name
+		$b = $this->request->browser->name;
+
+		// http://www.chromephp.com/
+		if ( _APP_USE_CHROMEPHP_LOGGING && $b === 'chrome' )
+		{
+	        $this->requireLibs('ChromePhp', 'tools/ChromePhp');
+	        
+			ChromePhp::useFile(_PATH_PUBLIC . 'logs/chromelogs/', '/public/logs/chromelogs/');
 		}
+		// http://www.firephp.org/
+		elseif ( _APP_USE_FIREPHP_LOGGING && $b === 'firefox' )
+		{
+			$this->requireLibs('FirePHP', 'tools/FirePHP');	
+		}
+		
+//$this->dump('test firePHP/ChromePhp');
+//$this->dump($this->request);
+	}
+	
+	public function initView()
+	{
+		// Init view
+		$this->view = new ArrayObject($this->view, 2);
+	}
+	
+	public function dump($data){ return $this->log($data); }
+	public function log($data)
+	{
+		// Do not continue if the debug is not activated
+		if ( !$this->debug ){ return; }
+		
+		// Shortcut for browser name
+		$b = $this->request->browser->name;
+		
+		if 		( _APP_USE_CHROMEPHP_LOGGING && $b === 'chrome' ) 	{ChromePhp::log($data); } 					// http://www.chromephp.com/
+		elseif 	( _APP_USE_FIREPHP_LOGGING && $b === 'firefox' ) 	{ FirePHP::getInstance(true)->log($data); } // http://www.firephp.org/
+		else 														{ var_dump($data); }
+	}
+	
+	public function initModel()
+	{
+		// Do not continue if we are not handling an existing resource
+		//if ( empty($this->request->resource) ){ return; }
+		if ( !$this->request->resource ){ return; }	
+	
+		// Load Resource data
+		$this->_resource = &$_resources[$this->request->resource];
+		
+		// Load Model
+		$mName = ucfirst(_DB_SYSTEM) . 'Model.class.php';
+		${$this->_resource->name} = new $mName();
 	}
 	
 	public function dispatchMethod()
@@ -216,11 +284,9 @@ class Controller implements ControllerInterface
 		$this->getCSS();
 		$this->getJS();
 		
-//var_dump($this->view);
-//var_dump($this->view['_magic']);
-//var_dump($this->view->_magic);
-
-		$this->loadTemplate();
+		$this->initTemplate();
+		$this->initTemplateData();
+		$this->renderTemplate();
 		
 		$this->debug();
 	}
@@ -257,6 +323,7 @@ class Controller implements ControllerInterface
 
 		if ( isset($_GET['emulate']) && !in_array($_GET['emulate'], array('0', 'false', 'no')) ) { $classes .= ' emulate'; }
 		if ( !empty($_GET['orientation']) && in_array($_GET['orientation'], array('portrait','landscape')) ) { $classes .= ' ' . $_GET['orientation']; }
+		if ( $this->debug ) { $classes .= ' debug'; }
  
 		// TODO: add groups
 		
@@ -318,8 +385,6 @@ class Controller implements ControllerInterface
 			$minMethod 			= 'getMinified' . $upper;
 			$this->view->$type 	= self::$minMethod($this->view->$type);
 		}
-
-		//return $this->view->$type;
 	}
 
 	static function getMinifiedCSS($css){ return self::getMinifiedAssets('css', $css); }
@@ -331,7 +396,8 @@ class Controller implements ControllerInterface
 		foreach ((array) $css as $item)
 		{
 			// TODO: handle '&' escaping for xhtml
-			$url .= ( !$url ? '/public/min/?f=' : ',' ) . $item;
+			//$url .= ( !$url ? '/public/min/?f=' : ',' ) . $item;
+			$url .= ( !$url ? '/public/min/?f=' : ',' ) . ltrim($item, '/');
 		}
 		
 		return array($url);
@@ -391,34 +457,22 @@ class Controller implements ControllerInterface
 		return $files;
 	}
 	
-	public function loadTemplate()
-	{
-		// Variables passed to the templates 
-		$passedData = array(
-			'data' 		=> &$this->data,
-			'request' 	=> &$this->request,
-			'view' 		=> &$this->view,
-		);
-		
-//$foo = $this->request;
-//var_dump($this->request->url);
-//var_dump($foo::$url);
-		
+	public function initTemplate()
+	{		
 		switch ( _APP_TEMPLATES_ENGINE )
 		{
 			case 'Haanga':
+				
 				class_exists('Haanga') || require (_PATH_HAANGA . 'lib/Haanga.php');
 				
 				Haanga::configure(array(
 				    'template_dir' 	=> _PATH_TEMPLATES,
 				    'cache_dir' 	=> _PATH_TEMPLATES_PRECOMPILED,
 				));
-				
-				Haanga::Load($this->view['template'], $passedData);
 				break;
-				
 			
 			case 'Twig':
+				
 				class_exists('Twig_Autoloader') || require (_PATH_TWIG . 'lib/Twig/Autoloader.php');
 				Twig_Autoloader::register();
 				
@@ -440,16 +494,11 @@ class Controller implements ControllerInterface
 				
 				$this->Template->addExtension(new Twig_Extensions_Extension_Text());
 				$this->Template->addExtension(new Twig_Extensions_Extension_I18n());
-				
-				//$template->display(array('name' => 'Fabien'));
-				//$template 	= $this->Template->loadTemplate($this->view['template']);
-				$this->Template 		= $this->Template->loadTemplate($this->view['template']);
-				echo $this->Template->render($passedData);
 				break;
-				
 				
 			case 'Smarty':
 			default:
+				
 				class_exists('Smarty') || require (_PATH_SMARTY . 'Smarty.class.php');
 				
 				// Instanciate a Smarty object and configure it
@@ -468,9 +517,35 @@ class Controller implements ControllerInterface
         		
         		//$this->Template->allow_php_templates 	= true; // no longer allowed since smarty 3.1
 				//$this->Template->allow_php_tag 		= true; // no longer allowed since smarty 3.1
-				
-				// Pass variables to the template & load it
-				$this->Template->assign($passedData);
+				break;
+		}
+
+		$this->templateData = array();
+	}
+
+	public function initTemplateData()
+	{
+		// Variables passed to the templates 
+		$this->templateData['data'] 	= &$this->data;
+		$this->templateData['request'] 	= &$this->request;
+		$this->templateData['view'] 	= &$this->view;
+	}
+
+	public function renderTemplate()
+	{
+		// Pass variables to the template & render it
+		switch ( _APP_TEMPLATES_ENGINE )
+		{
+			case 'Haanga':
+				Haanga::Load($this->view['template'], $this->templateData);
+				break;
+			case 'Twig':
+				$this->Template = $this->Template->loadTemplate($this->view['template']);
+				echo $this->Template->render($this->templateData);
+				break;
+			case 'Smarty':
+			default:
+				$this->Template->assign($this->templateData);
 				$this->Template->display($this->view['template'], $cacheId);
 				break;
 		}
@@ -478,10 +553,42 @@ class Controller implements ControllerInterface
 	
 	public function debug()
 	{
+		if ( !$this->debug ){ return; }
+		
+		$_phpgasus['mend'] = memory_get_usage();
+		
+		$this->data['debug'] = new ArrayObject(array_merge((array) $this->data->debug, array(
+			'called' 		=> new ArrayObject(array(
+				'controller' 	=> $this->request->controller->name,
+				'method' 		=> $this->request->controller->calledMethod
+			)),
+			'queries' 		=> new ArrayObject(array(
+				'count' 		=> null,
+				'launched' 		=> array(),
+				'failed' 		=> array(),
+				'skipped' 		=> array(),
+			), 2),
+			// Times: in ms
+			'time' 			=> new ArrayObject(array(
+				'till_before_data' 	=> null,
+				'till_after_data' 	=> null,
+				'data_retrieval' 	=> null,
+				'till_render' 		=> null,
+				'total' 			=> round(microtime(true) - $_phpgasus['tstart'] *1000,3), 
+			), 2),
+			// Memory: in ko
+			'memory' 		=> new ArrayObject(array(
+				'onStart' 			=> round($_phpgasus['mstart'] / 1024, 1),
+				'onEnd' 			=> round($_phpgasus['mend'] / 1024, 1),
+				'total_used' 		=> round(($_phpgasus['mend'] - $_phpgasus['mstart']) / 1024, 1),
+			), 2),
+		)), 2);
+		
+		/*
 		echo "<br/>\n", "DEBUG:", "<br/>\n";
 		
 		//echo __METHOD__, "<br/>\n";
-		echo $this->request->controller->name, '::', $this->request->controller->calledMethod, "<br/>\n";
+		//echo $this->request->controller->name, '::', $this->request->controller->calledMethod, "<br/>\n";
 		
 		// Rendering time
 			global $t1;
@@ -495,7 +602,7 @@ class Controller implements ControllerInterface
 		echo "Mem (start): ~ ", round($m1 / 1024, 1), " ko  <br/>\n";
 		echo "Mem (end): ~ ", round($m2 / 1024, 1), " ko  <br/>\n";
 		echo "Mem (used): ~ ", round(($m2 - $m1) / 1024, 1), " ko  <br/>\n";
-
+		*/
 	}
 }
 

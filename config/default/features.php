@@ -72,10 +72,10 @@ define('_APP_SEARCH_ALWAYS_GLOBAL',             true); 						// experimental.
 define('_APP_USE_RESOURCESGROUPS',              true);          			// experimental. 
 
 
-### MISC SNIFFING, FEATURES DETECTION & VIEWPORT HANDLING ###		
-define('_APP_SNIFF_PLATFORM', 					true); 						// Disable this if you don't want to try getting the platform data (prevent unnecessary processing)
-define('_APP_SNIFF_BROWSER', 					true); 						// Disable this if you don't want to try getting the browser data (prevent unnecessary processing)
-define('_APP_USE_MODERNIZR', 					false); 					// If allowed, the js lib Modernizr will be added to detect user browser capabilities adding subsenquent classes to the <HTML> tag
+### MISC SNIFFING, FEATURES DETECTION ###		
+define('_SNIFF_PLATFORM', 						true); 						// Disable this if you don't want to try getting the platform data (prevent unnecessary processing)
+define('_SNIFF_BROWSER', 						true); 						// Disable this if you don't want to try getting the browser data (prevent unnecessary processing)
+define('_USE_MODERNIZR', 						false); 					// If allowed, the js lib Modernizr will be added to detect user browser capabilities adding subsenquent classes to the <HTML> tag
 
 
 ### HTML & METAS ###			
@@ -96,7 +96,7 @@ define('_APP_ALLOW_PAGE_PRERENDERING', 			true);						// Allows/prevents Google 
 define('_APP_USE_CHROME_FRAME', 				true);						// HTML pages require Google Chrome Frame plugin? (if yes, displays plugin installation popup)
 
 
-### VIEWPORT & WEBAPP ###		
+### VIEWPORT & WEBAPP HANDLING ###		
 define('_APP_VIEWPORT_WIDTH', 					'device-width');			// Viewport width
 define('_APP_VIEWPORT_INI_SCALE', 				1.0); 						// Initial scale of the viewport
 define('_APP_VIEWPORT_MAX_SCALE', 				3.0); 						// Maximum scale of the viewport

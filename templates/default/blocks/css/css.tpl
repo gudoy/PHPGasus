@@ -3,7 +3,7 @@
 {* cf: http://www.phpied.com/conditional-comments-block-downloads/ *}
 <!--[if IE]><![endif]-->
 {foreach $view.css as $css}
-	<link rel="stylesheet" href="{$css}?{$version}" media="screen" />
+	<link rel="stylesheet" href="{$css}{if strpos($css, '?') !== false}&{else}?{/if}{$version}" media="screen" />
 {/foreach}
 {block name='cssIE'}{include file='default/blocks/css/IE/ie.tpl'}{/block}
 {block name='dynamicCss'}{/block}

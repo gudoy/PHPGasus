@@ -1,7 +1,7 @@
 {$version 		= 'v='|cat:$smarty.const._JS_VERSION|default:''}
 
 {foreach $view.js as $js}
-	<script src="{$js}?{$version}">
+	<script src="{$js}{if strpos($css, '?') !== false}&{else}?{/if}{$version}">
 {/foreach}
 {if $request->_magic['jsCalls']}
 	<script>

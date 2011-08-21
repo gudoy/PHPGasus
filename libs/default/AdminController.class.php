@@ -3,7 +3,7 @@
 class AdminController extends Controller
 {
 	public function __construct(&$Request)
-	{
+	{		
 		parent::__construct($Request);
 	}
 	
@@ -62,6 +62,16 @@ class AdminController extends Controller
 		// TODO
 		
 		$this->render();
+	}
+	
+	public function initTemplateData()
+	{
+		parent::initTemplateData();
+		
+		// 
+		$this->templateData['_resources'] 	= &$this->_resources;
+		$this->templateData['_columns'] 	= &$this->_columns;
+		$this->templateData['_groups'] 		= &$this->_groups;
 	}
 }
 

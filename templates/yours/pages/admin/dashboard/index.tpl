@@ -1,5 +1,5 @@
 {extends file='yours/layouts/pageAdmin.tpl'}
 
-{block name='pageContent'}
+{block name='mainContent'}
 {include file='default/blocks/admin/dashboard/index.tpl'}
 {/block}
