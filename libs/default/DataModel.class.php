@@ -189,6 +189,7 @@ class DataModel
 		'destRoot', 'destName', 'destFolder',
 		
 		// UI or admin purpose
+		'uiWidget',
 		'displayName', 'displayedValue', 'list',
 		'editable', 'forceUpdate',
 		'comment',

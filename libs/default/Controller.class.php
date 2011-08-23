@@ -179,6 +179,31 @@ class Controller implements ControllerInterface
 		*/
 	}
 
+	public function dispatchParams()
+	{
+		// TODO: handle path args
+		// assume pattern is [[$column]/$value]/[...]
+		// Split on '/'
+		// If current is id ==> add filters/conditions + go to next()
+		// else if is column ==> get next and add couple to filters/conditions + go to next()
+		// else get current resource nameField and add to filters/conditions + go to next()
+		
+		// TODO: handle query strings
+		
+		// Loop over params
+		foreach ($params as $param)
+		{
+			// Is column
+			// => add to filters/conditions: $column => $values
+			
+			// If contains ','
+			$multiValue = true;
+		
+			// Split on ','	
+			
+		}			
+	}
+
 	// (string) $classname, [(string) 'shortpath']
 	// array((string) $classname => (string) 'shortpath')
 	public function requireLibs()
