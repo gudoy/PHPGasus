@@ -1,6 +1,6 @@
 <?php
 
-class Model
+class Model extends Core
 {
 	public function __call($method, $args)
     {

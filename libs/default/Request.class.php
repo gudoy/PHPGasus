@@ -43,12 +43,6 @@ class Request
 		//$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']), '/'));
 		$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $this->relative_uri), '/'));
 		//$this->parts = preg_split('/\//', trim($_SERVER['REDIRECT_URL'], '/'));
-
-//var_dump(_PATH_REL);		
-//var_dump($_SERVER['QUERY_STRING']);
-//var_dump($this->parts);
-//phpinfo();
-//die();
 		
 		$this->getURL();
 		
@@ -404,20 +398,8 @@ class Request
 	//public static function getURL()
 	public function getURL()
 	{
-//var_dump(self);
-//var_dump(self::$url);
-//var_dump(self::$_instance);
-//var_dump(instanceof self);
-//var_dump(__METHOD__);
-//var_dump('before test');
-		
-		//if ( isset(self::$url) ){ return self::$url; }
 		if ( isset($this->url) ){ return $this->url(); }
-		//if ( (self::$_instance instanceof self) && isset($this->url) ){ return $this->url(); }
 
-//var_dump('after test');
-
-		//if ( (self::$_instance instanceof self) && isset($this->url) ){ $this->url = $url; }
 		$this->url = self::url();
 	}
 	
@@ -517,7 +499,7 @@ class Request
 			$url .= ( strpos($url, '?') !== false ? '&' : '?' ) . 'errors=9000';
 		}
 		
-		if ( self::isAjax() )
+		if ( Request::isAjax() )
 		{
 			$url = Tools::removeQueryParams('tplSelf', $url);
 			$this->data['redirect'] = Tools::removeQueryParams('tplSelf', $url);
@@ -526,7 +508,8 @@ class Request
 		else
 		{
 			header("Location:" . $url);
-			//die();
+			//header("Location:" . _URL . $url);
+			die();
 		}
 	}
 }
