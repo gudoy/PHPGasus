@@ -60,8 +60,13 @@ class Controller extends Core implements ControllerInterface
 	
 	public function dispatchMethod()
 	{
+//var_dump($_SERVER);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		// Shortcut to request controller
 		$RC = &$this->request->controller;
 		
+		// Force method to index
 		if ( !$RC->method ){ $RC->method = 'index'; }
 		
 		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) ? $RC->method : 'error404';

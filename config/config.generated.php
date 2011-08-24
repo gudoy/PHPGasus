@@ -5,7 +5,6 @@
 // 
 define	("_PATH_CONFIG", dirname(__FILE__) . '/'); 
 $confdir = _PATH_CONFIG . 'yours/';
-
 include( $confdir . 'env/_common.php' );
 include( $confdir . 'env/' . _APP_CONTEXT . '.php' );
 include( $confdir . 'paths.php' );

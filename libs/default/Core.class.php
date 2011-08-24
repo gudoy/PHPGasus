@@ -27,7 +27,7 @@ class Core
 		{
 	        $this->requireLibs('ChromePhp', 'tools/ChromePhp');
 	        
-			ChromePhp::useFile(_PATH_PUBLIC . 'logs/chromelogs/', '/public/logs/chromelogs/');
+			ChromePhp::useFile(_PATH_PUBLIC . 'logs/chromelogs', '/public/logs/chromelogs/');
 		}
 		// http://www.firephp.org/
 		elseif ( _APP_USE_FIREPHP_LOGGING && $b === 'firefox' )
@@ -48,7 +48,7 @@ class Core
 		// Shortcut for browser name
 		$b = $this->request->browser->name;
 		
-		if 		( _APP_USE_CHROMEPHP_LOGGING && $b === 'chrome' ) 	{ChromePhp::log($data); } 					// http://www.chromephp.com/
+		if 		( _APP_USE_CHROMEPHP_LOGGING && $b === 'chrome' ) 	{ ChromePhp::log($data); } 					// http://www.chromephp.com/
 		elseif 	( _APP_USE_FIREPHP_LOGGING && $b === 'firefox' ) 	{ FirePHP::getInstance(true)->log($data); } // http://www.firephp.org/
 		else 														{ var_dump($data); }
 	}

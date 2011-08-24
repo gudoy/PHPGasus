@@ -122,7 +122,7 @@ var_dump($parts);
 	public static function retrieve(){ $this->find(); }
 	public static function find()
 	{
-		
+$this->log(__METHOD__);
 	}
 	
 	public static function update()
