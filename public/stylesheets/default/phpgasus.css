@@ -7,6 +7,7 @@ pre {
 }
 
 /* Layout */
+/*
 #layout, 
 #header,
 #body,
@@ -16,6 +17,7 @@ pre {
 #header:after,
 #body:after,
 #footer:after { height:0; clear:both; content:' '; display:block; visibility:hidden; }
+*/
 
 /* Micro clearfix: http://nicolasgallagher.com/micro-clearfix-hack/ */
 /*

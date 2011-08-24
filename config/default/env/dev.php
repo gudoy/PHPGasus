@@ -7,7 +7,7 @@
 define("_ALLOW_FIREPHP_LOGGING", 				true);
 
 define("_APP_TEMPLATES_COMPILE_CHECK", 			true);
-define("_APP_TEMPLATES_FORCE_COMPILE", 			true);
+define("_APP_TEMPLATES_FORCE_COMPILE", 			false);
 define("_APP_TEMPLATES_CACHING", 				false); 
 
 define("_MINIFY_JS",							false);
