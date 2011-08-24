@@ -5,8 +5,8 @@ class Model extends Core
 	public function __call($method, $args)
     {
 //var_dump(__METHOD__);
-var_dump($method);
-var_dump($args);
+//var_dump($method);
+//var_dump($args);
 
 		// PATTERN: verb[Limiters][offseters][restricters][conditioners][condition operator][sorters]
 		
@@ -73,7 +73,7 @@ var_dump($args);
 		//$parts = preg_split('/(?<!^)(?=[A-Z])/', $foo, -1, PREG_SPLIT_OFFSET_CAPTURE);
 		$parts = preg_split('/(?=[A-Z])/', $method, -1, PREG_SPLIT_NO_EMPTY);
 		
-var_dump($parts);
+//var_dump($parts);
 		
 		// Loop over the parts
 		$i = 0;
