@@ -12,12 +12,12 @@ class AdminController extends Controller
 		//$this->triggerEvent('onBeforeIndex', array('from' => __FUNCTION__));
 		
 		// Get all (limited to _APP_LIMIT_RETRIEVED_RESOURCES) items of this resource
-		${$this->_resource['name']}->find();
+		$this->{$this->_resource['plural']}->find();
 		
 		//$this->triggerEvent('onAfterIndex', array('from' => __FUNCTION__));
 		
 		// Get count of total existings items for this resources
-		${$this->_resource['name']}->count();
+		$this->{$this->_resource['plural']}->count();
 		
 		// Handle pagination (get previous, next)
 		

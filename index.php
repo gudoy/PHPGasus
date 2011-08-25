@@ -24,7 +24,7 @@ if ( $dc )
 {
 	$RC->name 			= 'CHome'; 
 	$RC->rawName 		= 'home'; 
-	$RC->calledMethod 	= 'maintenance';  
+	$RC->calledMethod 	= $RC->method;  
 	return call_user_func(array(new $RC->name($Request), $RC->method));
 }
 
@@ -45,7 +45,7 @@ foreach ($Request->parts as $item)
 					( $Request->breadcrumbs ? join('/', $Request->breadcrumbs) . '/' : '' ); 	// Controller path
 	$cFilepath 	= $cPath . $cName . '.class.php'; 												// Controller file path	
 	
-	// Is an existing folder in controllers
+	// Is an existing folder in controllers?
 	if ( ( $isDir = is_dir($cPath . $item) ) && $isDir )
 	{	
 		if ( ( $isFile = file_exists($cPath . $item . '/' . $cName . '.class.php') ) && $isFile )
@@ -54,19 +54,17 @@ foreach ($Request->parts as $item)
 			$RC->path = $cPath . $item . '/';
 		}
 
+		// Is there a next item?
 		if ( $hasNext ){ $Request->breadcrumbs[] = $item; continue; }
 	}
-	elseif ( ( $isFile = is_file($cFilepath) ) && $isFile )
-	{
-		$RC->name = 'C' . ucfirst($item);
-	}
+	// Is an existing controller?
+	elseif ( ( $isFile = is_file($cFilepath) ) && $isFile ){ $RC->name = 'C' . ucfirst($item); }
 	
 	// Load controller
 	class_exists($RC->name) || require($RC->path . $RC->name . '.class.php');
 	
 	// Get method & params to dispatch
 	$RC->rawName 	= strtolower(substr($RC->name, 1));
-	//$RC->method 	= $isDir && $isFile ? null : $item;
 	$RC->method 	= $isDir || $isFile ? null : $item;
 	$RC->params 	= $hasNext ? array_slice($Request->parts, $i+1) : array();
 	

@@ -108,35 +108,35 @@ class Model extends Core
 
 		return $this->$method($opts);
     }
-	
+
 	public function connect()
 	{
-		
+
 	}
 	
-	public static function create()
+	public function create()
 	{
 		
 	}
 	
-	public static function retrieve(){ $this->find(); }
-	public static function find()
+	public function retrieve(){ $this->find(); }
+	public function find()
 	{
-$this->log(__METHOD__);
+//$this->log(__METHOD__);
 	}
 	
-	public static function update()
-	{
-		
-	}
-	
-	public static function delete()
+	public function update()
 	{
 		
 	}
 	
-	public static function createOrUpdate(){ $this->upsert(); }
-	public static function upsert()
+	public function delete()
+	{
+		
+	}
+	
+	public function createOrUpdate(){ $this->upsert(); }
+	public function upsert()
 	{
 		
 	}

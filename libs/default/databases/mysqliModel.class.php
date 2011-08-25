@@ -2,7 +2,6 @@
 
 class mysqliModel extends Model
 {
-	
 }
 
 ?>
