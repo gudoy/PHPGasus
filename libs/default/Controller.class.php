@@ -56,13 +56,13 @@ class Controller extends Core implements ControllerInterface
 	
 	public function initModel()
 	{
-var_dump(__METHOD__);
+
 		
 		// Do not continue if we are not handling an existing resource
 		//if ( empty($this->request->resource) ){ return; }
 		if ( !$this->_resource ){ return; }
 		
-var_dump($this->_resource);
+//var_dump($this->_resource);
 //var_dump($this->_resource['name']);
 		
 		// Load Model
@@ -70,7 +70,7 @@ var_dump($this->_resource);
 		$this->requireLibs($mName, 'databases/');
 		$this->{$this->_resource['plural']} = new $mName();
 		
-var_dump($this->{$this->_resource['plural']});
+//var_dump($this->{$this->_resource['plural']});
 	}
 	
 	public function dispatchMethod()

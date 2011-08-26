@@ -2,6 +2,15 @@
 
 class Model extends Core
 {
+	
+	public $db 			= null;
+	
+	public $success 	= null;
+	
+	public $data 		= array();
+	public $errors 		= array();
+	public $warnings 	= array();
+	
 	public function __call($method, $args)
     {
 //var_dump(__METHOD__);
@@ -114,6 +123,16 @@ class Model extends Core
 
 	}
 	
+	
+	public function query()
+	{
+var_dump(__METHOD__);
+		
+        // Connect to the db
+        if ( !$this->db ) { $this->connect(); }
+	}
+	
+	
 	public function create()
 	{
 		
@@ -122,7 +141,9 @@ class Model extends Core
 	public function retrieve(){ $this->find(); }
 	public function find()
 	{
-//$this->log(__METHOD__);
+var_dump(__METHOD__);
+
+		$this->query();
 	}
 	
 	public function update()
@@ -149,7 +170,7 @@ class Model extends Core
 		
 	}
 	
-	private function buildSelect()
+	public function buildSelect()
 	{
 		$args = func_get_args();
 		
@@ -163,12 +184,7 @@ class Model extends Core
 		), $args);
 	}
 	
-	private function query()
-	{
-		
-	}
-	
-	public static function count()
+	public function count()
 	{
 		//$this->data['total'][$this->resource['name']] = $this->select(array('count' => 'id', 'limit' => -1));
 		// 

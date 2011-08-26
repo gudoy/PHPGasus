@@ -5,6 +5,12 @@ class AdminController extends Controller
 	public function __construct(&$Request)
 	{		
 		parent::__construct($Request);
+		
+		// 
+		global $_resources, $_columns, $_groups;
+		$this->_resources 	= &$_resources;
+		$this->_columns 	= &$_columns;
+		$this->_groups 		= &$_groups;
 	}
 	
 	public function index()

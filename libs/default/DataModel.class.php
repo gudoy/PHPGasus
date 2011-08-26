@@ -712,6 +712,13 @@ class DataModel
 		return self::isResource($string) ? $_resources[$string] : false;
 	}
 	
+	static function resources()
+	{
+		global $_resources;
+		
+		return $_resources;
+	}
+	
 	
 	// Checks that a column existing in a given resource
 	static function isColumn($resource, $string)
