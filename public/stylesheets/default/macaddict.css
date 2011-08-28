@@ -150,7 +150,7 @@ nav.main li.resource:last-child { border-radius:0 0 10px 10px; border-bottom-col
 nav.main li.resource > a { width:100%; min-height:43px; display:inline-block; background-position:98% 50%; color:#000; text-decoration:none; vertical-align:middle; }
 nav.main li.resource .name { margin-top:14px; padding-left:30px; display:inline-block; text-transform:capitalize; font-size:17px; font-weight:bold; text-overflow:ellipsis; }
 nav.main li.resource:hover,
-nav.main li.resource.selected { background:#0589f5; background:-webkit-linear-gradient(#015fe6, #058cf5); }
+nav.main li.resource.selected { background:#0589f5; background:-webkit-linear-gradient(#015fe6, #058cf5); background:-moz-linear-gradient(#015fe6, #058cf5); background:-o-linear-gradient(#015fe6, #058cf5); background:-ms-linear-gradient(#015fe6, #058cf5); background:linear-gradient(#015fe6, #058cf5); }
 nav.main li.resource:hover .name,
 nav.main li.resource.selected .name { color:#fff; }
 
