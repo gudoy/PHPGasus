@@ -138,6 +138,9 @@ footer.menu .resize { float:right; cursor:col-resize; }
 #search #searchActionsField { display:none; }
 .gecko #search form { width:-moz-calc(100% - 10px); }
 .gecko #search #searchQueryField input { width:-moz-available; }
+.no-flexbox #search form { position:relative; }
+.no-flexbox #search #searchQueryField { position:absolute; left:25px; right:0; top:0; bottom:0; }
+/*.no-flexbox #search #searchQueryField input { width:auto; position:absolute; left:0; right:0; top:0; bottom:0; }*/
 
 nav.main { padding-top:10px; box-shadow:inset 0 1px 0 rgba(255,255,255,0.75); }
 nav.main .resourceGroup > a { margin:0 20px 10px 20px; display:inline-block; text-decoration:none; /*cursor:default; pointer-events:none;*/ }
