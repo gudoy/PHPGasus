@@ -7,10 +7,14 @@ interface ControllerInterface
 
 class Controller extends Core implements ControllerInterface
 {
-	public $debug 	= true;
+	public $debug 		= true;
 	
-	public $view 	= array();
-	public $data 	= array();
+	public $view 		= array();
+	public $data 		= array();
+	public $errors 		= array();
+	public $warnings 	= array();
+	
+	public $success 	= null;
 	
 	public function __construct($Request)
 	{		
@@ -25,17 +29,23 @@ class Controller extends Core implements ControllerInterface
 	
 	public function initDataModel()
 	{
+		//$this->dataModel = new DataModel();
 		( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
-	
+
 		// Check if the called controller is an existing resource
-		if ( ($rName = DataModel::isResource($this->request->controller->rawname)) && $rName )
+		//if ( ($rName = DataModel::isResource($this->request->controller->rawName)) && $rName )
+		if ( ($_r = DataModel::resource($this->request->controller->rawName)) && $_r )
 		{
-			$this->request->resource = $this->request->controller->rawname;
+			//$this->request->resource = $this->request->controller->rawName;
+			$this->request->resource 	= $_r['name'];
+			$this->_resource 			= $_r;
 		};
 		
-		$this->_resources 	=& $_resources;
-		$this->_columns 	=& $_columns;
-		$this->_groups 		=& $_groups;
+//var_dump($this->_resource);
+		
+		//$this->_resources 	= &$_resources;
+		//$this->_columns 	= &$_columns;
+		//$this->_groups 		= &$_groups;
 	}
 	
 	public function initView()
@@ -46,25 +56,38 @@ class Controller extends Core implements ControllerInterface
 	
 	public function initModel()
 	{
+
+		
 		// Do not continue if we are not handling an existing resource
 		//if ( empty($this->request->resource) ){ return; }
-		if ( !$this->request->resource ){ return; }	
-	
-		// Load Resource data
-		$this->_resource = &$_resources[$this->request->resource];
+		if ( !$this->_resource ){ return; }
+		
+//var_dump($this->_resource);
+//var_dump($this->_resource['name']);
 		
 		// Load Model
-		$mName = ucfirst(_DB_SYSTEM) . 'Model.class.php';
-		${$this->_resource->name} = new $mName();
+		$mName = _DB_SYSTEM . 'Model';
+		$this->requireLibs($mName, 'databases/');
+		$this->{$this->_resource['plural']} = new $mName();
+		
+//var_dump($this->{$this->_resource['plural']});
 	}
 	
 	public function dispatchMethod()
 	{
-//var_dump($_SERVER);
-//var_dump(__METHOD__);
-$this->log(__METHOD__);
 		// Shortcut to request controller
 		$RC = &$this->request->controller;
+		
+//var_dump($_SERVER);
+//var_dump($RC);
+//var_dump(__METHOD__);
+//die();
+		// TODO: Protect against CSRF
+		// If request method == get & overloaded method == delete
+		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->statusCode(405); }
+		// If method is create/retrieve/update, generated a csrf token to we will have to check against in proper method before doing anything
+		
+		
 		
 		// Force method to index
 		if ( !$RC->method ){ $RC->method = 'index'; }
@@ -166,6 +189,22 @@ $this->log(__METHOD__);
 		}			
 	}
 	
+	public function initCSRFtoken()
+	{
+		// Generate a CSRF token
+		$_SESSION['csrftoken'] = md5(uniqid(rand(), true));	
+	}
+	
+	public function validateCSRFtoken()
+	{
+		// If the CSRF token is not valid, directly render the page with proper 
+		if ( !isset($_POST['csrftoken']) || !isset($_SESSION['csrftoken']) || $_POST['csrftoken'] !== $_SESSION['csrftoken']  )
+		{
+			$this->errors[] = INVALID_CSRF_TOKEN;
+			$this->render();
+		}
+	}
+	
 	public function index()
 	{
 		$this->render();
@@ -243,6 +282,8 @@ $this->log(__METHOD__);
 		$this->getClasses();
 		$this->getCSS();
 		$this->getJS();
+		
+//var_dump($this->view);
 		
 		$this->initTemplate();
 		$this->initTemplateData();

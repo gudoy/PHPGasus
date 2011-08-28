@@ -6,6 +6,11 @@ class CDashboard extends AdminController
 	{
 		$this->render();
 	}
+	
+	public function hello()
+	{
+		$this->render();
+	}
 }
 
 ?>

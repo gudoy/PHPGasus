@@ -1,10 +1,12 @@
 <?php
 
+( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
+
 class DataModel
 {
-	static $resources 						= array();
-	static $groups 							= array();
-	static $columns 						= array();
+	//static $resources 						= array();
+	//static $groups 							= array();
+	//static $columns 						= array();
 	
 	// TODO: $propName => array('default' => null|[true|false]|{$value}, 'comment' => null, 'deprecated' => true|false)
 	static $resourceProperties 				= array(
@@ -688,12 +690,14 @@ class DataModel
 	// Checks that a resource exists
 	static function isResource($string)
 	{
+		global $_resources;
+		
 		//return !empty(self::$resources[$string]);
-		return !empty($_resources[$string]);
+		return !empty($_resources[(string) $string]);
 	}
 	
 	// Search for a mispelled resource
-	static function searchResource(string $name)
+	static function searchResource($name)
 	{
 		// TODO
 		// Compare string with resource name and return if matching is XX%?
@@ -701,17 +705,35 @@ class DataModel
 		return $false;
 	}
 	
+	static function resource($string)
+	{
+		global $_resources;
+		
+		return self::isResource($string) ? $_resources[$string] : false;
+	}
+	
+	static function resources()
+	{
+		global $_resources;
+		
+		return $_resources;
+	}
+	
 	
 	// Checks that a column existing in a given resource
 	static function isColumn($resource, $string)
 	{
-		return !empty(self::$columns[$resource][$string]);
+		global $_columns;
+		
+		//return !empty(self::$columns[$resource][$string]);
+		return !empty($_columns[$resource][$string]);
 	}
 	
 	// Returns the singular of a resource
 	static function singular($resource)
 	{
-		return self::isResource($resource) ? self::$resources[$resource]['singular'] : false;
+		//return self::isResource($resource) ? self::$resources[$resource]['singular'] : false;
+		return self::isResource($resource) ? $_resources[$resource]['singular'] : false;
 	}
 	
 	
