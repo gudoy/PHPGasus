@@ -31,7 +31,6 @@ if ( $dc )
 $RC->name 	= 'CHome';
 $RC->path 	= _PATH_CONTROLLERS;
 
-
 // Otherwise,
 // Loop over the request parts
 $i = -1;

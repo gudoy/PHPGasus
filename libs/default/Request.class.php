@@ -35,7 +35,7 @@ class Request
 	);
 	
 	public function __construct()
-	{
+	{		
 		// In case where the app do not use a hostname but is accessed instead via an IP, we are to remove the app base base from the request URI
 		$this->relative_uri = str_replace(rtrim(_PATH_REL, '/'), '', $_SERVER['REQUEST_URI']);
 		
