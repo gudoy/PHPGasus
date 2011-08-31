@@ -11,6 +11,12 @@ class Model extends Core
 	public $errors 		= array();
 	public $warnings 	= array();
 	
+	// 
+	public $logs 		= array(
+		'built' 	=> array(),
+		'launched' 	=> array(),
+	);
+	
 	public function __call($method, $args)
     {
 //var_dump(__METHOD__);
@@ -123,17 +129,7 @@ class Model extends Core
 
 	}
 	
-	
-	public function query()
-	{
-var_dump(__METHOD__);
-		
-        // Connect to the db
-        if ( !$this->db ) { $this->connect(); }
-	}
-	
-	
-	public function create()
+	public function getResources()
 	{
 		
 	}
@@ -168,26 +164,6 @@ var_dump(__METHOD__);
 		$args = func_get_args();
 		
 		
-	}
-	
-	public function buildSelect()
-	{
-		$args = func_get_args();
-		
-		$p = array_merge(array(
-			// Default params
-			'type' 		=> 'select',
-			'limit' 	=> _APP_LIMIT_RETRIEVED_RESOURCES,
-			
-			//'count' 	=> null,
-			//'distinct' 	=> null,
-		), $args);
-	}
-	
-	public function count()
-	{
-		//$this->data['total'][$this->resource['name']] = $this->select(array('count' => 'id', 'limit' => -1));
-		// 
 	}
 }
 

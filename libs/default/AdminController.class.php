@@ -17,13 +17,16 @@ class AdminController extends Controller
 	{
 		//$this->triggerEvent('onBeforeIndex', array('from' => __FUNCTION__));
 		
+//$this->{$this->_resource['plural']}->getResources();
+$this->{$this->_resource['plural']}->query('SELECT * FROM resources');
+		
 		// Get all (limited to _APP_LIMIT_RETRIEVED_RESOURCES) items of this resource
-		$this->{$this->_resource['plural']}->find();
+		//$this->{$this->_resource['plural']}->find();
 		
 		//$this->triggerEvent('onAfterIndex', array('from' => __FUNCTION__));
 		
 		// Get count of total existings items for this resources
-		$this->{$this->_resource['plural']}->count();
+		//$this->{$this->_resource['plural']}->count();
 		
 		// Handle pagination (get previous, next)
 		

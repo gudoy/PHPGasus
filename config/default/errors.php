@@ -23,8 +23,8 @@ $_errors = array(
 	'MISSING_FIELDS' 			=> array('msg' => _('Missing required fields'), 'args' => array('names')),
 
 	// DATABASE
-	'DB_CONNEXION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.')),
-	'DB_SELECTION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.')),
+	'DB_CONNEXION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.'), 'args' => array('error')),
+	'DB_SELECTION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.'), 'args' => array('error')),
 	'DB_QUERY_ERROR' 			=> array('msg' => _('An error occured on the database.')),
 
 	// SECURITY
