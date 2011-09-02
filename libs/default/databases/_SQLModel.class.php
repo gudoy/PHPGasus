@@ -26,8 +26,6 @@ var_dump(__METHOD__);
 var_dump($query);
 		
 		$this->doQuery($query, $p);
-		
-		$this->fetchResults();
 	}
 	
 	public function doQuery($query, array $params)
@@ -40,8 +38,49 @@ var_dump(__METHOD__);
 		$this->results = $this->db->query($query);
 		
 		$this->success = is_bool($this->results) && !$this->results ? false : true;
+		
+		$this->handleResults();
 	}
 	
+	
+	public function handleResults()
+	{
+		if ( !$this->success ){ return; } 
+		
+    	
+		$this->numRows();
+		$this->numFields();
+		
+		if ( $p['type'] === 'insert' )
+		{
+			$this->getinsertedId();
+			$this->affectedRows();
+		}
+		elseif ( $p['type'] === 'udpate' )
+		{
+			$this->affectedRows();
+		}
+	}
+	
+	public function affectedRows()
+	{
+		$this->affectedRows = $this->success ? $this->db->affected_rows : null; 
+	}
+	
+	public function numRows()
+	{		
+		$this->numRows = is_object($this->results) ? $this->results->num_rows : null;
+	}
+	
+	public function numFields()
+	{
+		$this->numFields = is_object($this->results) ? $this->results->field_count : null;
+	}
+	
+	public function insertedId()
+	{
+		$this->insertedId = $this->success ? $this->db->insert_id : null;
+	}
 	
 	public function buildSelect($params = array())
 	{
@@ -59,23 +98,31 @@ var_dump(__METHOD__);
 	public function fetchResults()
 	{
 var_dump(__METHOD__);
+//var_dump($this);
+//die();
 
-		// Single value
-		// Returnning
+		// TODO: use requested cols/rows number to decide which method to use to fetch results???
+		# Conditions are in order of use frequency
+		
+		// X row, X cols
+		if ( $this->numRows > 1 ) 									{ $this->fetchRows(); }
 		// 1 row, 1 col
+		elseif ( $this->numRows === 1 && $this->numFields === 1 )	{ $this->fetchCol(); }
 		// 1 row, X cols
+		elseif ( $this->numRows === 1 && $this->numFields > 1 ) 	{ $this->fetchRow(); }
 		// X row, 1 col
-		// X row, X cols 
+		elseif ( $this->numRows > 1 && $this->numFields > 1 )		{ $this->fetchCols(); }
 	}
 	
-	public function fetchValue(){}
-	public function fetchValues(){}
+	//public function fetchValue(){} 	// required????
+	//public function fetchValues(){} 	// required????
 	public function fetchCol(){}
 	public function fetchCols(){}
 	public function fetchRow(){}
 	public function fetchRows(){}
 	
-	public function escape(){}
+	public function escapeColName(){}
+	public function escapeString(){}
 	
 	public function getResources()
 	{

@@ -33,7 +33,8 @@ define("_URL_STATIC_1", 				_APP_PROTOCOL . 'static1.' . _DOMAIN . '/');
 
 
 # DATABASE PARAMETERS
-define("_DB_SYSTEM",   					'pdo'); 			// mysql, mysqli, postgresql, sqlite, mongodb, pdomysql, oracle
+define("_DB_SYSTEM",   					'mysql'); 			// mysql, postgresql, sqlite, mongodb, oracle, mssql
+define("_DB_DRIVER",    				'default'); 		// 'default', 'pdo' (for mysql, postresql, sqlite, mssql, orace), 'mysqli' (for mysql)   
 define("_DB_HOST",    					'localhost'); 		//
 define("_DB_USER",      				'admin'); 			//
 define("_DB_PASSWORD",  				'F4K3paSSw0rD'); 	//

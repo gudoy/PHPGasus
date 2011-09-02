@@ -9,10 +9,11 @@ class pdoModel extends _SQLModel
 	{
 var_dump(__METHOD__);
 
-		$dsn = 'mysql:host=' . _DB_HOST . ';port=' . _DB_PORT . ';dbname=' . _DB_NAME;
-		
-//var_dump($dsn);
-//var_dump(_DB_USER);
+		if 		( _DB_SYSTEM === 'postregsql' ) { $driver = 'pgsql'; }
+		elseif 	( _DB_SYSTEM === 'oracle' ) 	{ $driver = 'oci'; }
+		else 									{ $driver = _DB_SYSTEM; } 
+
+		$dsn = $driver . ':host=' . _DB_HOST . ';port=' . _DB_PORT . ';dbname=' . _DB_NAME;
 		
 		try
 		{
@@ -50,17 +51,29 @@ var_dump(__METHOD__);
 		{
 			$this->results = $this->db->exec($query); 
 		}
+		
+		$this->handleResults();
 	}
 	
-	public function fetchResults()
+	
+	public function affectedRows()
 	{
-var_dump(__METHOD__);
-var_dump($this->results);
-
-        while ($row = $this->results->fetch(PDO::FETCH_ASSOC))
-        {
-var_dump($row);
-		}
+		$this->affectedRows = $this->success ? $this->db->affected_rows : null; 
+	}
+	
+	public function numRows()
+	{		
+		$this->numRows = is_object($this->results) ? $this->results->rowCount() : null;
+	}
+	
+	public function numFields()
+	{
+		$this->numFields = is_object($this->results) ? $this->results->columnCount() : null;
+	}
+	
+	public function insertedId()
+	{
+		$this->insertedId = $this->success ? $this->db->lastInsertId() : null;
 	}
 	
 }

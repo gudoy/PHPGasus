@@ -37,18 +37,6 @@ var_dump(__METHOD__);
 		// Tell mysql we are sending already utf8 encoded data
 		$this->db->real_query("SET NAMES 'UTF8'");
 	}
-	
-	public function fetchResults()
-	{
-var_dump(__METHOD__);
-
-		// Single value
-		// Returnning
-		// 1 row, 1 col
-		// 1 row, X cols
-		// X row, 1 col
-		// X row, X cols 
-	}
 
 }
 

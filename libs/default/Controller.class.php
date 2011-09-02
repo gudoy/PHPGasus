@@ -66,7 +66,10 @@ class Controller extends Core implements ControllerInterface
 //var_dump($this->_resource['name']);
 		
 		// Load Model
-		$mName = _DB_SYSTEM . 'Model';
+		if 		( _DB_DRIVER === 'pdo' ) 	{ $mName = 'pdoModel'; }
+		else if ( _DB_DRIVER === 'mysqli' ) { $mName = 'mysqliModel'; }
+		else 								{ $mName = _DB_SYSTEM . 'Model'; }
+		
 		$this->requireLibs($mName, 'databases/');
 		$this->{$this->_resource['plural']} = new $mName();
 		
