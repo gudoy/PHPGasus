@@ -1,1 +1,1 @@
-{if $smarty.const._APP_USE_CHROME_FRAME}<!--[if IE ]><script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script><![endif]-->{/if}
+{if $smarty.const._USE_CHROME_FRAME}<!--[if IE ]><script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script><![endif]-->{/if}

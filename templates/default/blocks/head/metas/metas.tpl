@@ -16,7 +16,7 @@
 	<meta name="original-source" content="{$smarty.const._URL}{* current url *}{*">
 	<meta name="syndication-source" content="http://www.example.com/wire_story_1.html">
 	*}
-	{*<meta http-equiv="X-UA-Compatible" content="IE=edge{if $smarty.const._APP_USE_CHROME_FRAME},chrome=1{/if}" />*}
+	{*<meta http-equiv="X-UA-Compatible" content="IE=edge{if $smarty.const._USE_CHROME_FRAME},chrome=1{/if}" />*}
 	<meta name="apple-mobile-web-app-capable" content="{if $view.iosWebappCapable}yes{else}no{/if}" />
 	<meta name="viewport" content="width={$view.viewportWidth}, initial-scale={$view.viewportIniScale}, maximum-scale={$view.viewportMaxScale}, user-scalable={if $view.viewportUserScalable}yes{else}no{/if}" />
 	

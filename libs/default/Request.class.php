@@ -135,39 +135,62 @@ class Request
 		$_rq 			= &$this->request; 				// Shortcut for request
 		$_ctr 			= &$this->controller; 			// Shortcut for request controller
 		$_mg 			= &$this->_magic; 				// Shortcut for view magic data
-		
-		$jsSample 		= "if ( sample && sample.init && typeof sample.init === 'function' ){ sample.init(); }";
-		$jsSample2 		= "if ( sample && typeof sample === 'function' ){ sample(); }";
-		$_mg['jsCalls'] .= PHP_EOL;
-		
-		// Loop over the breacrumbs parts
+
 		$camel 			= '';
 		$pointed 		= '';
-		foreach ( $this->breadcrumbs as $item)
+		$jsObject 		= "if ( typeof object !== 'undefined' ){ --next-- }";
+		$jsFunction 	= "if ( typeof object.init === 'function' ){ object.init(); --next-- }";
+		$jsFunction2 	= "if ( typeof object.item === 'function' ){ object.item(); }";
+		
+		$_mg['jsCalls'] .= PHP_EOL . $jsObject;
+		
+		$items 			= $this->breadcrumbs;
+		array_push($items, $_ctr->rawName, $_ctr->calledMethod);		
+		$i 				= 0;
+		$lim 			= count($items);
+		$curObj 		= '';
+		$curTabs 		= '';
+		
+		foreach ( $items as $item )
 		{
-			$camel 				.= !empty($camel) ? ucfirst($item) : $item; 		// Get current camelcased concatenation of all parts
-			$pointed 			.= !empty($pointed) ? '.' . $item : $item; 			// Get current pointed notation concatenation of all parts
-			$_mg['classes'][] 	= $item; 											// Set the current item as a magic class
-			$_mg['objects'][] 	= $camel;  											// Set the current concatenation as a magic object
-			$_mg['jsCalls'] 	.= str_replace('sample', $pointed, $jsSample) . PHP_EOL;
+			// Get current camelcased concatenation of all parts
+			$camel 				.= !empty($camel) ? ucfirst($item) : $item;
+			
+			// Set the current concatenation as a magic object
+			$_mg['objects'][] 	= $camel;
+			
+			// Set the current item as a magic class (except for the last item)
+			if ( $i < $lim - 1 ){ $_mg['classes'][] = $item; }   					
+			
+			// first item (object)
+			if ( $i === 0 )
+			{
+				$curObj 	.= !empty($curObj) ? '.' . $item : $item; 		// Get current pointed notation concatenation of all parts
+				$curTabs 	.= "\t";
+				$_mg['jsCalls'] = str_replace('object', $curObj, $_mg['jsCalls']);
+				$tmp 			= PHP_EOL . $curTabs . str_replace('object', $curObj, $jsFunction);
+				$_mg['jsCalls'] = str_replace('--next--', $tmp, $_mg['jsCalls']);
+			}
+			// not first, not last (object)
+			elseif ( $i < $lim - 1 )
+			{
+				$curObj 			.= !empty($curObj) ? '.' . $item : $item; 		// Get current pointed notation concatenation of all parts
+				$tmp 			= PHP_EOL . $curTabs . str_replace('object', $curObj, $jsObject);
+				$_mg['jsCalls'] = str_replace('--next--', $tmp, $_mg['jsCalls']);
+				$curTabs 	.= "\t";
+				$tmp 			= PHP_EOL . $curTabs . str_replace('object', $curObj, $jsFunction);
+				$_mg['jsCalls'] = str_replace('--next--', $tmp, $_mg['jsCalls']);
+			}
+			// last item (function)
+			else
+			{
+				$tmp 			= PHP_EOL . $curTabs . str_replace(array('object', 'item'), array($curObj, $item), $jsFunction2) . PHP_EOL;
+				$_mg['jsCalls'] = str_replace('--next--', $tmp, $_mg['jsCalls']);
+			}
+			
+			$i++;
 		}
-		
-		// Add the called controller raw name
-		$camel 				.= !empty($camel) ? ucfirst($_ctr->rawName) : $_ctr->rawName;
-		$pointed 			.= ( !empty($pointed) ? '.' : '' ) . $_ctr->rawName;
-		$_mg['classes'][] 	= $_ctr->rawName; 					
-		$_mg['objects'][] 	= $camel;
-		$_mg['jsCalls'] 	.= str_replace('sample', $pointed, $jsSample) . PHP_EOL;
-		
-		// Add the called method name
-		$camel 				.= !empty($camel) ? ucfirst($_ctr->calledMethod) : $_ctr->calledMethod;
-		$pointed 			.= ( !empty($pointed) ? '.' : '' ) . $_ctr->calledMethod;
-		//$_mg['jsCalls'] 	.= str_replace('sample', $pointed, $jsSample2) . PHP_EOL;
-		$_mg['jsCalls'] 	.= str_replace('sample', $pointed, $jsSample2);
-		
-		// Set the magic view name
-		$_mg['name'] 		= $camel;
-		
+
 		return $_mg;
 	}
 
@@ -464,13 +487,6 @@ class Request
     }
 	
 	
-    /**
-     * Remove params (and theirs values) from a string (or url)
-     * 
-     * @param string|array $paramNames name of a param or array of params name
-     * @param string $replaceIn a string or URL in valid query format (param1=value1&param2=value2...)
-     * @return string cleaned string
-     */
     static function removeQueryParams($paramNames, $string)
     {
         $cleaned = $string;

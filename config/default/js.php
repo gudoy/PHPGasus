@@ -20,6 +20,7 @@ $_js = array(
 	# PHPGasus defaults
 	'common' 				=> array('jqueryPlusUI', 'modernizr', 'tools', 'default/app.js'),
 	'admin' 				=> array('default', 'timepicker', $pages . 'admin.js'),
+	'adminDashboard' 		=> array('admin', $pages . 'admin/dashboard.js'),
 	//'adminHome' 			=> array('admin', $pages . 'adminSpecifics.js'),
 	//'adminResourcesCreate' 	=> array('default', $pages . 'admin/adminResources.js'),
 	//'adminResourcesUpdate' 	=> array('default', $pages . 'admin/adminResources.js'),

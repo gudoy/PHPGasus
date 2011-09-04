@@ -1,6 +1,6 @@
-{if $smarty.const._APP_USE_CHROME_FRAME && $request->browser.alias === 'ie'}
+{if $smarty.const._USE_CHROME_FRAME && $request->browser.alias === 'ie'}
 <!--[if IE]>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
 <style>
 	.chromeFrameInstallDefaultStyle { width:100%; border: 5px solid blue; }
 </style>

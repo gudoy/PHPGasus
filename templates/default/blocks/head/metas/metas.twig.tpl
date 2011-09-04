@@ -15,7 +15,7 @@
 	http://www.google.com/support/news_pub/bin/answer.py?answer=191283
 	<meta name="original-source" content="{{ request.url }}">
 	<meta name="syndication-source" content="http://www.example.com/wire_story_1.html">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge{% if constant('_APP_USE_CHROME_FRAME') %},chrome=1{% endif %}" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge{% if constant('_USE_CHROME_FRAME') %},chrome=1{% endif %}" />
 	#}
 	<meta name="apple-mobile-web-app-capable" content="{% if view.iosWebappCapable %}yes{% else %}no{% endif %}" />
 	<meta name="viewport" content="width={{ view.viewportWidth }}, initial-scale={{ view.viewportIniScale }}, maximum-scale={{ view.viewportMaxScale }}, user-scalable={% if view.viewportUserScalable %}yes{% else %}no{% endif %}" />

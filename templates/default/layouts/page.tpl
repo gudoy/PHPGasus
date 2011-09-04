@@ -41,6 +41,7 @@
 		
 	{/block}</div>{/block}
 	{block name='js'}{include file='default/blocks/js/js.tpl'}{/block}
+	{block name='browserUpdateNotifier'}{include file='default/blocks/js/browserUpdate.tpl'}{/block}
 {/block}
 </body>{/block}
 </html>
