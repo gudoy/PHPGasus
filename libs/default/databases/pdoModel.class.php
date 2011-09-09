@@ -9,11 +9,14 @@ class pdoModel extends _SQLModel
 	{
 var_dump(__METHOD__);
 
-		if 		( _DB_SYSTEM === 'postregsql' ) { $driver = 'pgsql'; }
+		if 		( _DB_SYSTEM === 'mysqli' ) 	{ $driver = 'mysql'; }
+		elseif 	( _DB_SYSTEM === 'postregsql' ) { $driver = 'pgsql'; }
 		elseif 	( _DB_SYSTEM === 'oracle' ) 	{ $driver = 'oci'; }
 		else 									{ $driver = _DB_SYSTEM; } 
 
 		$dsn = $driver . ':host=' . _DB_HOST . ';port=' . _DB_PORT . ';dbname=' . _DB_NAME;
+		
+var_dump($dsn);
 		
 		try
 		{
@@ -22,22 +25,21 @@ var_dump(__METHOD__);
 		catch (PDOException $e)
 		{
 			// TODO: make something more user friendly. redirect to /error/;
-			$err = $this->env['type'] === 'prod' ? '' : $this->db-connect_errno() . ': ' . $this->db-connect_error();
+			$err = $this->env['type'] === 'prod' ? '' : $e->getMessage();
 			$this->errors['DB_CONNEXION_ERROR'] = array('error' => $err);
 		}
 		
 var_dump($this->db);
-
-//var_dump($this->db->errorCode());
-var_dump($this->db->errorInfo());
 		
 		return $this;	
 	}
 	
 	public function setEncoding(){} // nothing since this is done on connection opening;
 	
-	public function doQuery($query, array $params)
+	public function doQuery($query, array $params = array())
 	{
+		$p = &$params;
+		
 var_dump(__METHOD__);
 		// Log launched query
 		// $this->log($query);
@@ -46,11 +48,16 @@ var_dump(__METHOD__);
 		if ( $p['type'] === 'select' )
 		{
 			$this->results = $this->db->query($query);
+			$this->results->setFetchMode(PDO::FETCH_ASSOC);
 		}
 		else
 		{
 			$this->results = $this->db->exec($query); 
 		}
+		
+var_dump($this->results);
+		
+		$this->success = is_bool($this->results) && !$this->results ? false : true;
 		
 		$this->handleResults();
 	}
@@ -62,7 +69,7 @@ var_dump(__METHOD__);
 	}
 	
 	public function numRows()
-	{		
+	{
 		$this->numRows = is_object($this->results) ? $this->results->rowCount() : null;
 	}
 	

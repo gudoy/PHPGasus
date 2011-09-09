@@ -8,7 +8,7 @@ class _SQLModel extends Model
 		$this->db->query("SET NAMES 'UTF8'");
 	}
 	
-	public function query($query, $params = array())
+	public function query($query, array $params = array())
 	{
 var_dump(__METHOD__);
 		
@@ -28,8 +28,10 @@ var_dump($query);
 		$this->doQuery($query, $p);
 	}
 	
-	public function doQuery($query, array $params)
+	public function doQuery($query, array $params = array())
 	{
+		$p = &$params;
+		
 var_dump(__METHOD__);
 		// Log launched query
 		// $this->log($query);
@@ -43,13 +45,20 @@ var_dump(__METHOD__);
 	}
 	
 	
-	public function handleResults()
+	public function handleResults(array $params = array())
 	{
-		if ( !$this->success ){ return; } 
+var_dump(__METHOD__);
 		
+		// Do not continue if the request did not returned results
+		if ( !$this->success ){ return; }
+		
+		$p = &$params; 
     	
 		$this->numRows();
 		$this->numFields();
+		
+var_dump($this->numRows);
+var_dump($this->numFields);
 		
 		if ( $p['type'] === 'insert' )
 		{
@@ -60,20 +69,26 @@ var_dump(__METHOD__);
 		{
 			$this->affectedRows();
 		}
+		
+		$this->fetchResults();
 	}
 	
 	public function affectedRows()
 	{
+var_dump(__METHOD__);
 		$this->affectedRows = $this->success ? $this->db->affected_rows : null; 
 	}
 	
 	public function numRows()
-	{		
+	{
+var_dump(__METHOD__);
+		
 		$this->numRows = is_object($this->results) ? $this->results->num_rows : null;
 	}
 	
 	public function numFields()
 	{
+var_dump(__METHOD__);
 		$this->numFields = is_object($this->results) ? $this->results->field_count : null;
 	}
 	
@@ -82,7 +97,7 @@ var_dump(__METHOD__);
 		$this->insertedId = $this->success ? $this->db->insert_id : null;
 	}
 	
-	public function buildSelect($params = array())
+	public function buildSelect(array $params = array())
 	{
 		// Extends default params by passed ones
 		$p = array_merge(array(
@@ -112,14 +127,9 @@ var_dump(__METHOD__);
 		elseif ( $this->numRows === 1 && $this->numFields > 1 ) 	{ $this->fetchRow(); }
 		// X row, 1 col
 		elseif ( $this->numRows > 1 && $this->numFields > 1 )		{ $this->fetchCols(); }
+		
+var_dump($this->data);
 	}
-	
-	//public function fetchValue(){} 	// required????
-	//public function fetchValues(){} 	// required????
-	public function fetchCol(){}
-	public function fetchCols(){}
-	public function fetchRow(){}
-	public function fetchRows(){}
 	
 	public function escapeColName(){}
 	public function escapeString(){}
