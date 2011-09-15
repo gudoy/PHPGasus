@@ -4,9 +4,9 @@
 ## DEV ##
 #########
 
-define("_APP_TEMPLATES_COMPILE_CHECK", 			true);
-define("_APP_TEMPLATES_FORCE_COMPILE", 			false);
-define("_APP_TEMPLATES_CACHING", 				false); 
+define("_TEMPLATES_COMPILE_CHECK", 				true);
+define("_TEMPLATES_FORCE_COMPILE", 				false);
+define("_TEMPLATES_CACHING", 					false); 
 
 define("_MINIFY_JS",							false);
 define("_MINIFY_CSS", 							false);

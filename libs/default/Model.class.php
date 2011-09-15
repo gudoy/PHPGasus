@@ -39,10 +39,14 @@ class Model extends Core
 		'launched' 	=> array(),
 	);
 	
-	//public function __construct(&$controller)
-	public function __construct()
+	public function __construct(array $params)
 	{
-		//$this->_resource = $controller->_resource;
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+//var_dump($params);
+		
+		$this->_resource 		= $params['_resource'];
+		$this->_resourcecolumns = $params['_resourcecolumns'];
 	}
 	
 	public function __call($method, $args)
@@ -165,7 +169,8 @@ class Model extends Core
 	public function retrieve(){ $this->find(); }
 	public function find()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 
 		$this->query();
 	}
@@ -190,39 +195,68 @@ var_dump(__METHOD__);
 	public function select()
 	{
 		$args = func_get_args();
-		
-		
 	}
+	
+	
+	public function handleOptions()
+	{
+		# Handle Indexes
+		// Check that the passed index are existing columns
+		if 		( !empty($o['indexByUnique']) && !DataModel::isColumn($o['indexByUnique']) ) 	{ $o['indexByUnique'] 	= null; }
+		elseif 	( !empty($o['indexBy']) && !DataModel::isColumn($o['indexBy']) )				{ $o['indexBy'] 		= null; }
+		
+		# Handle orderBy
+		
+		# Handle conditions
+	}
+	
 	
 	
 	//public function fetchValue(){} 	// required????
 	//public function fetchValues(){} 	// required????
 	public function fetchCol()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 	}
 	public function fetchCols()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 	}
 	public function fetchRow()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 	}
 	public function fetchRows()
 	{
-		// TODO: get used key
+		$o 	= &$this->options;
 		
-		
-var_dump(__METHOD__);
+//var_dump($this);
+				
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		$i = 0;
 		foreach($this->results as $row)
 		{
-var_dump($row);
-			// If indexBy && isCol(indexBy)
-			// $this->data[$key] = $this->fixRow($row);
+//var_dump($row);			
+			$this->fixRow($row);
 			
-			// Otherwise
-			$this->data[] = $this->fixRow($row);
+			if ( $o['indexByUnique'] && isset($row[$o['indexByUnique']]) )
+			{
+				$this->data[$o['indexByUnique']] = $row;
+			}
+			else if ( $o['indexBy'] && isset($row[$o['indexBy']]) )
+			{
+				$this->data[$o['indexBy']][] = $row;
+			}
+			else
+			{
+				$this->data[$i] = $row;	
+			}
+			
+			$i++;
 		}
 		 
 	}
@@ -239,14 +273,14 @@ var_dump($row);
 	
 	public function fixColumn($column, $value, array $params = array())
 	{
-		$type 	= null;
+		//$type 	= null;
 		$v 		= &$value;
-	
-var_dump($this);
-die();	
-//var_dump(DataModel::resource())
 		
-        switch($type)
+//var_dump(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$column]['type']);
+$this->log(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$column]['type']);
+//$this->log(__METHOD__);
+		
+        switch($this->_resourcecolumns[$column]['type'])
         {
         	# Texts
 			case 'string':

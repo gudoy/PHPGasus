@@ -10,7 +10,8 @@ class _SQLModel extends Model
 	
 	public function query($query, array $params = array())
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 		
 		// If the connection is not opened, open it
 		if ( !$this->db ){ $this->connect(); }
@@ -23,7 +24,8 @@ var_dump(__METHOD__);
 		
 		// TODO: handle prepared queries
 		
-var_dump($query);
+//var_dump($query);
+$this->log(__METHOD__);
 		
 		$this->doQuery($query, $p);
 	}
@@ -32,7 +34,8 @@ var_dump($query);
 	{
 		$p = &$params;
 		
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 		// Log launched query
 		// $this->log($query);
 		// $this->logs['launched'][] = $query;
@@ -47,7 +50,8 @@ var_dump(__METHOD__);
 	
 	public function handleResults(array $params = array())
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 		
 		// Do not continue if the request did not returned results
 		if ( !$this->success ){ return; }
@@ -57,8 +61,10 @@ var_dump(__METHOD__);
 		$this->numRows();
 		$this->numFields();
 		
-var_dump($this->numRows);
-var_dump($this->numFields);
+//var_dump($this->numRows);
+$this->log($this->numRows);
+//var_dump($this->numFields);
+$this->log($this->numFields);
 		
 		if ( $p['type'] === 'insert' )
 		{
@@ -75,20 +81,23 @@ var_dump($this->numFields);
 	
 	public function affectedRows()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 		$this->affectedRows = $this->success ? $this->db->affected_rows : null; 
 	}
 	
 	public function numRows()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 		
 		$this->numRows = is_object($this->results) ? $this->results->num_rows : null;
 	}
 	
 	public function numFields()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 		$this->numFields = is_object($this->results) ? $this->results->field_count : null;
 	}
 	
@@ -112,7 +121,8 @@ var_dump(__METHOD__);
 	
 	public function fetchResults()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 //var_dump($this);
 //die();
 
@@ -129,6 +139,7 @@ var_dump(__METHOD__);
 		elseif ( $this->numRows > 1 && $this->numFields > 1 )		{ $this->fetchCols(); }
 		
 var_dump($this->data);
+//$this->log($this->data);
 	}
 	
 	public function escapeColName(){}
@@ -136,7 +147,8 @@ var_dump($this->data);
 	
 	public function getResources()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 		
 		$this->data['resources'] = $this->query('SHOW TABLES');
 	}

@@ -7,7 +7,8 @@ class pdoModel extends _SQLModel
 	
 	public function connect()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 
 		if 		( _DB_SYSTEM === 'mysqli' ) 	{ $driver = 'mysql'; }
 		elseif 	( _DB_SYSTEM === 'postregsql' ) { $driver = 'pgsql'; }
@@ -16,7 +17,8 @@ var_dump(__METHOD__);
 
 		$dsn = $driver . ':host=' . _DB_HOST . ';port=' . _DB_PORT . ';dbname=' . _DB_NAME;
 		
-var_dump($dsn);
+//var_dump($dsn);
+$this->log($dsn);
 		
 		try
 		{
@@ -29,7 +31,8 @@ var_dump($dsn);
 			$this->errors['DB_CONNEXION_ERROR'] = array('error' => $err);
 		}
 		
-var_dump($this->db);
+//var_dump($this->db);
+$this->log($this->db);
 		
 		return $this;	
 	}
@@ -40,7 +43,8 @@ var_dump($this->db);
 	{
 		$p = &$params;
 		
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 		// Log launched query
 		// $this->log($query);
 		// $this->logs['launched'][] = $query;
@@ -55,7 +59,8 @@ var_dump(__METHOD__);
 			$this->results = $this->db->exec($query); 
 		}
 		
-var_dump($this->results);
+//var_dump($this->results);
+//$this->log(__METHOD__);
 		
 		$this->success = is_bool($this->results) && !$this->results ? false : true;
 		

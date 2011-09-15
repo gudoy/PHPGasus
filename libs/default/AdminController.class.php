@@ -7,15 +7,19 @@ class AdminController extends Controller
 		parent::__construct($Request);
 		
 		// 
-		global $_resources, $_columns, $_groups;
-		$this->_resources 	= &$_resources;
-		$this->_columns 	= &$_columns;
-		$this->_groups 		= &$_groups;
+		//global $_resources, $_columns, $_groups;
+		//$this->_resources 	= &$_resources;
+		//$this->_columns 	= &$_columns;
+		//$this->_groups 		= &$_groups;
 	}
-	
+	 
 	public function index()
 	{
 		//$this->triggerEvent('onBeforeIndex', array('from' => __FUNCTION__));
+	
+//var_dump($this);
+$this->log($this);
+//die();
 		
 //$this->{$this->_resource['plural']}->getResources();
 $this->{$this->_resource['plural']}->query('SELECT * FROM resources');

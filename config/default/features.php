@@ -25,14 +25,14 @@ define('_APP_OWNER_URL', 						_URL);
 
 
 ### TEMPLATES ###	
-define('_APP_TEMPLATES_ENGINE', 				'Smarty'); 					// Smarty, Twig or Haanga (case sensitive)
-define('_APP_TEMPLATES_EXTENSION', 				'tpl'); 					//
-//define('_APP_TEMPLATES_ENGINE', 				'Twig'); 					// Smarty, Twig or Haanga (case sensitive)
-//define('_APP_TEMPLATES_EXTENSION', 				'twig.tpl'); 			//
-define("_APP_TEMPLATES_COMPILE_CHECK", 			false);	
-define("_APP_TEMPLATES_FORCE_COMPILE", 			false);	
-define("_APP_TEMPLATES_CACHING", 				false);	
-define("_APP_TEMPLATES_CACHE_LIFETIME", 		3600); // in seconds 	
+define('_TEMPLATES_ENGINE', 					'Smarty'); 					// Smarty, Twig or Haanga (case sensitive)
+define('_TEMPLATES_EXTENSION', 					'tpl'); 					//
+//define('_TEMPLATES_ENGINE', 					'Twig'); 					// Smarty, Twig or Haanga (case sensitive)
+//define('_TEMPLATES_EXTENSION', 				'twig.tpl'); 				//
+define("_TEMPLATES_COMPILE_CHECK", 				false);	
+define("_TEMPLATES_FORCE_COMPILE", 				false);	
+define("_TEMPLATES_CACHING", 					false);	
+define("_TEMPLATES_CACHE_LIFETIME", 			3600); // in seconds 	
 
 
 ### ACCOUNT & SESSIONS HANDLING ###	
@@ -51,10 +51,9 @@ define('_APP_IP_WHITELIST', 					''); 						// CSV list of IP adresses than coul
 
 
 ### DEV / DEBUG ###		
-define('_APP_USE_FIREPHP_LOGGING',      		true); 						// experimental. In local & dev environment, use FirePHP server lib to log data (using $this->dump()) into Firefox console (require related extension).
-define('_APP_USE_CHROMEPHP_LOGGING',      		true); 						// experimental. In local & dev environment, use ChromePHP server lib to log data (using $this->dump()) into Chrome console (require related extension).
-define("_ALLOW_FIREPHP_LOGGING", 				false);		
-define('_APP_USE_EVENTS',                       true);          			// Disable this if you do not need to use events 
+define('_USE_FIREPHP_LOGGING',      			true); 						// experimental. In local & dev environment, use FirePHP server lib to log data (using $this->dump()) into Firefox console (require related extension).
+define('_USE_CHROMEPHP_LOGGING',      			true); 						// experimental. In local & dev environment, use ChromePHP server lib to log data (using $this->dump()) into Chrome console (require related extension).		
+define('_USE_EVENTS',                       	true);          			// Disable this if you do not need to use events 
 define('_APP_USE_SQL_TYPEFIXING',               false);         			// experimental.
 define('_APP_USE_ONFETCH_TYPEFIXING', 			true);          			// experimental.
 define('_APP_TYPEFIX_ONETOONE_GETFIELDS',       true);          			// experimental.

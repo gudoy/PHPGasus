@@ -23,20 +23,17 @@ class Core
 		$b = $this->request->browser->name;
 
 		// http://www.chromephp.com/
-		if ( _APP_USE_CHROMEPHP_LOGGING && $b === 'chrome' )
+		if ( _USE_CHROMEPHP_LOGGING && $b === 'chrome' )
 		{
 	        $this->requireLibs('ChromePhp', 'tools/ChromePhp');
 	        
 			ChromePhp::useFile(_PATH_PUBLIC . 'logs/chromelogs', '/public/logs/chromelogs/');
 		}
 		// http://www.firephp.org/
-		elseif ( _APP_USE_FIREPHP_LOGGING && $b === 'firefox' )
+		elseif ( _USE_FIREPHP_LOGGING && $b === 'firefox' )
 		{
 			$this->requireLibs('FirePHP', 'tools/FirePHP');	
 		}
-		
-//$this->dump('test firePHP/ChromePhp');
-//$this->dump($this->request);
 	}
 	
 	public function dump($data){ return $this->log($data); }
@@ -45,12 +42,12 @@ class Core
 		// Do not continue if the debug is not activated
 		if ( !$this->debug ){ return; }
 		
-		// Shortcut for browser name
-		$b = $this->request->browser->name;
+		// Get the user agent
+		$ua = $_SERVER['HTTP_USER_AGENT'];
 		
-		if 		( _APP_USE_CHROMEPHP_LOGGING && $b === 'chrome' ) 	{ ChromePhp::log($data); } 					// http://www.chromephp.com/
-		elseif 	( _APP_USE_FIREPHP_LOGGING && $b === 'firefox' ) 	{ FirePHP::getInstance(true)->log($data); } // http://www.firephp.org/
-		else 														{ var_dump($data); }
+		if 		( _USE_CHROMEPHP_LOGGING && strpos($ua, ' Chrome/') !== false ) { ChromePhp::log($data); } 					// http://www.chromephp.com/
+		elseif 	( _USE_FIREPHP_LOGGING && strpos($ua, ' Firefox/') != false ) 	{ FirePHP::getInstance(true)->log($data); } // http://www.firephp.org/
+		else 																	{ var_dump($data); }
 	}
 
 	// (string) $classname, [(string) 'shortpath']

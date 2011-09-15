@@ -24,6 +24,7 @@ class DataModel
 		'parent', 'parents', 'siblings', 'children', 	// TODO: implement
 		
 		# PHPGasus features related
+		'order', 'importance', 							// TODO: implement
 		'searchable', 'crudability', 'exposed',
 		
 		# Generated
@@ -884,6 +885,11 @@ class DataModel
 			// time, _time, year, _year, month, _month, day, _day, hour, _hour, minutes, _minutes, seconds, _seconds
 			// amout, price => floats
 		}
+	}
+
+	static function getColumnType($resource, $column)
+	{
+		return $_columns[$resource][$column]['type'];
 	}
 }
 
