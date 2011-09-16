@@ -106,19 +106,6 @@ $this->log(__METHOD__);
 		$this->insertedId = $this->success ? $this->db->insert_id : null;
 	}
 	
-	public function buildSelect(array $params = array())
-	{
-		// Extends default params by passed ones
-		$p = array_merge(array(
-			// Default params
-			'type' 		=> 'select',
-			'limit' 	=> _APP_LIMIT_RETRIEVED_RESOURCES,
-			
-			//'count' 	=> null,
-			//'distinct' 	=> null,
-		), $params);
-	}
-	
 	public function fetchResults()
 	{
 //var_dump(__METHOD__);
@@ -152,13 +139,121 @@ $this->log(__METHOD__);
 		
 		$this->data['resources'] = $this->query('SHOW TABLES');
 	}
+
+	public function buildSelect(array $params = array())
+	{
+		// Define shortcuts
+		$this->queryPlan = array(
+			'tables' 	=> array(),
+			'columns' 	=> array(),
+		);
+		$_qp 	= &$this->queryPlan; 
+		
+		// Build final query  
+		$_q 		= 	"SELECT "
+						. $this->buildColumnsList()
+						. $this->buildFrom()
+						. $this->buildLeftJoins()
+						. $this->buildRightJoins()
+						. $this->buildCrossJoins()
+						. $this->buildWhere()
+						. $this->buildOrderBy()
+						. $this->buildOrderBy()
+						. $this->buildLimit()
+						. $this->buildOffset()
+		;
+		
+		return $_q;
+	}
+	public function buildInsert(){}
+	public function buildUpdate(){}
 	
-	public function count(){}
-	public function distinct(){}
+
+	public function buildColumnsList()
+	{
+		$o = &$this->options;
+		
+		// TODO
+		
+		return '';	
+	}
 	
-	public function buildConditions(){}
-	public function buildLimit(){}
-	public function buildGroupBy(){}
+	public function buildFrom()
+	{
+		$o = &$this->options;
+		
+		// TODO
+		
+		return '';	
+	}
+	
+	public function buildLeftJoins()
+	{
+		$o = &$this->options;
+		
+		// TODO
+		
+		return '';	
+	}
+	
+	public function buildRightJoins()
+	{
+		$o = &$this->options;
+		
+		// TODO
+		
+		return '';	
+	}
+	
+	public function buildCrossJoins()
+	{
+		$o = &$this->options;
+		
+		// TODO
+		
+		return '';	
+	}
+	
+	public function buildWhere()
+	{
+		$o = &$this->options;
+		
+		// TODO
+		
+		return '';		
+	}
+	
+	public function buildGroupBy()
+	{
+		$o = &$this->options;
+		
+		// TODO
+		
+		return '';
+	}
+	
+	public function buildOrderBy()
+	{
+		$o = &$this->options;
+		
+		// TODO
+		
+		return '';
+	}
+	
+	public function buildLimit()
+	{
+		$o = &$this->options;
+		
+		!empty($o['limit']) && $o['limit'] != -1 ? "LIMIT " . $o['limit'] . " " : " ";
+	}
+	
+	public function buildOffset()
+	{
+		$o = &$this->options;
+		
+		return !empty($o['offset']) ? "OFFSET " . $o['offset'] . " " : " ";
+	}
 }
 
 ?>

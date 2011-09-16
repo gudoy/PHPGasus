@@ -166,35 +166,63 @@ $this->log(__METHOD__);
 		
 	}
 	
-	public function retrieve(){ $this->find(); }
+	public function create()
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
+	}
+	
+	//public function retrieve(){ $this->find(); }
 	public function find()
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
+
+		$this->handleOptions();
 
 		$this->query();
 	}
 	
 	public function update()
 	{
-		
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();		
 	}
 	
 	public function delete()
 	{
-		
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
 	}
 	
 	public function createOrUpdate(){ $this->upsert(); }
 	public function upsert()
 	{
-		
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
 	}
 	
-	
-	public function select()
+	public function count()
 	{
-		$args = func_get_args();
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
+	}
+	public function distinct()
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
 	}
 	
 	
@@ -337,6 +365,7 @@ $this->log(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$colu
 				
 			# Dates & times
             case 'timestamp':
+//var_dump(is_numeric($v));
             	$v = is_numeric($v) ? (int) $v : (int) DateTime::createFromFormat('Y-m-d H:i:s', $v, new DateTimeZone('UTC'))->format('U'); break;
             //case 'datetime':
             //case 'time':
