@@ -150,23 +150,100 @@ $this->log(__METHOD__);
 		$_qp 	= &$this->queryPlan; 
 		
 		// Build final query  
-		$_q 		= 	"SELECT "
-						. $this->buildColumnsList()
-						. $this->buildFrom()
-						. $this->buildLeftJoins()
-						. $this->buildRightJoins()
-						. $this->buildCrossJoins()
-						. $this->buildWhere()
-						. $this->buildOrderBy()
-						. $this->buildOrderBy()
-						. $this->buildLimit()
-						. $this->buildOffset()
+		$_q = 	"SELECT "
+				. $this->buildColumnsList()
+				. $this->buildFrom()
+				. $this->buildLeftJoins()
+				. $this->buildRightJoins()
+				. $this->buildCrossJoins()
+				. $this->buildWhere()
+				. $this->buildGroupBy()
+				. $this->buildOrderBy()
+				. $this->buildLimit()
+				. $this->buildOffset()
 		;
 		
 		return $_q;
 	}
-	public function buildInsert(){}
-	public function buildUpdate(){}
+	
+	public function buildInsert()
+	{
+		// Define shortcuts
+		$this->queryPlan = array(
+			'tables' 	=> array(),
+			'columns' 	=> array(),
+		);
+		$_qp 	= &$this->queryPlan; 
+		
+		// Build final query  
+		$_q = 	"INSERT INTO "
+				. $this->buildFrom()
+				. $this->buildColumnsList()
+				. $this->buildLeftJoins()
+				. $this->buildRightJoins()
+				. $this->buildCrossJoins()
+				. $this->buildWhere()
+				. $this->buildGroupBy()
+				. $this->buildOrderBy()
+				. $this->buildLimit()
+				. $this->buildOffset()
+		;
+		
+		return $_q;
+	}
+	
+	public function buildUpdate()
+	{
+		// Define shortcuts
+		$this->queryPlan = array(
+			'tables' 	=> array(),
+			'columns' 	=> array(),
+		);
+		$_qp 	= &$this->queryPlan; 
+		
+		// Build final query  
+		$_q = 	"UPDATE "
+				. $this->buildFrom()
+				. $this->buildColumnsList()
+				. $this->buildLeftJoins()
+				. $this->buildRightJoins()
+				. $this->buildCrossJoins()
+				. $this->buildWhere()
+				. $this->buildGroupBy()
+				. $this->buildOrderBy()
+				. $this->buildLimit()
+				. $this->buildOffset()
+		;
+		
+		return $_q;
+	}
+	
+	
+	public function buildDelete()
+	{
+		// Define shortcuts
+		$this->queryPlan = array(
+			'tables' 	=> array(),
+			'columns' 	=> array(),
+		);
+		$_qp 	= &$this->queryPlan; 
+		
+		// Build final query  
+		$_q = 	"DELETE "
+				. $this->buildFrom()
+				. $this->buildColumnsList()
+				. $this->buildLeftJoins()
+				. $this->buildRightJoins()
+				. $this->buildCrossJoins()
+				. $this->buildWhere()
+				. $this->buildGroupBy()
+				. $this->buildOrderBy()
+				. $this->buildLimit()
+				. $this->buildOffset()
+		;
+		
+		return $_q;
+	}
 	
 
 	public function buildColumnsList()
