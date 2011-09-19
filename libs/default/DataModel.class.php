@@ -14,7 +14,7 @@ class DataModel
 		'type',
 		'name', 'singular', 'plural', 
 		'displayName', 'nameField',
-		'defaultNameField', 							// TODO: deprecate: use nameField instead 
+		//'defaultNameField', 							// TODO: deprecate: use nameField instead 
 		
 		# Database
 		'database', 'table', 'alias',

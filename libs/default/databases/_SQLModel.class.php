@@ -125,7 +125,7 @@ $this->log(__METHOD__);
 		// X row, 1 col
 		elseif ( $this->numRows > 1 && $this->numFields > 1 )		{ $this->fetchCols(); }
 		
-var_dump($this->data);
+//var_dump($this->data);
 //$this->log($this->data);
 	}
 	

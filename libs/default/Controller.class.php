@@ -38,7 +38,7 @@ class Controller extends Core implements ControllerInterface
 		{
 			//$this->request->resource = $this->request->controller->rawName;
 			$this->request->resource 	= $_r['name'];
-			$this->_resource 			= $_r;
+			$this->_resource 			= new ArrayObject($_r, 2);
 		};
 		
 //var_dump($this->_resource);

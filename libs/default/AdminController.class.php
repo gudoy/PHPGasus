@@ -85,6 +85,28 @@ $this->{$this->_resource['plural']}->query('SELECT * FROM resources');
 		$this->templateData['_resources'] 	= &$this->_resources;
 		$this->templateData['_columns'] 	= &$this->_columns;
 		$this->templateData['_groups'] 		= &$this->_groups;
+		
+		
+$this->dump($this->templateData);
+	}
+	
+	public function getViewLayout()
+	{
+		$this->view['layout'] = 'yours/layouts/pageAdmin.' . _TEMPLATES_EXTENSION;	
+	}
+	
+	public function getViewTemplate()
+	{
+		// If we are handling an existing resource
+		if ( $this->_resource )
+		{
+			$this->view->template = !empty($this->view['template']) ? !empty($this->view['template']) : 'yours/pages/' 
+				//. ( $this->request->_magic['classes'] ? join('/', $this->request->_magic['classes']) . '/' : '' )
+				. 'admin/_resource/'
+				. $this->request->controller->calledMethod . '.' . _TEMPLATES_EXTENSION;
+		}
+		// Otherwise, fallback to the default get template method
+		else { parent::getViewTemplate(); }
 	}
 }
 
