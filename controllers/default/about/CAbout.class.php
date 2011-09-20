@@ -46,6 +46,12 @@ class CAbout extends Controller
 	}
 	
 	
+	public function credits()
+	{
+		$this->render();
+	}
+	
+	
 };
 
 ?>

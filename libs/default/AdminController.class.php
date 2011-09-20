@@ -22,7 +22,10 @@ $this->log($this);
 //die();
 		
 //$this->{$this->_resource['plural']}->getResources();
-$this->{$this->_resource['plural']}->query('SELECT * FROM resources');
+//var_dump($this->{$this->_resource['plural']}->query('SELECT * FROM resources'));
+		$rName 				= $this->_resource['plural'];
+		//$this->data[$rName] = $this->{$rName}->findAll();
+		$this->data[$rName] = $this->{$rName}->query('SELECT * FROM resources');
 		
 		// Get all (limited to _APP_LIMIT_RETRIEVED_RESOURCES) items of this resource
 		//$this->{$this->_resource['plural']}->find();

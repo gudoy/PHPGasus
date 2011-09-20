@@ -5,7 +5,7 @@
 #########
 
 define("_TEMPLATES_COMPILE_CHECK", 				true);
-define("_TEMPLATES_FORCE_COMPILE", 				false);
+define("_TEMPLATES_FORCE_COMPILE", 				true);
 define("_TEMPLATES_CACHING", 					false); 
 
 define("_MINIFY_JS",							false);

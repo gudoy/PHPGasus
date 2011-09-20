@@ -29,10 +29,10 @@ define('_TEMPLATES_ENGINE', 					'Smarty'); 					// Smarty, Twig or Haanga (case
 define('_TEMPLATES_EXTENSION', 					'tpl'); 					//
 //define('_TEMPLATES_ENGINE', 					'Twig'); 					// Smarty, Twig or Haanga (case sensitive)
 //define('_TEMPLATES_EXTENSION', 				'twig.tpl'); 				//
-define("_TEMPLATES_COMPILE_CHECK", 				false);	
-define("_TEMPLATES_FORCE_COMPILE", 				false);	
-define("_TEMPLATES_CACHING", 					false);	
-define("_TEMPLATES_CACHE_LIFETIME", 			3600); // in seconds 	
+define("_TEMPLATES_COMPILE_CHECK", 				false);
+define("_TEMPLATES_FORCE_COMPILE", 				false);
+define("_TEMPLATES_CACHING", 					false);
+define("_TEMPLATES_CACHE_LIFETIME", 			3600); // in seconds
 
 
 ### ACCOUNT & SESSIONS HANDLING ###	

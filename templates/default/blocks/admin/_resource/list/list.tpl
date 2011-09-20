@@ -2,9 +2,14 @@
 {$rProps 	= $_resources[$rName]}
 {$rModel 	= $_columns[$rName]}
 
-{foreach $data[$request.resource] as $item}
-<article id="{$request.resource}{$item.id}">
-	<input type="checkbox" value="" />
+{foreach $data[$rName] as $item}
+<article class="resource" id="{$rName}{$item.id}">
+	<div class="meta">
+		<input type="checkbox" name="selectedResources" value="{$item.id}" />	
+	</div>
+	<nav class="actions">
+		{include file='default/blocks/common/buttons/action.tpl' class="view" href="{$smarty.const._URL}admin/{$rName}/{$item.id}" label='view'}
+	</nav>
 	<header>
 		<h3 class="title">
 			<span class="id">{$item.id}</span>
@@ -13,6 +18,7 @@
 	</header>
 	<div class="content">
 		{foreach $rModel as $col => $props}
+		<span class="key">{$col}</span>
 		<span class="value" data-exact="{$item[$col]}">{$item[$col]}</span>
 		{/foreach}
 	</div>

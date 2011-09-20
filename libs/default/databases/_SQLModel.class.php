@@ -28,6 +28,8 @@ $this->log(__METHOD__);
 $this->log(__METHOD__);
 		
 		$this->doQuery($query, $p);
+		
+		return $this->data;
 	}
 	
 	public function doQuery($query, array $params = array())
