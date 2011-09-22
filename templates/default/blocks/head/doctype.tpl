@@ -9,6 +9,7 @@
 {$langAttr 			= 'lang="'|cat:$curLang|cat:'"'}
 
 {if $doctype === 'html5' && $request->outputFormat !== 'xhtml'}
+	{$attrs 	= " $langAttr $xmllang"}
 {elseif $doctype === 'xhtml-strict-1.1'}
 	{$dtd 		= ' PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"'}
 	{$attrs 	= " $xmlns $xmllang"}
@@ -21,4 +22,4 @@
 {/if}
 {/strip}
 <!DOCTYPE html{$doctypeCompl}>
-<html{if $view.smartname} {$view.smartname}{/if} id="{$view.name}" class="no-js {$view.classes}"{if $smarty.const._APP_USE_MANIFEST} manifest="{$smarty.const._APP_MANIFEST_FILENAME}"{/if}{$attributes}{$htmlAttrbitues}>
+<html{if $view.smartname} {$view.smartname}{/if} id="{$view.name}" class="no-js {$view.classes}"{if $smarty.const._APP_USE_MANIFEST} manifest="{$smarty.const._APP_MANIFEST_FILENAME}"{/if}{$attributes}{$attrs}>
