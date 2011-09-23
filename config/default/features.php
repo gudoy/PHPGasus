@@ -79,9 +79,9 @@ define('_USE_MODERNIZR', 						true); 						// If allowed, the js lib Modernizr 
 
 
 ### LANGUAGES & INTERNATIONALISATION ###
-define('_I18N_SYSTEM', 							'db'); 						// 'db' (database + gettext), 'po' (.po files + gettext), 'php'
+define('_LANGUAGES_SYSTEM', 					'db'); 						// 'db' (database + gettext), 'po' (.po files + gettext), 'php'
 define('_DEFAULT_LANGUAGE', 					'fr_FR'); 					// or en_US, en_GB, de_DE, es_EN, it_IT, ja_JP, zh_CN, ko_KR
-define('LANGUAGES', 							'fr_FR'); 					// List of languages availables for the app, separated by comas
+define('_LANGUAGES', 							'fr_FR'); 					// List of languages availables for the app, separated by comas
 
 
 
