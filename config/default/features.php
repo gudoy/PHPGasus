@@ -74,12 +74,18 @@ define('_APP_USE_RESOURCESGROUPS',              true);          			// experiment
 ### MISC SNIFFING, FEATURES DETECTION ###		
 define('_SNIFF_PLATFORM', 						true); 						// Disable this if you don't want to try getting the platform data (prevent unnecessary processing)
 define('_SNIFF_BROWSER', 						true); 						// Disable this if you don't want to try getting the browser data (prevent unnecessary processing)
-define('_USE_MODERNIZR', 						true); 					// If allowed, the js lib Modernizr will be added to detect user browser capabilities adding subsenquent classes to the <HTML> tag
+define('_USE_MODERNIZR', 						true); 						// If allowed, the js lib Modernizr will be added to detect user browser capabilities adding subsenquent classes to the <HTML> tag
+
+
+
+### LANGUAGES & INTERNATIONALISATION ###
+define('_I18N_SYSTEM', 							'db'); 						// 'db' (database + gettext), 'po' (.po files + gettext), 'php'
+define('_DEFAULT_LANGUAGE', 					'fr_FR'); 					// or en_US, en_GB, de_DE, es_EN, it_IT, ja_JP, zh_CN, ko_KR
+define('LANGUAGES', 							'fr_FR'); 					// List of languages availables for the app, separated by comas
+
 
 
 ### HTML & METAS ###			
-define('_APP_DEFAULT_LANGUAGE', 				'fr_FR'); 					// or en_US, en_GB, de_DE, es_EN, it_IT, ja_JP, zh_CN, ko_KR
-define('_APP_LANGUAGES', 						'fr_FR'); 					// List of languages (translatations) for the app, separated by comas
 define('_APP_DOCTYPE', 							'html5');					// 'html5', 'xhtml-strict-1.1', 'xhtml-strict', 'xhtml-transitional', 
 define('_APP_DEFAULT_OUTPUT_FORMAT', 			'html');					// Is there case where it won't be html?
 define('_APP_DEFAULT_OUTPUT_MIME', 				'text/html');				// 
