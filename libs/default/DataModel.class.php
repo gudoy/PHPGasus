@@ -14,28 +14,44 @@ class DataModel
 		'type',
 		'name', 'singular', 'plural', 
 		'displayName', 'nameField',
-		//'defaultNameField', 							// TODO: deprecate: use nameField instead 
+		//'defaultNameField', 					// Deprecated: use nameField instead 
 		
 		# Database
 		'database', 'table', 'alias',
 		
 		# Relations
-		'extends', 
-		'parent', 'parents', 'siblings', 'children', 	// TODO: implement
+		'extends', 								// default = null
+		'parent', 								// default = null
+		'parents',  							// default = array()
+		'siblings',  							// default = array()
+		'children', 							// default = array()
+		'related', 								// parent + siblings + children
+		// use relations instead of parent/siblings/children??????
+		// 'relations'  	=> array('oneToOne','oneToMany','manyToOne', 'manyToMany')
 		
 		# PHPGasus features related
-		'order', 'importance', 							// TODO: implement
+		'order', 'importance', 					// TODO: implement
 		'searchable', 'crudability', 'exposed',
 		
 		# Generated
-		// 'exposedColumns' 	=> array()
-		// 'relations'  	=> array('oneToOne','oneToMany','manyToOne', 'manyToMany')
+		'exposedColumns', 						// array of column names (default = empty) 
+		'searchableColumns', 					// array of column names (default = empty)
 	);
 	
-	static $columnTypes 					= array(
+	static $columnTypes = array(
+        # mysql types:
+        // 'serial', 'bit', 'tinyint', 'bool', 'smallint', 'mediumint', 'int', 'bigint', 'float', 'double', 'double precision', 'decimal', 
+        // 'date', 'datetime', 'timestamp', 'time', 'year', 
+        // 'char', 'varchar', 
+        // 'binary', 'varbinary', 
+        // 'tinyblob', 'blob', 'mediumblob', 'longblob',
+        // 'tinytext', 'text', 'mediumtext', 'longtext', 
+        // 'enum', 'set'
+        // 'bit'
 		'types' 	=> array(
 			# Texts
-			'string', 'varchar', 'slug', 'email', 'password', 'url', 'tel', 'color', 'meta', 'ip',
+			'string', 'varchar', 
+			'email', 'password', 'url', 'tel', 'color', 'meta', 'ip',
 			'slug', 'tag', 
 			'text', 'html', 'code',
 			
@@ -48,7 +64,8 @@ class DataModel
 			'bool','boolean',
 			
 			# Dates & times
-			'timestamp', 'datetime', 'date', 'time', 'year', 'month', 'week', 'day', 'hour', 'minutes', 'seconds', 
+			'timestamp', 'datetime', 'date', 'time', 'year', 
+			//'month', 'week', 'day', 'hour', 'minutes', 'seconds', 
 			
 			# Relations
 			'1-1', 'onetoone', 'one2one', '121', '1to1', '12one',
@@ -56,58 +73,73 @@ class DataModel
 			'n-1', 'manytoone', 'many2one', 'n21', 'nto1', 'manyto1', 'many21',
 			'n-n', 'manytomany', 'many2many', 'n2n', 'nton',
 			
+			# media
+			'file', 'image', 'video', 'sound', 'file',
+			
 			# Misc
 			'pk', 'id', 'serial',
-			'enum', 'choice',
-			'file', 'image', 'video', 'sound', 'file',
+			'enum', 'choice', 'set',
 		),
 		'realtypes' => array(
 			# Texts
 				// strings (length=255) 
 				'string' 		=> 'string',
 				'varchar' 		=> 'string',
-				'slug' 			=> 'string', // + length = 64
-				'tag' 			=> 'string', // alias of slug
-				'email' 		=> 'string', // + validator pattern
-				'password'		=> 'string', // + modifiers = sha1
-				'url' 			=> 'string', // + FILTER_VALIDATE_URL?
-				'tel' 			=> 'string', // + length = 20???, + pattern ? 
-				'color'			=> 'string', // + length = 32, + validator pattern (#hex, rgb(), rgba(), hsl(), ... ?)
+				'slug' 			=> 'string', 		// + length = 64
+				'tag' 			=> 'string', 		// alias of slug
+				'email' 		=> 'string', 		// + validator pattern
+				'password'		=> 'string', 		// + modifiers = sha1
+				'url' 			=> 'string', 		// + FILTER_VALIDATE_URL?
+				'tel' 			=> 'string', 		// + length = 20???, + pattern ? 
+				'color'			=> 'string', 		// + length = 32, + validator pattern (#hex, rgb(), rgba(), hsl(), ... ?)
 				'meta' 			=> 'string',
-				'ip' 			=> 'string', // + length = 40 + FILTER_VALIDATE_IP, ? 
-
+				'ip' 			=> 'string', 		// + length = 40 + FILTER_VALIDATE_IP, ? 
 				
 				// texts (length=null)				
 				'html' 			=> 'text',
 				'code' 			=> 'text',
 				'text' 			=> 'text',
+				
+				// enumerations
+				'enum' 			=> 'enum',
+				'choice' 		=> 'enum',
+				'set' 			=> 'set',
 
 			# Numbers
 				// ints
-				'int' 			=> 'integer', // + min = -2147483648, + max = 2147483648
-				'integer'		=> 'integer', // + min = -2147483648, + max = 2147483648
-				'num'			=> 'integer', // + min = -2147483648, + max = 2147483648
-				'number'		=> 'integer', // + min = -2147483648, + max = 2147483648
+				'int' 			=> 'integer', 		// + min = -2147483648, + max = 2147483648
+				'integer'		=> 'integer', 		// + min = -2147483648, + max = 2147483648
+				'num'			=> 'integer', 		// + min = -2147483648, + max = 2147483648
+				'number'		=> 'integer', 		// + min = -2147483648, + max = 2147483648
 				
-				'tinyint' 		=> 'tinyint', // + min = -128, + max = 128 
-				'smallint' 		=> 'smallint', // + min = -32768, + max = 32768
-				'mediumint' 	=> 'mediumint', // + min = -8388608, + max = 8388608
-				'bigint' 		=> 'bigint', // + min = -9223372036854775808, + max = 9223372036854775808
+				'tinyint' 		=> 'tinyint', 		// + min = -128, + max = 128 
+				'smallint' 		=> 'smallint', 		// + min = -32768, + max = 32768
+				'mediumint' 	=> 'mediumint', 	// + min = -8388608, + max = 8388608
+				'bigint' 		=> 'bigint', 		// + min = -9223372036854775808, + max = 9223372036854775808
 				
 				// floats
+				'decimal' 		=> 'float',
 				'float' 		=> 'float',
 				'real' 			=> 'float',
 				'double'		=> 'float',		
 				
 			# Booleans
+				'bit' 			=> 'boolean',
 				'bool' 			=> 'boolean',
 				'boolean' 		=> 'boolean',
 				
 			# Dates & times
-				// timestamps
 				'timestamp' 	=> 'timestamp',
 				'date' 			=> 'date',
 				'datetime' 		=> 'datetime',
+				'time' 			=> '', 				// ?
+				'year' 			=> '', 				// ?
+				//'month' 		=> '', 				// ?
+				//'week' 			=> '', 				// ?
+				//'day' 			=> '', 				// ?
+				//'hour' 			=> '', 				// ?
+				//'minutes' 		=> '', 				// ?
+				//'seconds' 		=> '', 				// ?
 				
 			# Relations
 				// One to one relations (& aliases)
@@ -143,15 +175,10 @@ class DataModel
 				'n2n' 			=> 'manytomany', 
 				'nton' 			=> 'manytomany',
 			
-			# Misc
-				// Enum
-				'enum' 			=> 'enum',
-				'choice' 		=> 'enum',
-				
-				// Pk + length = 11, pk = 1, editable = 0
-				'pk' 			=> 'integer', 
-				'id' 			=> 'integer',
-				'id' 			=> 'integer',
+			# Misc				
+				'pk' 			=> 'integer', // Pk + length = 11, pk = 1, editable = 0 
+				'id' 			=> 'integer', // Pk + length = 11, pk = 1, editable = 0
+				'serial' 		=> 'integer', // Pk + length = 11, pk = 1, editable = 0
 		),
 	);
 	
@@ -162,18 +189,21 @@ class DataModel
 		'exposed',
 	
 		# SQL related
-		'realtype', 'length', 'values', 
+		'realtype',
+		'length',  
+		'fk',
 		'null', 'pk', 'ai', 'default', 
 		'unsigned', 'unique', 'index', 			// TODO: implement
-		'possibleValues', 						// TODO deprecate: use values instead
+		'values',
+		'possibleValues', 						// Deprecated: use values instead
 		
 		# Relations
 		//'on 									// TODO: ???
 		'relResource', 							// TODO: ??? replace by on, to, or from????
-		'relField', 							// TODO: deprecate in favor of relColumn
+		'relField', 							// Deprecated: use relColumn instead
 		'relColumn', 							// TODO: implement 
-		'getFields','relGetFields', 			// TODO: deprecate in favor of getColumns
-		'relGetAs', 							// TODO: deprecate. use associative array in relGetFields
+		'getFields','relGetFields', 			// Deprecated: use getColumns instead
+		'relGetAs', 							// Deprecated: use associative array getColumns
 		'getColumns', 							// TODO: 'col1,cold2,...' or array('col1','col2',...) or array('col1' => 'my_col_1', 'col2' => 'my_col_2')
 		'pivotResource', 'pivotLeftField', 'pivotRightField',
 		'fetchingStrategy',  					// null,'none,','join','select','subselect','batch'
@@ -182,18 +212,18 @@ class DataModel
 		# Format/validation related
 		'placeholder', 'required', 
 		'min', 'max', 'step', 'pattern',
-		'computed', 'computedValue', 'eval',	// TODO: deprecate. implements custom types instead (possibily with modifiers) 
+		'computed', 'computedValue', 'eval',	// Deprecated. 
 		'modifiers', 							// TODO: implement trim|lower|upper|camel|capitalize|now|escape, ....
 		
 		// Files related
 		'forceUpload', 
-		'storeOn',  							// TODO: ftp|amazon_s3|amazon_ec2 
-		'acl', 									// S3_ACL_PRIVATE, S3_ACL_PUBLIC, S3_ACL_OPEN, S3_ACL_AUTH_READ. default = S3_ACL_PRIVATE
-		'destRoot', 'destName', 'destFolder',
+		'storeOn',  							// TODO????? (ftp|amazon_s3|amazon_ec2) 
+		'acl', 									// TODO????? (S3_ACL_PRIVATE, S3_ACL_PUBLIC, S3_ACL_OPEN, S3_ACL_AUTH_READ. default = S3_ACL_PRIVATE)
+		'destRoot', 'destName', 'destFolder', 	// TODO?????
 		
 		// UI or admin purpose
 		'uiWidget',
-		'displayName', 'displayedValue', 'list',
+		'displayName', 'displayValue', 'list',
 		'editable', 'forceUpdate',
 		'comment',
 	);
@@ -201,16 +231,8 @@ class DataModel
 	
 	);
 	
-	//static $_r 			= null;
-	//static $_c 			= null;
-	//static $_gp 		= null;
-	
 	public function _construct()
 	{
-		// Define aliases
-		//self::$_r 	= &$this->resources;
-		//self::$_c 	= &$this->columns;
-		//self::$_gp 	= &$this->groups;
 	}
 	
 	// 
