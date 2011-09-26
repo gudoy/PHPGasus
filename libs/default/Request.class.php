@@ -263,7 +263,7 @@ class Request
 				'major' 		=> '?',
 				'minor' 		=> '?',
 				'build' 		=> '?',
-				'release' 		=> '?',
+				'revision' 		=> '?',
 			), 2),
 			//'hasHTML5' 			=> false,
 		), 2);
@@ -401,6 +401,16 @@ class Request
 		return isset($this->outputFormat) && in_array($this->outputFormat, $this->knownExtensions) 
 				? $this->outputFormat
 				: _APP_DEFAULT_OUTPUT_FORMAT;
+	}
+
+
+	public function handleParameters()
+	{
+		// TODO
+		
+		// Sanitize $_GET params
+		
+		// Check against resource + relatedResource 
 	}
 	
 	static function isAjax()

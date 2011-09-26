@@ -7,7 +7,8 @@ class mysqliModel extends _SQLModel
 	
 	public function connect()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
 
 		// Open a connection on the db server
 		$this->db 			= new mysqli(_DB_HOST, _DB_USER, _DB_PASSWORD, _DB_NAME);

@@ -8,6 +8,7 @@
 {% set langAttr = 'lang="' ~ curLang ~ '"' %}
 
 {% if doctype is sameas('html5') and request.outputFormat is not sameas('xhtml') %}
+	{% set attrs 	= ' ' ~ langAttr ~ ' ' ~ xmllang %}
 {% elseif doctype is sameas('xhtml-strict-1.1') %}
 	{% set dtd 		= ' PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"' %}
 	{% set attrs 	= ' ' ~ xmlns ~ ' ' ~ xmllang %}
@@ -20,4 +21,4 @@
 {% endif %}
 {% endspaceless %}
 <!DOCTYPE html{{ doctypeCompl }}>
-<html{% if view.smartname %} {{ view.smartname }}{% endif %} id="{{ view.name }}" class="no-js {{ view.classes }}"{% if constant('_APP_USE_MANIFEST') %} manifest="{{ constant('_APP_MANIFEST_FILENAME') }}"{% endif %}{{ attributes }}{{ htmlAttrbitues }}>
+<html{% if view.smartname %} {{ view.smartname }}{% endif %} id="{{ view.name }}" class="no-js {{ view.classes }}"{% if constant('_APP_USE_MANIFEST') %} manifest="{{ constant('_APP_MANIFEST_FILENAME') }}"{% endif %}{{ attributes }}{{ attrs }}>

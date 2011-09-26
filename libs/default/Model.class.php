@@ -11,11 +11,43 @@ class Model extends Core
 	public $errors 		= array();
 	public $warnings 	= array();
 	
+	public $options 	= array(
+		'type' 				=> 'select', 	// 'select','insert',''update','delete'
+		'limit' 			=> null, 		// (int)
+		'offset' 			=> null, 		// (int)
+		'orderBy' 			=> null, 		// {$datamodel $column} [asc|desc]
+		'indexBy' 			=> null, 		// {gotten $column}
+		'indexByUnique' 	=> null, 		// {gotten $column}
+		'conditions' 		=> array(), 	//
+		'groupBy' 			=> null,
+		'returnning' 		=> null,
+		
+		'distinct' 			=> null,
+		'count' 			=> array(),
+		
+		'by' 				=> null,
+		'values' 			=> null,
+		'getFields' 		=> null, // TODO: deprecate in favor if 'columns'
+		'columns' 			=> null,
+		
+		'fetchingStrategy' 	=> null, // TODO: 
+	);
+	
 	// 
 	public $logs 		= array(
 		'built' 	=> array(),
 		'launched' 	=> array(),
 	);
+	
+	public function __construct(array $params)
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+//var_dump($params);
+		
+		$this->_resource 		= $params['_resource'];
+		$this->_resourcecolumns = $params['_resourcecolumns'];
+	}
 	
 	public function __call($method, $args)
     {
@@ -134,36 +166,239 @@ class Model extends Core
 		
 	}
 	
-	public function retrieve(){ $this->find(); }
+	public function create()
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
+	}
+	
+	//public function retrieve(){ $this->find(); }
 	public function find()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
 
 		$this->query();
 	}
 	
 	public function update()
 	{
-		
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();		
 	}
 	
 	public function delete()
 	{
-		
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
 	}
 	
 	public function createOrUpdate(){ $this->upsert(); }
 	public function upsert()
 	{
-		
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
+	}
+	
+	public function count()
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
+	}
+	public function distinct()
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+		$this->handleOptions();
 	}
 	
 	
-	public function select()
+	public function handleOptions()
 	{
-		$args = func_get_args();
+		# Handle Indexes
+		// Check that the passed index are existing columns
+		if 		( !empty($o['indexByUnique']) && !DataModel::isColumn($o['indexByUnique']) ) 	{ $o['indexByUnique'] 	= null; }
+		elseif 	( !empty($o['indexBy']) && !DataModel::isColumn($o['indexBy']) )				{ $o['indexBy'] 		= null; }
 		
+		# Handle orderBy
 		
+		# Handle conditions
+	}
+	
+	
+	
+	//public function fetchValue(){} 	// required????
+	//public function fetchValues(){} 	// required????
+	public function fetchCol()
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+	}
+	public function fetchCols()
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+	}
+	public function fetchRow()
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+	}
+	public function fetchRows()
+	{
+		$o 	= &$this->options;
+		
+//var_dump($this);
+				
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		$i = 0;
+		foreach($this->results as $row)
+		{
+//var_dump($row);			
+			$this->fixRow($row);
+			
+			if ( $o['indexByUnique'] && isset($row[$o['indexByUnique']]) )
+			{
+				$this->data[$o['indexByUnique']] = $row;
+			}
+			else if ( $o['indexBy'] && isset($row[$o['indexBy']]) )
+			{
+				$this->data[$o['indexBy']][] = $row;
+			}
+			else
+			{
+				$this->data[$i] = $row;	
+			}
+			
+			$i++;
+		}
+		 
+	}
+	
+	public function fixRow(&$row)
+	{
+		foreach($row as $column => $value)
+		{
+			$row[$column] = $this->fixColumn($column, $value);
+		}
+		
+		return $row;
+	}
+	
+	public function fixColumn($column, $value, array $params = array())
+	{
+		//$type 	= null;
+		$v 		= &$value;
+		
+//var_dump(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$column]['type']);
+$this->log(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$column]['type']);
+//$this->log(__METHOD__);
+		
+        switch($this->_resourcecolumns[$column]['type'])
+        {
+        	# Texts
+			case 'string':
+			case 'varchar':
+			case 'text':
+			case 'slug':
+			case 'tag':
+			case 'html':
+			case 'code':
+			case 'email':
+			case 'password':
+			case 'url':
+			case 'tel':
+			case 'color':
+			case 'meta':
+			case 'ip':
+			default:
+				$v = $v; break;
+			
+			# Numbers
+			case 'int':
+			case 'integer':
+			case 'smallint':
+			case 'num':
+			case 'number':
+			case 'tinyint':
+			case 'smallint':
+			case 'mediumint':
+			case 'bigint':
+				
+			case 'ai':
+			case 'serial':
+			case 'pk':
+			case 'primarykey':
+				
+			# Relations
+			case '1-1':
+			case 'onetoone':
+			case 'one2one':
+			case '121':
+			case '1to1':
+				$v = (int) $v; break;
+			
+			# Booleans
+			case 'bool':
+			case 'boolean';
+				$v = in_array($v, array(true,1,'1','true','t')) ? true : false; break;
+			
+			# Floats
+			case 'float':
+			case 'real':
+			case 'double':
+				$v = (float) $v;
+				
+			# Dates & times
+            case 'timestamp':
+//var_dump(is_numeric($v));
+            	$v = is_numeric($v) ? (int) $v : (int) DateTime::createFromFormat('Y-m-d H:i:s', $v, new DateTimeZone('UTC'))->format('U'); break;
+            //case 'datetime':
+            //case 'time':
+            //case 'year':
+            //case 'month':
+            //case 'day':
+            //case 'hours':
+            //case 'minutes':
+            //case 'seconds':
+			
+			# 
+			case 'set':
+				$v = !empty($v) ? explode(',', (string) $v) : array();
+            case 'enum':
+				$v = $v;
+				
+			/*
+            case 'onetomany':
+            case 'manytomany':
+            case 'onetomany':
+            
+            case 'file':
+            case 'fileduplicate':
+                    //$v = !empty($v) && !empty($p[$colProps]['destBaseURL']) && filter_var($v, FILTER_VALIDATE_URL) === false
+                            //? $p[$colProps]['destBaseURL'] . preg_replace('/^\/(.*)/','$1',$v)
+                            //: $v;
+            case 'image':
+            case 'video':
+            case 'sound':
+			 */
+        }
+        
+        return $v;
 	}
 }
 

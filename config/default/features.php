@@ -25,14 +25,14 @@ define('_APP_OWNER_URL', 						_URL);
 
 
 ### TEMPLATES ###	
-define('_APP_TEMPLATES_ENGINE', 				'Smarty'); 					// Smarty, Twig or Haanga (case sensitive)
-define('_APP_TEMPLATES_EXTENSION', 				'tpl'); 					//
-//define('_APP_TEMPLATES_ENGINE', 				'Twig'); 					// Smarty, Twig or Haanga (case sensitive)
-//define('_APP_TEMPLATES_EXTENSION', 				'twig.tpl'); 			//
-define("_APP_TEMPLATES_COMPILE_CHECK", 			false);	
-define("_APP_TEMPLATES_FORCE_COMPILE", 			false);	
-define("_APP_TEMPLATES_CACHING", 				false);	
-define("_APP_TEMPLATES_CACHE_LIFETIME", 		3600); // in seconds 	
+define('_TEMPLATES_ENGINE', 					'Smarty'); 					// Smarty, Twig or Haanga (case sensitive)
+define('_TEMPLATES_EXTENSION', 					'tpl'); 					//
+//define('_TEMPLATES_ENGINE', 					'Twig'); 					// Smarty, Twig or Haanga (case sensitive)
+//define('_TEMPLATES_EXTENSION', 				'twig.tpl'); 				//
+define("_TEMPLATES_COMPILE_CHECK", 				false);
+define("_TEMPLATES_FORCE_COMPILE", 				false);
+define("_TEMPLATES_CACHING", 					false);
+define("_TEMPLATES_CACHE_LIFETIME", 			3600); // in seconds
 
 
 ### ACCOUNT & SESSIONS HANDLING ###	
@@ -51,10 +51,9 @@ define('_APP_IP_WHITELIST', 					''); 						// CSV list of IP adresses than coul
 
 
 ### DEV / DEBUG ###		
-define('_APP_USE_FIREPHP_LOGGING',      		true); 						// experimental. In local & dev environment, use FirePHP server lib to log data (using $this->dump()) into Firefox console (require related extension).
-define('_APP_USE_CHROMEPHP_LOGGING',      		true); 						// experimental. In local & dev environment, use ChromePHP server lib to log data (using $this->dump()) into Chrome console (require related extension).
-define("_ALLOW_FIREPHP_LOGGING", 				false);		
-define('_APP_USE_EVENTS',                       true);          			// Disable this if you do not need to use events 
+define('_USE_FIREPHP_LOGGING',      			true); 						// experimental. In local & dev environment, use FirePHP server lib to log data (using $this->dump()) into Firefox console (require related extension).
+define('_USE_CHROMEPHP_LOGGING',      			true); 						// experimental. In local & dev environment, use ChromePHP server lib to log data (using $this->dump()) into Chrome console (require related extension).		
+define('_USE_EVENTS',                       	true);          			// Disable this if you do not need to use events 
 define('_APP_USE_SQL_TYPEFIXING',               false);         			// experimental.
 define('_APP_USE_ONFETCH_TYPEFIXING', 			true);          			// experimental.
 define('_APP_TYPEFIX_ONETOONE_GETFIELDS',       true);          			// experimental.
@@ -75,12 +74,18 @@ define('_APP_USE_RESOURCESGROUPS',              true);          			// experiment
 ### MISC SNIFFING, FEATURES DETECTION ###		
 define('_SNIFF_PLATFORM', 						true); 						// Disable this if you don't want to try getting the platform data (prevent unnecessary processing)
 define('_SNIFF_BROWSER', 						true); 						// Disable this if you don't want to try getting the browser data (prevent unnecessary processing)
-define('_USE_MODERNIZR', 						true); 					// If allowed, the js lib Modernizr will be added to detect user browser capabilities adding subsenquent classes to the <HTML> tag
+define('_USE_MODERNIZR', 						true); 						// If allowed, the js lib Modernizr will be added to detect user browser capabilities adding subsenquent classes to the <HTML> tag
+
+
+
+### LANGUAGES & INTERNATIONALISATION ###
+define('_LANGUAGES_SYSTEM', 					'db'); 						// 'db' (database + gettext), 'po' (.po files + gettext), 'php'
+define('_DEFAULT_LANGUAGE', 					'fr_FR'); 					// or en_US, en_GB, de_DE, es_EN, it_IT, ja_JP, zh_CN, ko_KR
+define('_LANGUAGES', 							'fr_FR'); 					// List of languages availables for the app, separated by comas
+
 
 
 ### HTML & METAS ###			
-define('_APP_DEFAULT_LANGUAGE', 				'fr_FR'); 					// or en_US, en_GB, de_DE, es_EN, it_IT, ja_JP, zh_CN, ko_KR
-define('_APP_LANGUAGES', 						'fr_FR'); 					// List of languages (translatations) for the app, separated by comas
 define('_APP_DOCTYPE', 							'html5');					// 'html5', 'xhtml-strict-1.1', 'xhtml-strict', 'xhtml-transitional', 
 define('_APP_DEFAULT_OUTPUT_FORMAT', 			'html');					// Is there case where it won't be html?
 define('_APP_DEFAULT_OUTPUT_MIME', 				'text/html');				// 

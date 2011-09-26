@@ -38,14 +38,14 @@ class Controller extends Core implements ControllerInterface
 		{
 			//$this->request->resource = $this->request->controller->rawName;
 			$this->request->resource 	= $_r['name'];
-			$this->_resource 			= $_r;
+			$this->_resource 			= new ArrayObject($_r, 2);
 		};
 		
 //var_dump($this->_resource);
 		
-		//$this->_resources 	= &$_resources;
-		//$this->_columns 	= &$_columns;
-		//$this->_groups 		= &$_groups;
+		$this->_resources 	= &$_resources;
+		$this->_columns 	= &$_columns;
+		$this->_groups 		= &$_groups;
 	}
 	
 	public function initView()
@@ -66,12 +66,24 @@ class Controller extends Core implements ControllerInterface
 //var_dump($this->_resource['name']);
 		
 		// Load Model
-		if 		( _DB_DRIVER === 'pdo' ) 	{ $mName = 'pdoModel'; }
-		else if ( _DB_DRIVER === 'mysqli' ) { $mName = 'mysqliModel'; }
-		else 								{ $mName = _DB_SYSTEM . 'Model'; }
+		switch(_DB_DRIVER)
+		{
+			case 'default':
+			case 'pdo':
+				$mName = 'pdoModel'; break;
+			case 'mysqli':
+				$mName = 'mysqliModel'; break;
+			default:
+				$mName = _DB_SYSTEM . 'Model'; break;
+		}
+		
+		$params = array(
+			'_resource' 		=> $this->_resource,
+			'_resourcecolumns' 	=> $this->_columns[$this->_resource['name']],
+		);
 		
 		$this->requireLibs($mName, 'databases/');
-		$this->{$this->_resource['plural']} = new $mName();
+		$this->{$this->_resource['plural']} = new $mName($params);
 		
 //var_dump($this->{$this->_resource['plural']});
 	}
@@ -243,7 +255,7 @@ class Controller extends Core implements ControllerInterface
 		// Merge some default properties with user defined ones 
 		$this->view = new ArrayObject(array_merge(array(
 			// Caching
-			'cache' 					=> _APP_TEMPLATES_CACHING,
+			'cache' 					=> _TEMPLATES_CACHING,
 			'cacheId' 					=> null,
 			'cacheLifetime' 			=> null,
 			
@@ -336,14 +348,14 @@ class Controller extends Core implements ControllerInterface
 
 	public function getViewLayout()
 	{
-		$this->view['layout'] = !empty($this->view['layout']) ? $this->view['layout'] : 'yours/layouts/page.' . _APP_TEMPLATES_EXTENSION;	
+		$this->view['layout'] = !empty($this->view['layout']) ? $this->view['layout'] : 'yours/layouts/page.' . _TEMPLATES_EXTENSION;	
 	}
 	
 	public function getViewTemplate()
 	{
 		$this->view->template = !empty($this->view['template']) ? !empty($this->view['template']) : 'yours/pages/' 
 			. ( $this->request->_magic['classes'] ? join('/', $this->request->_magic['classes']) . '/' : '' )
-			. $this->request->controller->calledMethod . '.' . _APP_TEMPLATES_EXTENSION;
+			. $this->request->controller->calledMethod . '.' . _TEMPLATES_EXTENSION;
 	}
 	
 	public function getViewName()
@@ -463,7 +475,7 @@ class Controller extends Core implements ControllerInterface
 	
 	public function initTemplate()
 	{		
-		switch ( _APP_TEMPLATES_ENGINE )
+		switch ( _TEMPLATES_ENGINE )
 		{
 			case 'Haanga':
 				
@@ -490,7 +502,7 @@ class Controller extends Core implements ControllerInterface
 					'charset' 				=> 'utf-8',
 					'base_template_class' 	=> 'Twig_Template',
 					'cache' 				=> _PATH_TEMPLATES_PRECOMPILED,
-					'auto_reload' 			=> _APP_TEMPLATES_FORCE_COMPILE,
+					'auto_reload' 			=> _TEMPLATES_FORCE_COMPILE,
 					'strict_variables' 		=> false,
 					'autoescape' 			=> true,
 					'optimizations' 		=> -1,
@@ -507,10 +519,10 @@ class Controller extends Core implements ControllerInterface
 				
 				// Instanciate a Smarty object and configure it
 				$this->Template 						= new Smarty();
-				$this->Template->compile_check 			= _APP_TEMPLATES_COMPILE_CHECK;
-				$this->Template->force_compile 			= _APP_TEMPLATES_FORCE_COMPILE;
-				$this->Template->caching 				= isset($this->view['cache']) 			? $this->view['cache'] : _APP_TEMPLATES_CACHING;
-				$this->Template->cache_lifetime 		= isset($this->view['cacheLifetime']) 	? $this->view['cache'] : _APP_TEMPLATES_CACHE_LIFETIME;
+				$this->Template->compile_check 			= _TEMPLATES_COMPILE_CHECK;
+				$this->Template->force_compile 			= _TEMPLATES_FORCE_COMPILE;
+				$this->Template->caching 				= isset($this->view['cache']) 			? $this->view['cache'] : _TEMPLATES_CACHING;
+				$this->Template->cache_lifetime 		= isset($this->view['cacheLifetime']) 	? $this->view['cache'] : _TEMPLATES_CACHE_LIFETIME;
 				$this->Template->template_dir 			= _PATH_TEMPLATES;
 				$this->Template->compile_dir 			= _PATH_TEMPLATES_PRECOMPILED;
 				$this->Template->cache_dir 				= _PATH_TEMPLATES_CACHE;
@@ -538,7 +550,7 @@ class Controller extends Core implements ControllerInterface
 	public function renderTemplate()
 	{
 		// Pass variables to the template & render it
-		switch ( _APP_TEMPLATES_ENGINE )
+		switch ( _TEMPLATES_ENGINE )
 		{
 			case 'Haanga':
 				Haanga::Load($this->view['template'], $this->templateData);

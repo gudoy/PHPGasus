@@ -29,5 +29,4 @@
 </header>
 {/block}
 
-
 {block name='mainColFooter'}{include file='default/blocks/mainCol/mainColFooterAdmin.tpl'}{/block}
