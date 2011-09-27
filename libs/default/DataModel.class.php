@@ -4,9 +4,9 @@
 
 class DataModel
 {
-	//static $resources 						= array();
-	//static $groups 							= array();
-	//static $columns 						= array();
+	public static $resources 	= array();
+	public static $groups 		= array();
+	public static $columns 		= array();
 	
 	// TODO: $propName => array('default' => null|[true|false]|{$value}, 'comment' => null, 'deprecated' => true|false)
 	static $resourceProperties 				= array(
@@ -285,34 +285,42 @@ class DataModel
 	}
 	
 	// Merge order: database, dataModel (generated), dataModel (manual)
-	public function parseResources()
+	public function parseResources(array $params = array())
 	{
+		$p = array_merge(array(
+			'from' 		=> _PATH_CONF . 'yours/dataModel/resources.php',
+			'varname' 	=> '_resources',
+		), $params);
+		
 		// Get resources from dataModel
-		require(_PATH_CONF . 'dataModel.php');
+		require($p['from']);
 		
 		// Get unregistered resources from database
 		// TODO
 		
 		// Get registered resources from database
-		$dbResources = CResources::getInstance()->index(array('reindexby' => 'name', 'isUnique' => 1));
+		//$dbResources = CResources::getInstance()->index(array('reindexby' => 'name', 'isUnique' => 1));
+		$dbResources 	= array();
 		
 		// Merge both
-		self::$resources = array_merge($resources, $dbResources);
+		$tmpResources = array_merge($$p['varname'], $dbResources);
 		
 		// Loop over the resources
-		foreach ( self::$resources as $name => &$res )
+		foreach ( $tmpResources as $name => &$res )
 		{
-			$res = array_merge($res,array(
-				'name' 				=> $name,
+			$realName = Tools::slug(preg_replace('/[\+\s\_]/', '', $name));
+			
+			self::$resources[$realName] = array(
+				'name' 				=> $realName,
+				'displayName' 		=> !empty($res['displayName']) ? $res['displayName'] : $name,
+				
 				'type' 				=> !empty($res['type']) ? $res['type'] : $this->guessResourceType($name),
 				'singular' 			=> !empty($res['singular']) ? $res['singular'] : Tools::singular($name),
-				'plural' 			=> !empty($res['plural']) ? $res['plural'] : $name,
-			));
-			$res = array_merge($res,array(
-				// TODO
-				'database' 			=> 'default',
-				'table' 			=> !empty($res['table']) ? $res['table'] : self::getDbTableName($name),
-				'alias' 			=> !empty($res['alias']) ? $res['alias'] : self::getDbTableName($name),
+				'plural' 			=> !empty($res['plural']) ? $res['plural'] : $realName,
+				
+				'database' 			=> !empty($res['database']) ? $res['database'] : 'default',
+				'table' 			=> !empty($res['table']) ? $res['table'] : self::getDbTableName($realName),
+				'alias' 			=> !empty($res['alias']) ? $res['alias'] : self::getDbTableAlias($realName),
 				'displayName' 		=> !empty($res['displayName']) ? $res['displayName'] : $name,
 				'defaultNameField' 	=> !empty($res['defaultNameField']) ? $res['defaultNameField'] : self::guessNameField($name),
 				'nameField' 		=> !empty($res['nameField']) ? $res['nameField'] : self::guessNameField($name),
@@ -320,13 +328,15 @@ class DataModel
 				'searchable' 		=> !empty($res['searchable']) ? $res['searchable'] : 0,
 				'exposed' 			=> !empty($res['exposed']) ? $res['exposed'] : 0,
 				'crudability' 		=> !empty($res['crudability']) ? $res['crudability'] : 'CRUD',
-			));
+			);
 
 			ksort($res);
 		}
 
 		// Sort resources by alphabetical order
-		sort(self::$resources);
+		asort(self::$resources);
+		
+var_dump(self::$resources);
 	}
 	
 	public function parseGroups()
@@ -714,9 +724,15 @@ class DataModel
 	static function isResource($string)
 	{
 		global $_resources;
+
+//var_dump(__METHOD__);		
+//var_dump($string);
+//var_dump($_resources);
+//die();
 		
 		//return !empty(self::$resources[$string]);
-		return !empty($_resources[(string) $string]);
+		//return !empty($_resources[(string) $string]);
+		return !empty($_resources['items'][(string) $string]);
 	}
 	
 	// Search for a mispelled resource
@@ -732,7 +748,8 @@ class DataModel
 	{
 		global $_resources;
 		
-		return self::isResource($string) ? $_resources[$string] : false;
+		//return self::isResource($string) ? $_resources[$string] : false;
+		return self::isResource($string) ? $_resources['items'][$string] : false;
 	}
 	
 	static function resources()
@@ -749,7 +766,8 @@ class DataModel
 		global $_columns;
 		
 		//return !empty(self::$columns[$resource][$string]);
-		return !empty($_columns[$resource][$string]);
+		//return !empty($_columns[$resource][$string]);
+		return !empty($_columns['items'][$resource][$string]);
 	}
 	
 	// Returns the singular of a resource
@@ -792,6 +810,60 @@ class DataModel
 		}
 		
 		return $tableName;
+	}
+	
+	
+	static function getDbTableAlias($resource)
+	{
+		$tableAlias = null;
+		
+var_dump(__METHOD__);
+var_dump($resource);
+var_dump(self::isResource($resource));
+//die();
+		
+		// If the resource is not found
+		if ( !self::isResource($resource) ) { return $tableAlias; }
+		
+		// Shortcut to resource properties
+		$rProps = &$_resources['items'][$resource];
+		
+var_dump($rProps);
+		
+		// For relation resources, create names like '{$resource1}_{$resource2}' 
+		//if ( self::$resources[$resource]['type'] === 'relation' )
+		
+		
+		if ( $rProps['type'] === 'relation' )
+		{
+			// TODO: get related tables alias and concatenates them
+		}
+		else
+		{
+			$tableAlias = '';
+			
+			// Get display name
+			$dName = !empty($rProps['displayName']) ? $rProps['displayName'] : $rProps['name'];
+			
+var_dump($dName);
+			
+			// Split on spaces
+			$parts = explode(' ', $dName);
+			
+			// Foreach part
+			foreach($parts as $parts)
+			{
+				$cons = Tools::consonants($parts);
+				$tableAlias .= substr($cons, 0, 4);
+			}
+		}
+		
+var_dump($tableAlias);
+die();
+		
+		// TODO: check to the alias is not already in use
+		
+		return $tableAlias;
 	}
 	
 	

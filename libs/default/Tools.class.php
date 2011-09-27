@@ -1,8 +1,7 @@
 <?php
 
 class Tools
-{
-    
+{    
     static function deaccentize($str)
     {
         $charsTable = array(
@@ -118,7 +117,7 @@ class Tools
     }
     
     
-    static function strtolower_utf8($string)
+    static function strtolower_utf8($str)
     {
         $to = array(
             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u",
@@ -135,20 +134,20 @@ class Tools
             "Ь", "Э", "Ю", "Я"
         );
         
-        return str_replace($from, $to, $string); 
+        return str_replace($from, $to, $str);
     }
-
-
-	static function consonants($string)
+	
+	// Remove consonants from a string
+	static function vowels($str)
 	{
-		return str_replace(
-			array('a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U'),
-			'',
-			//Tools::deaccentize($string)
-			$string
-		);
+		return preg_replace('/[bcdfghjklnpqrstvwwxyz]/gi', '');
 	}
-    
+
+	// Remove vowels from a string
+	static function consonants($str)
+	{
+		return str_replace(array('a','e','i','o','u','A','E','I','O','U'), '', $str);
+	}
     
     static function toArray($value)
     {
