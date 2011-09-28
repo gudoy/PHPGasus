@@ -465,10 +465,10 @@ class Request
 			$tmp = substr($url, $pos);
 			
 			// Get end position of the param value
-			if 		( strpos($tmp, "&amp;") !== false ) { $end_pos = strpos($tmp, "&amp;"); } // case where there are others params after, separated by a "&amp;"
-			else if ( strpos($tmp, "&") !== false ) 	{ $end_pos = strpos($tmp, "&"); } // case where there are others params after, separated by a "&"
-			else if ( strpos($tmp, "#") !== false ) 	{ $end_pos = strpos($tmp, "#"); } // case where there are others params after, separated by a "#"
-			else 										{ $end_pos = strlen($tmp); } // case where there are no others params after
+			if 		( strpos($tmp, "&amp;") !== false ) { $end_pos = strpos($tmp, "&amp;"); } 	// case where there are others params after, separated by a "&amp;"
+			else if ( strpos($tmp, "&") !== false ) 	{ $end_pos = strpos($tmp, "&"); } 		// case where there are others params after, separated by a "&"
+			else if ( strpos($tmp, "#") !== false ) 	{ $end_pos = strpos($tmp, "#"); } 		// case where there are others params after, separated by a "#"
+			else 										{ $end_pos = strlen($tmp); } 			// case where there are no others params after
 			
 			// Truncate the string from 0 to the end of the param value
 			return substr($tmp, strlen($param) + 1, $end_pos);
