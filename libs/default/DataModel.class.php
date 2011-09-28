@@ -34,8 +34,8 @@ class DataModel
 		'searchable', 'crudability', 'exposed',
 		
 		# Generated
-		'exposedColumns', 						// array of column names (default = empty) 
-		'searchableColumns', 					// array of column names (default = empty)
+		'_exposedColumns', 						// array of column names (default = empty) 
+		'_searchableColumns', 					// array of column names (default = empty)
 	);
 	
 	static $columnTypes = array(
@@ -280,20 +280,32 @@ class DataModel
 	public function parse()
 	{
 		$this->parseResources();
-		$this->parseGroups();
-		$this->parseColumns();
+		//$this->parseGroups();
+		//$this->parseColumns();
 	}
 	
 	// Merge order: database, dataModel (generated), dataModel (manual)
 	public function parseResources(array $params = array())
 	{
 		$p = array_merge(array(
-			'from' 		=> _PATH_CONF . 'yours/dataModel/resources.php',
+			'from' 		=> array(
+				_PATH_CONF . 'default/dataModel/resources.php',
+				_PATH_CONF . 'yours/dataModel/resources.php',
+			),
 			'varname' 	=> '_resources',
 		), $params);
 		
-		// Get resources from dataModel
-		require($p['from']);
+		$tmpResources = array();
+		
+		// Loop over passed resources files
+		foreach(Tools::toArray($p['from']) as $item)
+		{
+			// Load the current file
+			require($item);
+			
+			// Merge its resources into the temp resources array
+			$tmpResources = array_merge($tmpResources, $$p['varname']);
+		}
 		
 		// Get unregistered resources from database
 		// TODO
@@ -302,8 +314,8 @@ class DataModel
 		//$dbResources = CResources::getInstance()->index(array('reindexby' => 'name', 'isUnique' => 1));
 		$dbResources 	= array();
 		
-		// Merge both
-		$tmpResources = array_merge($$p['varname'], $dbResources);
+		// Merge the database resources into the temp resources array
+		$tmpResources = array_merge($tmpResources, $dbResources);
 		
 		// Loop over the resources
 		foreach ( $tmpResources as $name => &$res )
@@ -322,8 +334,7 @@ class DataModel
 				'table' 			=> !empty($res['table']) ? $res['table'] : self::getDbTableName($realName),
 				'alias' 			=> !empty($res['alias']) ? $res['alias'] : self::getDbTableAlias($realName),
 				'displayName' 		=> !empty($res['displayName']) ? $res['displayName'] : $name,
-				'defaultNameField' 	=> !empty($res['defaultNameField']) ? $res['defaultNameField'] : self::guessNameField($name),
-				'nameField' 		=> !empty($res['nameField']) ? $res['nameField'] : self::guessNameField($name),
+				'nameField' 		=> !empty($res['nameField']) ? $res['nameField'] : ( !empty($res['defaultNameField']) ? $res['defaultNameField'] : self::guessNameField($name) ),
 				'extends' 			=> !empty($res['extends']) ? $res['extends'] : null,
 				'searchable' 		=> !empty($res['searchable']) ? $res['searchable'] : 0,
 				'exposed' 			=> !empty($res['exposed']) ? $res['exposed'] : 0,
@@ -498,7 +509,8 @@ var_dump(self::$resources);
 			
 			// Get resource DB columns data using proper query  
 			$query 		= "DESCRIBE " . $resource['table'] . ";"; 
-			$dbColumns 	= CResourcescolumns::getInstance()->index(array('manualQuery' => $query));
+			//$dbColumns 	= CResourcescolumns::getInstance()->index(array('manualQuery' => $query));
+$dbColumns = array();
 			
 			// Do no continue if the table does not exists in DB	
 			//if ( empty($dbColumns) ){ die($rName); }
@@ -531,11 +543,16 @@ var_dump(self::$resources);
 
 	public function parseManualDataModelColumns()
 	{
-		// Get resources from dataModel
-		require(_PATH_CONF . 'dataModel.php');
+		// Get default resources' columns
+		require(_PATH_CONF . 'default/dataModel/columns.php');
+		$defColumns 	= $_columns;
 		
-		// Init manual dataModel columns to an empty array
-		$manualCols = array();
+		// Get yours resources' columns 
+		require(_PATH_CONF . 'yours/dataModel/columns.php');
+		$yoursColumns 	= $_columns;
+		
+		// Merge them
+		$tmpColumns = array_merge($defColumns, $yoursColumns);
 		
 		// If the the dataModel manuel file is defined, and is an array, take it
 		if ( is_array($dataModel) ){ $manualCols = &$dataModel; }
@@ -815,55 +832,75 @@ var_dump(self::$resources);
 	
 	static function getDbTableAlias($resource)
 	{
-		$tableAlias = null;
-		
-var_dump(__METHOD__);
-var_dump($resource);
-var_dump(self::isResource($resource));
-//die();
+		$alias = null;
 		
 		// If the resource is not found
 		if ( !self::isResource($resource) ) { return $tableAlias; }
 		
 		// Shortcut to resource properties
-		$rProps = &$_resources['items'][$resource];
-		
-var_dump($rProps);
+		//$rProps = &$_resources['items'][$resource];
+		$rProps = self::resource($resource);
 		
 		// For relation resources, create names like '{$resource1}_{$resource2}' 
 		//if ( self::$resources[$resource]['type'] === 'relation' )
 		
+		// admin logs 		=> admlog 		(compouned word ==> concat both aliases)
+		// bans 			=> ban 			(> singular 4 chars ==> |singular)
+		// groups 			=> grp|gp 		(default? ==> |singular|consonants)
+		// users 			=> usr 			(default? ==> |singular|consonants)
+		// sessions 		=> sess 		((|singular|consonants).match(/^([bcdfghjklnpqrstvwwxyz]{1}\1)/) ==> |substr(0,4))
+		// resources 		=> ress
+		// users groups 	=> usrgp 		(compouned word ==> concat both aliases)
+		// tasks 			=> task 		(default? ==> |singular|consonants)
 		
-		if ( $rProps['type'] === 'relation' )
+		// products 		=> prod|prdc
+		// medias 			=> med|media
+		// applications 	=> app|applctn
+		// platforms 		=> plat|pltfrm
+		
+		// Possible rules
+		// - 2 first consonants are equals
+		
+		// Possible values
+		// - contatenation of the aliases of all words
+		// - singular without vowels
+		$sing 	= $rProps['singular'];
+		$dName 	= $rProps['displayName'];
+
+		// The resource is relation table
+		// or 
+		// it's name is a compound word
+		if ( $rProps['type'] === 'relation' || preg_match('/\s+/', $dName) )
 		{
-			// TODO: get related tables alias and concatenates them
-		}
-		else
-		{
-			$tableAlias = '';
-			
-			// Get display name
-			$dName = !empty($rProps['displayName']) ? $rProps['displayName'] : $rProps['name'];
-			
-var_dump($dName);
-			
-			// Split on spaces
-			$parts = explode(' ', $dName);
-			
 			// Foreach part
-			foreach($parts as $parts)
+			foreach(explode(' ', Tools::singular($dName)) as $part)
 			{
-				$cons = Tools::consonants($parts);
-				$tableAlias .= substr($cons, 0, 4);
+				if ( preg_match('/[aeiou]/', $part[0]) )
+				{
+					$alias .= substr($part[0] . Tools::consonants($part), 0, 3);
+				}
+				else
+				{
+					$alias .= substr(Tools::consonants($part), 0, 3);	
+				}
 			}
 		}
+		// Singular is < 4 chars
+		// or
+		// Vowels free string starts by 2 identic chars
+		elseif ( strlen($sing) <= 4 || preg_match('/([bcdfghjklmnpqrstvwxyz]){1}\1/', Tools::consonants($sing)) )
+		 {
+		 	$alias = substr($sing, 0, 4);
+		 }
+		// Otherwise, fallback simply removing the vowels & trimming to 5 cars
+		else 											{ $alias = substr(Tools::consonants($sing), 0, 5); }
 		
-var_dump($tableAlias);
-die();
+//var_dump($alias);
+//die();
 		
 		// TODO: check to the alias is not already in use
 		
-		return $tableAlias;
+		return $alias;
 	}
 	
 	
@@ -983,6 +1020,8 @@ die();
 
 	static function getColumnType($resource, $column)
 	{
+var_dump(__METHOD__);
+		
 		return $_columns[$resource][$column]['type'];
 	}
 }
