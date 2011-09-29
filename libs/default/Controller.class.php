@@ -16,36 +16,59 @@ class Controller extends Core implements ControllerInterface
 	
 	public $success 	= null;
 	
+	private static $_instance;
+	
 	public function __construct($Request)
 	{		
-		$this->request = &$Request;
+		//$this->request = &$Request;
+		$this->request = $Request;
 		
 		parent::__construct();
 		
 		$this->initDataModel();
 		$this->initView();
-		$this->initModel();
+		//$this->initModel();
+	}
+	
+	
+	public function __get($prop)
+	{
+		# Auto-instanciation of models
+		
+		// Do not continue if we are not handling an existing resource
+		if ( !DataModel::isResource($prop) ){ return; }
+		
+		// Load Model
+		switch(_DB_DRIVER)
+		{
+			case 'default':
+			case 'pdo': 		$mName = 'pdoModel'; break;
+			case 'mysqli': 		$mName = 'mysqliModel'; break;
+			default: 			$mName = _DB_SYSTEM . 'Model'; break;
+		}
+		
+		$this->requireLibs($mName, 'databases/');
+		$this->{$this->_resource['plural']} = new $mName(array('_resource' => $prop));
+	}
+	
+	
+	public static function getInstance()
+	{
+		if ( !(self::$_instance instanceof self) ) { self::$_instance = new self(); } 
+		
+		return self::$_instance;
 	}
 	
 	public function initDataModel()
 	{
-		//$this->dataModel = new DataModel();
 		( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
 
 		// Check if the called controller is an existing resource
-		//if ( ($rName = DataModel::isResource($this->request->controller->rawName)) && $rName )
 		if ( ($_r = DataModel::resource($this->request->controller->rawName)) && $_r )
 		{
-			//$this->request->resource = $this->request->controller->rawName;
 			$this->request->resource 	= $_r['name'];
 			$this->_resource 			= new ArrayObject($_r, 2);
-		};
-		
-//var_dump($this->_resource);
-		
-		$this->_resources 	= &$_resources;
-		$this->_columns 	= &$_columns;
-		$this->_groups 		= &$_groups;
+		}; 
 	}
 	
 	public function initView()
@@ -56,36 +79,6 @@ class Controller extends Core implements ControllerInterface
 	
 	public function initModel()
 	{
-
-		
-		// Do not continue if we are not handling an existing resource
-		//if ( empty($this->request->resource) ){ return; }
-		if ( !$this->_resource ){ return; }
-		
-//var_dump($this->_resource);
-//var_dump($this->_resource['name']);
-		
-		// Load Model
-		switch(_DB_DRIVER)
-		{
-			case 'default':
-			case 'pdo':
-				$mName = 'pdoModel'; break;
-			case 'mysqli':
-				$mName = 'mysqliModel'; break;
-			default:
-				$mName = _DB_SYSTEM . 'Model'; break;
-		}
-		
-		$params = array(
-			'_resource' 		=> $this->_resource,
-			'_resourcecolumns' 	=> $this->_columns[$this->_resource['name']],
-		);
-		
-		$this->requireLibs($mName, 'databases/');
-		$this->{$this->_resource['plural']} = new $mName($params);
-		
-//var_dump($this->{$this->_resource['plural']});
 	}
 	
 	public function dispatchMethod()
@@ -200,7 +193,6 @@ class Controller extends Core implements ControllerInterface
 			$multiValue = true;
 		
 			// Split on ','	
-			
 		}			
 	}
 	

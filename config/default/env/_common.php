@@ -61,6 +61,9 @@ function __autoload($className)
 	$path 		= constant('_PATH_' . strtoupper($type  . 's')); 					// Get class type base path
 	$file 		= $path . $className . '.class.php'; 								// Get class filepath
 	
+//var_dump($className);
+//var_dump($file);
+	
 	class_exists($className) || (file_exists($file) && require($file));
 }
 spl_autoload_register('__autoload');

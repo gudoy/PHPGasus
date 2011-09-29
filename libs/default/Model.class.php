@@ -39,14 +39,20 @@ class Model extends Core
 		'launched' 	=> array(),
 	);
 	
-	public function __construct(array $params)
+	public function __construct(array $params = array())
 	{
 //var_dump(__METHOD__);
-$this->log(__METHOD__);
-//var_dump($params);
+//$this->log(__METHOD__);
+//die();
+		$p = &$params;
+
+		//if ( !($this->_resource = DataModel::resource($params['_resource']))) { return false; }
+		if ( !DataModel::isResource($p['_resource']) ){ return false; }
 		
-		$this->_resource 		= $params['_resource'];
-		$this->_resourcecolumns = $params['_resourcecolumns'];
+		$this->_resource = new ArrayObject(DataModel::resource($p['_resource'], 2));
+		
+		// Shortcut to current resource columns
+		$this->_resourcecolumns = DataModel::columns($this->_resource->name);
 	}
 	
 	public function __call($method, $args)

@@ -30,8 +30,8 @@ $_resources = array(
 ));
 
 $_columns = array(
-'items' => array(
-	'resources' => array(
+'resources' => array(
+	'items' => array(
 		'id' 					=> array('type' => 'pk'),
 		'table'                 => array('type' => 'varchar', 'length' => 32),
 		'name' 					=> array('type' => 'slug', 'from' => 'table', 'length' => 32),
@@ -45,7 +45,11 @@ $_columns = array(
 		'creation_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
 		'update_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
 	),
-	'users' => array(
+	'_exposed' 		=> array(),
+	'_searchable' 	=> array(),
+),
+'users' => array(
+	'items' => array(
 		'id' 					=> array('type' => 'pk'),
 		'email' 				=> array('type' => 'email'),
 		'password' 				=> array('type' => 'password', 'hash' => 'sha1', 'length' => 64, 'exposed' => 0),
@@ -58,7 +62,11 @@ $_columns = array(
 		'creation_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
 		'update_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
 	),
-	'sessions' => array(
+	'_exposed' 		=> array(),
+	'_searchable' 	=> array(),
+),
+'sessions' => array(
+	'items' => array(
 		'id' 					=> array('type' => 'pk'),
 		'name' 					=> array('type' => 'varchar', 'length' => 32),
 		'user_id' 				=> array('type' => 'onetoone'),
@@ -67,6 +75,10 @@ $_columns = array(
 		'last_url' 				=> array('type' => 'url'),
 		'creation_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
 		'update_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
-)));
+	),
+	'_exposed' 		=> array(),
+	'_searchable' 	=> array(),
+),
+);
 
 ?>

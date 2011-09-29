@@ -282,72 +282,104 @@ class DataModel
 		$this->parseResources();
 		//$this->parseGroups();
 		//$this->parseColumns();
+		
+var_dump(self::$resources);
 	}
 	
 	// Merge order: database, dataModel (generated), dataModel (manual)
 	public function parseResources(array $params = array())
 	{
 		$p = array_merge(array(
-			'from' 		=> array(
+			'from' 			=> array(
 				_PATH_CONF . 'default/dataModel/resources.php',
 				_PATH_CONF . 'yours/dataModel/resources.php',
 			),
-			'varname' 	=> '_resources',
+			'varname' 		=> '_resources',
+			'checkDatabase' => true,
 		), $params);
 		
-		$tmpResources = array();
+		$tmpRes = array();
 		
 		// Loop over passed resources files
 		foreach(Tools::toArray($p['from']) as $item)
 		{
-			// Load the current file
-			require($item);
+			// Do not continue is the file could not be loaded
+			if ( is_file($item) && require($item) ){ continue; }
 			
-			// Merge its resources into the temp resources array
-			$tmpResources = array_merge($tmpResources, $$p['varname']);
+//var_dump(${$p['varname']});
+			
+			// Merge its resources into a temp resources array
+			$tmpRes = array_merge($tmpRes, ${$p['varname']});
 		}
 		
 		// Get unregistered resources from database
 		// TODO
 		
 		// Get registered resources from database
-		//$dbResources = CResources::getInstance()->index(array('reindexby' => 'name', 'isUnique' => 1));
-		$dbResources 	= array();
+		if ( $p['checkDatabase'] )
+		{
+			//$Resources = new Model($params)
+			
+			//$dbResources = CResources::getInstance()->find();
+			//$dbResources = MResources::getInstance()->find();
+			//$dbResources = MResources->find();
+			//$dbResources = Resources::getInstance()->find();
+			//$dbResources = $this->resources->find();
+			$dbResources = $this->resources->find();
+			//$dbResources 	= array();	
+		}
 		
 		// Merge the database resources into the temp resources array
-		$tmpResources = array_merge($tmpResources, $dbResources);
+		$tmpRes = array_merge($tmpRes, $dbResources);
+		
+		// Init final resources
+		self::$resources = array(
+			'items' 		=> array(),
+			'_aliases' 		=> array(),
+			'_searchable' 	=> array(),
+			'_exposed' 		=> array(),
+		);
 		
 		// Loop over the resources
-		foreach ( $tmpResources as $name => &$res )
+		foreach ( $tmpRes as $name => &$res )
 		{
-			$realName = Tools::slug(preg_replace('/[\+\s\_]/', '', $name));
+			$realName 	= Tools::slug(preg_replace('/[\+\s\_]/', '', $name));
+			$searchable = !empty($res['searchable']) ? $res['searchable'] : 0;
+			$exposed 	= !empty($res['exposed']) ? $res['exposed'] : 0;
+			$alias 		= !empty($res['alias']) ? $res['alias'] : self::getDbTableAlias($realName);
 			
-			self::$resources[$realName] = array(
+			self::$resources['items'][$realName] = array(
 				'name' 				=> $realName,
 				'displayName' 		=> !empty($res['displayName']) ? $res['displayName'] : $name,
-				
 				'type' 				=> !empty($res['type']) ? $res['type'] : $this->guessResourceType($name),
 				'singular' 			=> !empty($res['singular']) ? $res['singular'] : Tools::singular($name),
 				'plural' 			=> !empty($res['plural']) ? $res['plural'] : $realName,
-				
 				'database' 			=> !empty($res['database']) ? $res['database'] : 'default',
 				'table' 			=> !empty($res['table']) ? $res['table'] : self::getDbTableName($realName),
-				'alias' 			=> !empty($res['alias']) ? $res['alias'] : self::getDbTableAlias($realName),
+				'alias' 			=> $alias,
 				'displayName' 		=> !empty($res['displayName']) ? $res['displayName'] : $name,
 				'nameField' 		=> !empty($res['nameField']) ? $res['nameField'] : ( !empty($res['defaultNameField']) ? $res['defaultNameField'] : self::guessNameField($name) ),
 				'extends' 			=> !empty($res['extends']) ? $res['extends'] : null,
-				'searchable' 		=> !empty($res['searchable']) ? $res['searchable'] : 0,
-				'exposed' 			=> !empty($res['exposed']) ? $res['exposed'] : 0,
+				'searchable' 		=> $searchable,
+				'exposed' 			=> $exposed,
 				'crudability' 		=> !empty($res['crudability']) ? $res['crudability'] : 'CRUD',
+				
+				// Generated properties
+				'_exposedColumns' 		=> array(), // will be populated by parseColumns() 
+				'_searchableColumns' 	=> array(), // will be populated by parseColumns()
 			);
+			
+			self::$resources['_aliases'][$alias] = $realName;
+			
+			// 
+			if ( $searchable )	{ self::$resources['_searchable'][] = $realName; }
+			if ( $exposed )		{ self::$resources['exposed'][] 	= $realName; }
 
 			ksort($res);
 		}
 
 		// Sort resources by alphabetical order
 		asort(self::$resources);
-		
-var_dump(self::$resources);
 	}
 	
 	public function parseGroups()
@@ -761,12 +793,22 @@ $dbColumns = array();
 		return $false;
 	}
 	
+	static function columns($resource)
+	{
+		global $_columns;
+		
+var_dump($resource);
+		
+		return isset($_columns[$resource]['items']) ? $_columns[$resource]['items'] : false;
+	}
+	
 	static function resource($string)
 	{
 		global $_resources;
 		
 		//return self::isResource($string) ? $_resources[$string] : false;
-		return self::isResource($string) ? $_resources['items'][$string] : false;
+		//return self::isResource($string) ? $_resources['items'][$string] : false;
+		return isset($_resources['items'][$string]) ? $_resources['items'][$string] : false;
 	}
 	
 	static function resources()
