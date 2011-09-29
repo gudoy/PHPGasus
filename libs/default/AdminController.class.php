@@ -21,9 +21,10 @@ class AdminController extends Controller
 $this->log($this);
 //die();
 		
-//$this->{$this->_resource['plural']}->getResources();
-//var_dump($this->{$this->_resource['plural']}->query('SELECT * FROM resources'));
-		$rName 				= $this->_resource['plural'];
+		$rName 				= $this->_resource['plural']; // Shortcut to current resource name
+		
+//var_dump($this->{$rName});
+		
 		//$this->data[$rName] = $this->{$rName}->findAll();
 		$this->data[$rName] = $this->{$rName}->query('SELECT * FROM resources');
 		
@@ -84,13 +85,17 @@ $this->log($this);
 	{
 		parent::initTemplateData();
 		
-		// 
-		$this->templateData['_resources'] 	= &$this->_resources;
-		$this->templateData['_columns'] 	= &$this->_columns;
-		$this->templateData['_groups'] 		= &$this->_groups;
+		global $_groups, $_resources, $_columns;
 		
+		//$this->templateData['_groups'] 		= &$this->_groups; 
+		//$this->templateData['_resources'] 	= &$this->_resources;
+		//$this->templateData['_columns'] 		= &$this->_columns;
 		
-$this->dump($this->templateData);
+		$this->templateData['_groups'] 		= &$_groups;
+		$this->templateData['_resources'] 	= &$_resources;
+		$this->templateData['_columns'] 	= &$_columns;
+		
+//$this->log($this->templateData['_resources']);
 	}
 	
 	public function getViewLayout()

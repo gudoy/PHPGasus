@@ -52,7 +52,7 @@ class Model extends Core
 		$this->_resource = new ArrayObject(DataModel::resource($p['_resource'], 2));
 		
 		// Shortcut to current resource columns
-		$this->_resourcecolumns = DataModel::columns($this->_resource->name);
+		$this->_resourcecolumns = DataModel::columns($p['_resource']);
 	}
 	
 	public function __call($method, $args)

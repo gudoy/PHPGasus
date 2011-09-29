@@ -6,9 +6,7 @@ interface ControllerInterface
 }
 
 class Controller extends Core implements ControllerInterface
-{
-	public $debug 		= true;
-	
+{	
 	public $view 		= array();
 	public $data 		= array();
 	public $errors 		= array();
@@ -33,10 +31,14 @@ class Controller extends Core implements ControllerInterface
 	
 	public function __get($prop)
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+$this->log('prop: ' . (string) $prop);
+		
 		# Auto-instanciation of models
 		
 		// Do not continue if we are not handling an existing resource
-		if ( !DataModel::isResource($prop) ){ return; }
+		if ( !empty($prop) && !DataModel::isResource($prop) ){ return; }
 		
 		// Load Model
 		switch(_DB_DRIVER)
@@ -47,8 +49,11 @@ class Controller extends Core implements ControllerInterface
 			default: 			$mName = _DB_SYSTEM . 'Model'; break;
 		}
 		
+		// Direct access to resource model
 		$this->requireLibs($mName, 'databases/');
-		$this->{$this->_resource['plural']} = new $mName(array('_resource' => $prop));
+		$this->{$prop} = new $mName(array('_resource' => $prop));
+		
+		return $this->{$prop};
 	}
 	
 	
@@ -541,6 +546,9 @@ class Controller extends Core implements ControllerInterface
 
 	public function renderTemplate()
 	{
+$this->log(__METHOD__);
+$this->log($this->templateData);
+		
 		// Pass variables to the template & render it
 		switch ( _TEMPLATES_ENGINE )
 		{

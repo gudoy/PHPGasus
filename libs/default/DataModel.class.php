@@ -2,6 +2,7 @@
 
 ( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
 
+//class DataModel extends Core
 class DataModel
 {
 	public static $resources 	= array();
@@ -233,6 +234,7 @@ class DataModel
 	
 	public function _construct()
 	{
+		parent::__construct();
 	}
 	
 	// 
@@ -304,9 +306,7 @@ var_dump(self::$resources);
 		foreach(Tools::toArray($p['from']) as $item)
 		{
 			// Do not continue is the file could not be loaded
-			if ( is_file($item) && require($item) ){ continue; }
-			
-//var_dump(${$p['varname']});
+			if ( !is_file($item) || !require($item) ){ continue; }
 			
 			// Merge its resources into a temp resources array
 			$tmpRes = array_merge($tmpRes, ${$p['varname']});
@@ -318,19 +318,29 @@ var_dump(self::$resources);
 		// Get registered resources from database
 		if ( $p['checkDatabase'] )
 		{
-			//$Resources = new Model($params)
+			switch(_DB_DRIVER)
+			{
+				case 'default':
+				case 'pdo': 		$mName = 'pdoModel'; break;
+				case 'mysqli': 		$mName = 'mysqliModel'; break;
+				default: 			$mName = _DB_SYSTEM . 'Model'; break;
+			}
+			
+			$Resources = new Model(array('_resource' => 'resources'));
 			
 			//$dbResources = CResources::getInstance()->find();
 			//$dbResources = MResources::getInstance()->find();
 			//$dbResources = MResources->find();
 			//$dbResources = Resources::getInstance()->find();
 			//$dbResources = $this->resources->find();
-			$dbResources = $this->resources->find();
+			//$dbResources = $this->resources->find();
+			$dbResources = $Resources->find();
+			
 			//$dbResources 	= array();	
 		}
 		
 		// Merge the database resources into the temp resources array
-		$tmpRes = array_merge($tmpRes, $dbResources);
+		$tmpRes = array_merge($tmpRes, (array) $dbResources);
 		
 		// Init final resources
 		self::$resources = array(
@@ -795,9 +805,14 @@ $dbColumns = array();
 	
 	static function columns($resource)
 	{
+//var_dump(__METHOD__);
+//$this->log(__METHOD__);
 		global $_columns;
 		
-var_dump($resource);
+//var_dump('resource: ' . $resource);
+//$this->log('resource: ' . $resource);
+//var_dump($_columns);
+//die();
 		
 		return isset($_columns[$resource]['items']) ? $_columns[$resource]['items'] : false;
 	}

@@ -6,10 +6,8 @@
 			<div class="input">
 				<select id="searchIn" name="searchIn" multiple="multiple">
 					<option value="all">{t}all{/t}</option>
-					{foreach $_resources as $rName => $rProps}
-					{if $rProps.searchable}
+					{foreach $_resources._searchable as $rName}
 					<option value="{$rName}">{$_resources[$rName].displayName|default:$rName}</option>
-					{/if}
 					{/foreach}
 				</select>
 			</div>

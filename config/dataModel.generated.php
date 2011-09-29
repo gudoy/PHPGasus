@@ -24,10 +24,11 @@ $_resources = array(
 	'tasks' 			=> array('name' => 'tasks', 'type' => 'native', 'singular' => 'task', 'plural' => 'tasks', 'displayName' => 'tasks', 'database' => 'default', 'table' => 'tasks', 'alias' => 'tsk', 'defaultNameField' => 'admin_title', 'nameField' => '', 'extends' => null, 'searchable' => false, 'exposed' => false, 'crudability' => 'CRUD',),
 	'users' 			=> array('name' => 'users', 'type' => 'native', 'singular' => 'user', 'plural' => 'users', 'displayName' => 'users', 'database' => 'default', 'table' => 'users', 'alias' => 'u', 'defaultNameField' => 'email', 'nameField' => '', 'extends' => null, 'searchable' => true, 'exposed' => false, 'crudability' => 'CRUD',),
 	'usersgroups' 		=> array('name' => 'usersgroups', 'type' => 'relation', 'singular' => 'usersgroup', 'plural' => 'usersgroups', 'displayName' => 'user groups', 'database' => 'default', 'table' => 'users_groups', 'alias' => 'ugp', 'defaultNameField' => '', 'nameField' => '', 'extends' => null, 'searchable' => false, 'exposed' => false, 'crudability' => 'CRUD',),
+),
 '_aliases' 		=> array(),
-'_searchable' 	=> array(),
+'_searchable' 	=> array('users'),
 '_exposed' 		=> array(),
-));
+);
 
 $_columns = array(
 'resources' => array(
