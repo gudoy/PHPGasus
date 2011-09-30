@@ -59,7 +59,7 @@ This function tries to call the proper method of the proper controller with prop
 DISPATCHER => CONTROLLER (samples):							
 GET /                                       => /CHome->index() 									
 GET /notAMethod                             => /CHome->error404('notAMethod') 					
-GET /hello/world                        	=> /CHome->hello('world') 							
+GET /hello/world 							=> /CHome->hello('world') 							
 GET /hello/world/1                          => /CHome->hello('world','1')                      
 GET /hello/world/1/2                        => /CHome->hello('world','1','2')                  
 GET /hello/world/1/2/and/goes/on            => /CHome->hello('world','1','2,'and','goes','on') 
@@ -81,15 +81,15 @@ GET /users/42,43,foo/email,birthday         => /CUsers->index('42,43,foo','email
 
 CONTROLLER to MODEL/DATABASE (sample magic methods);
 (unless explicitely specified, all request use "LIMIT 100" clause)
-Products->findAll() 										=> SELECT * FROM products LIMIT 100
-Products->fingAll(array('limit' => -1)) 					=> SELECT * FROM products
-Products->findByName(array('foo','bar')) 					=> SELECT * FROM products WHERE name IN ('foo','bar') LIMIT 100
-Products->findOneByName('myKillerProduct') 					=> SELECT * FROM products WHERE name = myKillerProduct LIMIT 1 
-Users->findById(42) 										=> SELECT * FROM users WHERE id = 42 LIMIT 100
-Users->findAllByNameWhereBirthyearIs1983('gudoy') 			=> SELECT * FROM users WHERE nameFied = 'gudoy' AND birthyear = 1983 LIMIT 100
-Users->findAllById(array(42,43,44)) 						=> SELECT * FROM users WHERE id IN (42,43,45) LIMIT 100
-Users->findAllEmailById(array(42,43,44)) 					=> SELECT email FROM users WHERE id IN (42,43,45) LIMIT 100
-Users->findAllEmailAndBirthdayById(array(42,43,44)) 		=> SELECT email,birthyear FROM users WHERE id IN (42,43,45) LIMIT 100
+Products->findAll() 								=> SELECT * FROM products LIMIT 100
+Products->fingAll(array('limit' => -1)) 			=> SELECT * FROM products
+Products->findByName(array('foo','bar')) 			=> SELECT * FROM products WHERE name IN ('foo','bar') LIMIT 100
+Products->findOneByName('myKillerProduct') 			=> SELECT * FROM products WHERE name = myKillerProduct LIMIT 1 
+Users->findById(42) 								=> SELECT * FROM users WHERE id = 42 LIMIT 100
+Users->findAllByNameWhereBirthyearIs1983('gudoy') 	=> SELECT * FROM users WHERE nameFied = 'gudoy' AND birthyear = 1983 LIMIT 100
+Users->findAllById(array(42,43,44)) 				=> SELECT * FROM users WHERE id IN (42,43,45) LIMIT 100
+Users->findAllEmailById(array(42,43,44)) 			=> SELECT email FROM users WHERE id IN (42,43,45) LIMIT 100
+Users->findAllEmailAndBirthdayById(array(42,43,44)) => SELECT email,birthyear FROM users WHERE id IN (42,43,45) LIMIT 100
 
 
 
@@ -100,26 +100,26 @@ CONTROLLERS
 
 
 JAVASCIPTS // TODO: choose pattern
-GET     /                       => homeIndex                => home.init() && homeIndex.init()
-GET     /about/                 => aboutIndex               => about.init() && aboutIndex.init()
-GET     /about/credits          => aboutCreditsIndex        => about.init() && credits.init() && aboutCreditsIndex.init()
-GET     /admin/                 => adminIndex               => admin.init() && adminIndex.init()
-GET     /admin/user/42          => adminUsersRetrieve       => admin.init() && users.init() && adminUsers.init() && adminUsersRetrieve.init()
-POST    /admin/user/42          => adminUsersUpdate         => admin.init() && users.init() && adminUsers.init() && adminUsersCreate.init()
-PUT     /admin/user/42          => adminUsersUpdate         => admin.init() && users.init() && adminUsers.init() && adminUsersUpdate.init()
-DELETE  /admin/user/42          => adminUsersDelete         => admin.init() && users.init() && adminUsers.init() && adminUsersDelete.init()
+GET     /                       => home.init() && homeIndex.init()
+GET     /about/                 => about.init() && aboutIndex.init()
+GET     /about/credits          => about.init() && credits.init() && aboutCreditsIndex.init()
+GET     /admin/                 => admin.init() && adminIndex.init()
+GET     /admin/user/42          => admin.init() && users.init() && adminUsers.init() && adminUsersRetrieve.init()
+POST    /admin/user/42          => admin.init() && users.init() && adminUsers.init() && adminUsersCreate.init()
+PUT     /admin/user/42          => admin.init() && users.init() && adminUsers.init() && adminUsersUpdate.init()
+DELETE  /admin/user/42          => admin.init() && users.init() && adminUsers.init() && adminUsersDelete.init()
 or 
-GET     /                       => homeIndex                => home.init() && home.index()
-GET     /about/                 => aboutIndex               => about.init() && about.index()
-GET     /about/credits          => aboutCreditsIndex        => about.init() && credits.init() && aboutCreditsIndex.init()
-GET     /admin/                 => adminIndex               => admin.init() && admin.index()
-GET     /admin/users/42         => adminUsersRetrieve       => admin.init() && admin.users.init() && admin.users.retrieve()
-POST    /admin/users/42         => adminUsersUpdate         => admin.init() && admin.users.init() && admin.users.create()
-PUT     /admin/users/42         => adminUsersUpdate         => admin.init() && admin.users.init() && admin.users.update()
-DELETE  /admin/users/42         => adminUsersDelete         => admin.init() && admin.users.init() && admin.users.delete()
-GET     /users/42/products/     => usersProductsRetrieve    => users.init() && products.init() && users.products.init()
+GET     /                       => home.init() && home.index()
+GET     /about/                 => about.init() && about.index()
+GET     /about/credits          => about.init() && credits.init() && aboutCreditsIndex.init()
+GET     /admin/                 => admin.init() && admin.index()
+GET     /admin/users/42         => admin.init() && admin.users.init() && admin.users.retrieve()
+POST    /admin/users/42         => admin.init() && admin.users.init() && admin.users.create()
+PUT     /admin/users/42         => admin.init() && admin.users.init() && admin.users.update()
+DELETE  /admin/users/42         => admin.init() && admin.users.init() && admin.users.delete()
+GET     /users/42/products/     => users.init() && products.init() && users.products.init()
 
-// + specifics js: load files + $(document).ready()
+
 
 
 CODING PRACTICES
