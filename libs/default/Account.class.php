@@ -13,12 +13,11 @@ Class Account extends Core
 	}
 	
 	private function login()
-	{
-		
+	{		
 		$redirect 	= !empty($_POST['redirect']) 
 						? Tools::sanitize($_POST['redirect'], array('type' => 'uri')) 
 						: ( !empty($_GET['redirect']) ? $_GET['redirect'] : null );
-		$url 		= $redirect ? _URL . $redirect : _URL_HOME; 
+		$url 		= $redirect ? _URL . $redirect : _URL_HOME;
 		
 		// If already logged
 		if ( $this->logged() ){ $this->redirect($url); }		
@@ -26,6 +25,11 @@ Class Account extends Core
 	
 	private function logout()
 	{
+		$redirect 	= !empty($_POST['redirect']) 
+						? Tools::sanitize($_POST['redirect'], array('type' => 'uri')) 
+						: ( !empty($_GET['redirect']) ? $_GET['redirect'] : null );
+		$url 		= $redirect ? _URL . $redirect : _URL_LOGIN;
+		
 		// Delete DB session
 		if ( !empty($_SESSION['id']) ) { CSessions::getInstance()->delete(array('values' => $_SESSION['id'])); }
 		
@@ -44,7 +48,7 @@ Class Account extends Core
 		session_destroy();
 		
 		// 
-		return $this->redirect(_URL_LOGIN);
+		return $this->redirect($url);
 	}
 	
 	private function getLoginAttempsCount()
