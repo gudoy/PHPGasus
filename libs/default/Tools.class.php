@@ -270,10 +270,14 @@ class Tools
 			//$value = intval($value);
 		}
 		// floats
-		if ( in_array($p['type'], array('float', 'real', 'double')) )
+		elseif ( in_array($p['type'], array('float', 'real', 'double')) )
 		{
 			$value = floatval($value);
 		}
+		// uri
+		// url
+		// mail
+		// ... 
 		// phone number
 		else if ( $p['type'] === 'tel' )
 		{
