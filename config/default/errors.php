@@ -13,7 +13,18 @@ ini_set('xdebug.var_display_max_depth', 6); 				//
 ini_set('xdebug.max_nesting_level', 500); 					// default is 100, which can be cumbersome
 
 
-// KEY => array('msg' => _($message), ['args' => array()]
+/* 
+errors
+	key: 'MISSING_REQUIRED_FIELD',
+	summary': 'Missing required fields: %s'
+	message': 'Please pass the following missing fields: %s'
+	actions:
+		primary:
+		secondary:
+		secondary:
+		...
+*/
+
 $_errors = array(
 
 	// CONTENT/REQUEST VALIDATION

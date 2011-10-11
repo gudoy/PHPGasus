@@ -250,47 +250,8 @@ class Tools
         return $data;
     } 
 
-	// TODO
-	static function validate($value, $params = array())
-	{
-		
-	}
-
-	// TODO
-	static function sanitize($value, $params = array())
-	{
-		$p = array_merge(array(
-			'type' => 'string'
-		), $params);
-
-		// ints
-		if ( in_array($p['type'], array('int', 'integer', 'numeric', 'tinyint', 'smallint', 'mediumint', 'bigint')) )
-		{
-			$value = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-			//$value = intval($value);
-		}
-		// floats
-		elseif ( in_array($p['type'], array('float', 'real', 'double')) )
-		{
-			$value = floatval($value);
-		}
-		// uri
-		// url
-		// mail
-		// ... 
-		// phone number
-		else if ( $p['type'] === 'tel' )
-		{
-			$value = preg_replace('/\D/', '', $value);
-		}
-		// TODO: all other types
-		else
-		{
-			$value = filter_var($value, FILTER_SANITIZE_STRING);
-		}
-		
-		return $value;
-	}
+	// sanitize() moved to DataModel
+	// validate() moved to DataModel
 }
 
 ?>

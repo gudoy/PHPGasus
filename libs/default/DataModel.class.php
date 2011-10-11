@@ -39,6 +39,15 @@ class DataModel
 		'_searchableColumns', 					// array of column names (default = empty)
 	);
 	
+	static $realTypes = array(
+		'string','text','enum','set',
+		'int','tinyint', 'smallint', 'mediumint', 'bigint',
+		'float',
+		'boolean',
+		'timestamp','date','datetime',
+		'onetone', 'onetomany', 'manytoone', 'manytomany'
+	);
+	
 	static $columnTypes = array(
         # mysql types:
         // 'serial', 'bit', 'tinyint', 'bool', 'smallint', 'mediumint', 'int', 'bigint', 'float', 'double', 'double precision', 'decimal', 
@@ -108,10 +117,10 @@ class DataModel
 
 			# Numbers
 				// ints
-				'int' 			=> 'integer', 		// + min = -2147483648, + max = 2147483648
-				'integer'		=> 'integer', 		// + min = -2147483648, + max = 2147483648
-				'num'			=> 'integer', 		// + min = -2147483648, + max = 2147483648
-				'number'		=> 'integer', 		// + min = -2147483648, + max = 2147483648
+				'int' 			=> 'int', 			// + min = -2147483648, + max = 2147483648
+				'integer'		=> 'int', 			// + min = -2147483648, + max = 2147483648
+				'num'			=> 'int', 			// + min = -2147483648, + max = 2147483648
+				'number'		=> 'int', 			// + min = -2147483648, + max = 2147483648
 				
 				'tinyint' 		=> 'tinyint', 		// + min = -128, + max = 128 
 				'smallint' 		=> 'smallint', 		// + min = -32768, + max = 32768
@@ -177,9 +186,9 @@ class DataModel
 				'nton' 			=> 'manytomany',
 			
 			# Misc				
-				'pk' 			=> 'integer', // Pk + length = 11, pk = 1, editable = 0 
-				'id' 			=> 'integer', // Pk + length = 11, pk = 1, editable = 0
-				'serial' 		=> 'integer', // Pk + length = 11, pk = 1, editable = 0
+				'pk' 			=> 'int', 			// Pk + length = 11, pk = 1, editable = 0 
+				'id' 			=> 'int', 			// Pk + length = 11, pk = 1, editable = 0
+				'serial' 		=> 'int', 			// Pk + length = 11, pk = 1, editable = 0
 		),
 	);
 	
@@ -283,9 +292,10 @@ class DataModel
 	{
 		$this->parseResources();
 		//$this->parseGroups();
-		//$this->parseColumns();
+		$this->parseColumns();
 		
-var_dump(self::$resources);
+//var_dump(self::$resources);
+var_dump(self::$columns);
 	}
 	
 	// Merge order: database, dataModel (generated), dataModel (manual)
@@ -340,7 +350,7 @@ var_dump(self::$resources);
 		}
 		
 		// Merge the database resources into the temp resources array
-		$tmpRes = array_merge($tmpRes, (array) $dbResources);
+		$tmpRes = array_merge((array) $tmpRes, (array) $dbResources);
 		
 		// Init final resources
 		self::$resources = array(
@@ -399,21 +409,50 @@ var_dump(self::$resources);
 	
 	
 	// Merge order: database, dataModel (generated), dataModel (manual)
-	public function parseColumns()
-	{				
-		// If the resource are not found, parse them
-		if ( !self::$resources ){ self::parseResources(); }
-
-		// Get columns in db, manual dataModel & generated dataModel files
-		$dbCols 			= $this->parseDBColumns(self::$resources);
-		$writtenCols 		= $this->parseManualDataModelColumns();
-		//$generatedCols 		= $this->parseGeneratedDataModelColumns();
-
-		// Merge them temporarily into an unique array
-		//$tmpColumns 		= array_merge($dbCols, $writtenCols, $generatedCols);
-		$tmpColumns 		= array_merge($dbCols, $writtenCols);
+	public function parseColumns(array $params = array())
+	{
+		$p = array_merge(array(
+			'from' 			=> array(
+				_PATH_CONF . 'default/dataModel/columns.php',
+				_PATH_CONF . 'yours/dataModel/columns.php',
+			),
+			'varname' 		=> '_columns',
+			'checkDatabase' => true,
+		), $params);
 		
-		// Loop over this temp array
+		$tmpColumns = array();
+		
+		// Loop over passed columns files
+		foreach(Tools::toArray($p['from']) as $item)
+		{
+			// Do not continue is the file could not be loaded
+			if ( !is_file($item) || !require($item) ){ continue; }
+			
+			// Merge its resources into a temp columns array
+			$tmpColumns = array_merge($tmpColumns, ${$p['varname']});
+		}
+		
+		// Get unregistered columns from database
+		// TODO
+		
+		// Get registered columns from database
+		if ( $p['checkDatabase'] )
+		{
+			// TODO
+			$dbColumns = array();
+		}
+		
+		// Merge the database columns into the temp columns array
+		$tmpColumns = array_merge((array) $tmpColumns, (array) $dbColumns);
+		
+		// Init final resources
+		self::$columns = array(
+			'items' 		=> array(),
+			'_exposed' 		=> array(),
+			'_searchable' 	=> array(),
+		);
+		
+		// Loop over the resources
 		foreach ( array_keys((array) $tmpColumns) as $rName )
 		{
 			// Shortcut for current resource columns
@@ -427,9 +466,9 @@ var_dump(self::$resources);
 				// Shortcut for column properties
 				$p = &$rCols[$cName];
 				
-				$cProps = &self::$columns[$rName][$cName];
+				$cProps = &self::$columns['items'][$rName][$cName];
 				
-				// Set default props values is not already defined
+				// Set default props values if not already defined
 				$cProps = array_merge(array(
 					//'name' 				=> $p['Field'],
 					'type' 				=> null,
@@ -581,33 +620,6 @@ $dbColumns = array();
 		}
 		
 		return count($resources) === 1 ? $dbCols[$rNames[0]] : $dbCols;
-	}
-
-	public function parseManualDataModelColumns()
-	{
-		// Get default resources' columns
-		require(_PATH_CONF . 'default/dataModel/columns.php');
-		$defColumns 	= $_columns;
-		
-		// Get yours resources' columns 
-		require(_PATH_CONF . 'yours/dataModel/columns.php');
-		$yoursColumns 	= $_columns;
-		
-		// Merge them
-		$tmpColumns = array_merge($defColumns, $yoursColumns);
-		
-		// If the the dataModel manuel file is defined, and is an array, take it
-		if ( is_array($dataModel) ){ $manualCols = &$dataModel; }
-		
-		return $manualCols;
-	}
-	
-	
-	public function parseGeneratedDataModelColumns()
-	{
-		$generatedCols = array();
-		
-		return $generatedCols;
 	}
 	
 	
@@ -1080,6 +1092,49 @@ $dbColumns = array();
 var_dump(__METHOD__);
 		
 		return $_columns[$resource][$column]['type'];
+	}
+	
+	
+	// TODO
+	static function validate($value, $params = array())
+	{
+		
+	}
+
+	// TODO
+	static function sanitize($value, $params = array())
+	{
+		$p = array_merge(array(
+			'type' => 'string'
+		), $params);
+
+		// ints
+		if ( in_array($p['type'], array('int', 'integer', 'numeric', 'tinyint', 'smallint', 'mediumint', 'bigint')) )
+		{
+			$value = filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+			//$value = intval($value);
+		}
+		// floats
+		elseif ( in_array($p['type'], array('float', 'real', 'double')) )
+		{
+			$value = floatval($value);
+		}
+		// uri
+		// url
+		// mail
+		// ... 
+		// phone number
+		else if ( $p['type'] === 'tel' )
+		{
+			$value = preg_replace('/\D/', '', $value);
+		}
+		// TODO: all other types
+		else
+		{
+			$value = filter_var($value, FILTER_SANITIZE_STRING);
+		}
+		
+		return $value;
 	}
 }
 
