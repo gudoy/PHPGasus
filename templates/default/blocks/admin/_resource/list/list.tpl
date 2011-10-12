@@ -1,6 +1,6 @@
 {$rName 	= $request->resource}
-{$rProps 	= $_resources[$rName]}
-{$rModel 	= $_columns[$rName]}
+{$rProps 	= $_resources.items[$rName]}
+{$rModel 	= $_columns[$rName].items}
 
 {foreach $data[$rName] as $item}
 <article class="resource" id="{$rName}{$item.id}">

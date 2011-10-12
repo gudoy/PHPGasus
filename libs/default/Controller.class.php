@@ -105,7 +105,8 @@ $this->log('prop: ' . (string) $prop);
 		// Force method to index
 		if ( !$RC->method ){ $RC->method = 'index'; }
 		
-		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) ? $RC->method : 'error404';
+		// If method exists and does not start by un '_' char (used for not exposed method)
+		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) && $RC->method[0] !== '_' ? $RC->method : 'error404';
 		
 		return call_user_func_array(array($this, $RC->calledMethod), array());
 		

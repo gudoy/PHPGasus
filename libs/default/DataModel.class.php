@@ -62,7 +62,8 @@ class DataModel
 			# Texts
 			'string', 'varchar', 
 			'email', 'password', 'url', 'tel', 'color', 'meta', 'ip',
-			'slug', 'tag', 
+			'slug', 
+			'tag', 
 			'text', 'html', 'code',
 			
 			# Numbers
@@ -93,13 +94,13 @@ class DataModel
 		'realtypes' => array(
 			# Texts
 				// strings (length=255) 
-				'string' 		=> 'string',
-				'varchar' 		=> 'string',
+				'string' 		=> 'string', 		// + length = 255
+				'varchar' 		=> 'string', 		// alias of string
 				'slug' 			=> 'string', 		// + length = 64
-				'tag' 			=> 'string', 		// alias of slug
+				//'tag' 			=> 'string', 		// alias of slug
 				'email' 		=> 'string', 		// + validator pattern
-				'password'		=> 'string', 		// + modifiers = sha1
-				'url' 			=> 'string', 		// + FILTER_VALIDATE_URL?
+				'password'		=> 'string', 		// + modifiers = sha1 + length(will depend of the algorithm)
+				'url' 			=> 'string', 		// + max = 2083 + FILTER_VALIDATE_URL?
 				'tel' 			=> 'string', 		// + length = 20???, + pattern ? 
 				'color'			=> 'string', 		// + length = 32, + validator pattern (#hex, rgb(), rgba(), hsl(), ... ?)
 				'meta' 			=> 'string',
@@ -153,6 +154,7 @@ class DataModel
 				
 			# Relations
 				// One to one relations (& aliases)
+				/*
 				'1-1' 			=> 'onetone', 
 				'onetoone' 		=> 'onetone', 
 				'one2one' 		=> 'onetone', 
@@ -184,6 +186,9 @@ class DataModel
 				'many2many' 	=> 'manytomany', 
 				'n2n' 			=> 'manytomany', 
 				'nton' 			=> 'manytomany',
+				 */
+				
+				'onetoone' 		=> 'int', 			// + fk = 1 + handle relations props
 			
 			# Misc				
 				'pk' 			=> 'int', 			// Pk + length = 11, pk = 1, editable = 0 
@@ -197,15 +202,17 @@ class DataModel
 		# PHPGasus meta
 		'type', 'from',
 		'exposed',
+		'importance',
 	
 		# SQL related
 		'realtype',
-		'length',  
-		'fk',
-		'null', 'pk', 'ai', 'default', 
-		'unsigned', 'unique', 'index', 			// TODO: implement
+		'length',
 		'values',
 		'possibleValues', 						// Deprecated: use values instead
+		'null', 'default',
+		'fk',
+		'pk', 'ai',  
+		'unsigned', 'unique', 'index', 			// TODO: implement
 		
 		# Relations
 		//'on 									// TODO: ???
@@ -221,9 +228,10 @@ class DataModel
 
 		# Format/validation related
 		'placeholder', 'required', 
-		'min', 'max', 'step', 'pattern',
+		'min', 'max', 'step', 'patterns', 'pattern',
 		'computed', 'computedValue', 'eval',	// Deprecated. 
 		'modifiers', 							// TODO: implement trim|lower|upper|camel|capitalize|now|escape, ....
+		'algo', 								// for password. TODO: implement md5,sha1 
 		
 		// Files related
 		'forceUpload', 
@@ -233,9 +241,16 @@ class DataModel
 		
 		// UI or admin purpose
 		'uiWidget',
-		'displayName', 'displayValue', 'list',
+		'displayName', 'displayValue', 
+		'list', 								// Deprecated: use importance instead
 		'editable', 'forceUpdate',
 		'comment',
+		
+		// Deprecated (for BC only)
+		//'possibleValues', 'relField' , 'relGetFields' , 'relGetAs'
+		// 'computed', 'eval', 'computedValue'
+		// 'list' 
+		
 	);
 	static $columnBoleanDefaultedProperties = array(
 	
@@ -295,7 +310,7 @@ class DataModel
 		$this->parseColumns();
 		
 //var_dump(self::$resources);
-var_dump(self::$columns);
+//var_dump(self::$columns);
 	}
 	
 	// Merge order: database, dataModel (generated), dataModel (manual)
@@ -454,7 +469,7 @@ var_dump(self::$columns);
 		
 		// Loop over the resources
 		foreach ( array_keys((array) $tmpColumns) as $rName )
-		{
+		{			
 			// Shortcut for current resource columns
 			$rCols = &$tmpColumns[$rName];
 			
@@ -463,64 +478,119 @@ var_dump(self::$columns);
 			$colsNb = count($rCols); 
 			foreach ( array_keys((array) $rCols) as $cName )
 			{
-				// Shortcut for column properties
-				$p = &$rCols[$cName];
+				// Shortcut for defined column properties
+				//$p 		= &$rCols[$cName];
+				// First step: takes the defined properties as is (just remove unknown properties)
+				$p = array_intersect_key((array) $rCols[$cName], (array) array_flip((array) self::$columnProperties));
 				
+				// Shortcut for final column properties
 				$cProps = &self::$columns['items'][$rName][$cName];
+//var_dump($p);
+//var_dump('-----------: ' . $cName);
 				
-				// Set default props values if not already defined
-				$cProps = array_merge(array(
-					//'name' 				=> $p['Field'],
-					'type' 				=> null,
-					'realtype' 			=> null,
-					'length' 			=> null,
-					'null' 				=> false,
-					'unsigned' 			=> true,
-					'pk' 				=> false,
-					'ai' 				=> false,
-					'possibleValues' 	=> null, 	
-					'values' 			=> null,
+				// Loop over known columns names 
+				foreach(self::$columnProperties as $k)
+				{	
+					# PHPGasus meta
+					// Handle 'type'
+					if ( $k === 'type' )
+					{
+						$cProps['type'] = isset($p['type']) && in_array($p['type'], self::$columnTypes['types']) 
+											? $p['type'] 
+											: self::guessColumnType($cName);	
+					}
 					
-					// Relations
-					'relResource' 		=> null,
-					'relField' 			=> null,
-					'relGetFields' 		=> null, 	
-					'relGetAs' 			=> null, 	
-					'pivotResource' 	=> null,
-					'pivotLeftField' 	=> null,
-					'pivotRightField' 	=> null,
+					// Handle 'from'
+					elseif ( $k === 'from' )
+					{
+						//$cProps['from'] = isset($p['from']) && self::isColumn($rName, $p['from']) ? $p['from'] : null;	
+						$cProps['from'] = isset($p['from']) ? $p['from'] : null;
+					}
 					
-					// Format and/or validation
-					'default' 			=> null,
-					'placeholder' 		=> null, 
-					'computed' 			=> false, 
-					'unique' 			=> false,
-					'index' 			=> false,
-					'required' 			=> false,
-					'eval' 				=> null, 	
-					'modifiers' 		=> null, 	
-					'computedValue' 	=> null,	
-					'pattern' 			=> null,
-					'step' 				=> null,
-					'min' 				=> null,
-					'max' 				=> null,
+					// Handle 'exposed'
+					elseif ( $k === 'exposed' )
+					{	
+						$cProps['exposed'] = isset($p['exposed']) && $p['exposed'] ? true : false;
+					}
 					
-					// Files
-					'forceUpload' 		=> false,
-					'storeOn' 			=> null,
-					'acl' 				=> null,
-					'destRoot' 			=> null,
+					// Handle 'importance'
+					elseif ( $k === 'importance' )
+					{	
+						$cProps['importance'] = isset($p['importance']) ? intVal($p['importance']) : 0;
+					}
+	
+					# SQL related
+					// Handle 'realtype'
+					elseif ( $k === 'realtype' )
+					{
+						$cProps['realtype'] = isset($p['realtype']) && in_array($p['realtype'], self::$columnTypes['realtypes']) 
+											? $p['realtype'] 
+											: self::$columnTypes['reatype'][$cProps['type']];
+					}
+					
+					// Handle 'length'
+					elseif ( $k === 'length' )
+					{
+						$cProps['length'] = isset($p['length']) ? intVal($p['length']) : null;
+						
+						// Do not continue if the length has been defined
+						if ( !empty($cProps['length']) ) { continue; }
+						
+						// Otherwise, do some magic depending of defined type
+						switch($cProps['type'])
+						{
+							// TODO: complete
+							case 'tinyint':
+							case 'smallint':
+							case 'mediumint':
+							case 'bigint':  
+							case 'int': 		$cProps['length'] = 11; break;
 
-					'exposed' 			=> null,
+							case 'tag':
+							case 'slug': 		$cProps['length'] = 64; break;
+							case 'ip': 			$cProps['length'] = 40; break;
+							case 'tel': 		$cProps['length'] = 20; break;
+							case 'color': 		$cProps['length'] = 32; break; 
+							
+							case 'email':
+								
+							case 'password': 	// TODO: will depends of algo
+												$cProps['length'] = 40; break; // sha1
+												
+										
+							case 'varchar':
+							case 'string': 		$cProps['length'] = 255; break;
+							default: 			$cProps['length'] = 11; break;							
+						}
+					}
 					
-					// UI or admin purpose
-					'displayName' 		=> null,
-					'displayedValue' 	=> null,
-					'editable' 			=> false,
-					'list' 				=> 0,
-					'comment' 			=> null, 	
-				), $p);
+					// Handle 'possibleValues'
+					elseif ( $k === 'possibleValues' )
+					{
+						$cProps['values'] = isset($p['possibleValues']) ? $p['possibleValues'] : null;
+					}
+					
+					// Handle 'values'
+					elseif ( $k === 'values' )
+					{
+						$cProps['values'] = isset($p['values']) ? $p['values'] : null;
+						
+						// TODO: if type accept several values, transform into an array
+						if ( in_array($cProps['type'], array('set','enum','choice')) ){ $cProps['values'] = Tools::toArray($cProps['values']); }
+					}
+					
+					// Handle 'null'
+					elseif ( $k === 'null' )
+					{
+					}
+					
+					// Handle 'default'
+					elseif ( $k === 'default' )
+					{
+					}
+				}
 				
+				/*
 				// Force booleans
 				$cProps['pk'] = $cProps['pk'] ? true : false;
 				$cProps['ai'] = $cProps['ai'] ? true : false;
@@ -540,7 +610,7 @@ var_dump(self::$columns);
 					{
 						$p['type'] = 'serial';
 					}	
-				}
+				}*/
 				
 				/*				
 				# Type
@@ -565,6 +635,9 @@ var_dump(self::$columns);
 					
 				$i++;
 			}
+
+var_dump($rName);
+var_dump(self::$columns['items'][$rName]);
 		}
 	}
 	
@@ -1030,7 +1103,7 @@ $dbColumns = array();
 			$plur = Tools::plural($part);
 			
 			// Check if is an existing resource
-			$isResource = $this->isResource($sing) || $this->isResource($plur);
+			$isResource = self::isResource($sing) || self::isResource($plur);
 			
 			// If resource && resource not current one, assume it's a relation
 			
