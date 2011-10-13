@@ -200,7 +200,7 @@ class DataModel
 	// TODO: $propName => array('default' => null|[true|false]|{$value}, 'comment' => null, 'deprecated' => true|false)
 	static $columnProperties 				= array(
 		# PHPGasus meta
-		'type', 'from',
+		'type',
 		'exposed',
 		'importance',
 	
@@ -215,6 +215,7 @@ class DataModel
 		'unsigned', 'unique', 'index', 			// TODO: implement
 		
 		# Relations
+		'from', 								// TODO: use this to tell the column from which a slug will be created
 		//'on 									// TODO: ???
 		'relResource', 							// TODO: ??? replace by on, to, or from????
 		'relField', 							// Deprecated: use relColumn instead
@@ -582,11 +583,47 @@ class DataModel
 					// Handle 'null'
 					elseif ( $k === 'null' )
 					{
+						// Do not continue if the prop has been defined
+						if ( isset($p['null']) ){ $cProps['null'] = $cProps['null'] == true ? true : false; continue; }
+						
+						
+						// Otherwise, do some magic depending of defined type
+						switch($cProps['type'])
+						{
+							// The following types MUST have a value and thus have to be NOT NULL
+							case 'id':
+							case 'pk':
+							case 'serial':
+							case 'bit':
+							case 'bool':
+							case 'boolean':
+							case 'set':		
+							case 'enum':
+							case 'choice':
+								$cProps['null'] = false; break;
+							default: 
+								$cProps['null'] = true; break;							
+						}
 					}
 					
 					// Handle 'default'
 					elseif ( $k === 'default' )
 					{
+						// Do not continue if the prop has been defined
+						if ( isset($p['default']) ){ $cProps['default'] = $cProps['default'] == true ? true : false; continue; }
+
+						// TODO: do some magic
+						$cProps['default'] = null;
+					}
+					
+					// Handle 'default'
+					elseif ( $k === 'fk' )
+					{
+						// Do not continue if the prop has been defined
+						if ( isset($p['fk']) ){ $cProps['fk'] = $cProps['fk'] == true ? true : false; continue; }
+
+						// TODO: do some magic
+						$cProps['fk'] = $cProps['type'] === "onetoone" ? true : false;
 					}
 				}
 				
@@ -882,9 +919,26 @@ $dbColumns = array();
 	// Search for a mispelled resource
 	static function searchResource($name)
 	{
+		// Do not continue any longer if the $name as is is an existing resource
+		if 	( self::isResource($name) ){ return $name; }
+		
+//var_dump(__METHOD__ . ' -> ' . $name);
+		// Otherwise, try to get its singular & plural forms
+		$sing = Tools::singular($name);
+		$plur = Tools::plural($name);
+		
+//var_dump('sing' . ' : ' . $sing);
+//var_dump('plur' . ' : ' . $plur);
+		
+		// Check if any of them is a resource
+		if 		( self::isResource($sing) ){ return $sing; }
+		elseif 	( self::isResource($plur) ){ return $plur; }
+		
 		// TODO
 		// Compare string with resource name and return if matching is XX%?
+		// using levenshtein()
 		
+		// If not found at this point, return false
 		return $false;
 	}
 	
@@ -926,7 +980,7 @@ $dbColumns = array();
 		
 		//return !empty(self::$columns[$resource][$string]);
 		//return !empty($_columns[$resource][$string]);
-		return !empty($_columns['items'][$resource][$string]);
+		return !empty($_columns[$resource]['items'][$string]);
 	}
 	
 	// Returns the singular of a resource
@@ -1094,21 +1148,43 @@ $dbColumns = array();
 	// Try to gess column type using it's name
 	static function guessColumnType($colName)
 	{
-		// Split the name on the '_'
-		$parts 		= explode('_', $colName);
+//var_dump(__METHOD__ . ' -> ' . $colName);
+
+		// Init type
+		$type 		= null;
 		
+		// TODO: Check the column name as is against common naming patterns
+		
+		// Split the name on the '_'
+		$parts 		= explode('_', $colName); 
+		
+		// Loop over each parth of the word
 		foreach ( (array) $parts as $part )
 		{
-			$sing = Tools::singular($part);
-			$plur = Tools::plural($part);
+//var_dump($part);
+			
+			$sing 			= Tools::singular($part);
+			$plur 			= Tools::plural($part);
 			
 			// Check if is an existing resource
-			$isResource = self::isResource($sing) || self::isResource($plur);
+			//$isResource 	= self::isResource($sing) || self::isResource($plur);
+			$relResource 	= self::searchResource($part);
+			$isResource 	= !!$relResource;
 			
+//var_dump('next: ' . next($parts));
+			
+			// If next part is an existing colum of this resource
+			$isColumn 	= $isResource && self::isColumn($relResource, next($parts));
+//var_dump('relResource:' . $relResource);
+//var_dump('isResource: ' . (int) $isResource);
+//var_dump('isColumn: ' . (int) $isColumn);
+			
+			if 		( $isResource && $isColumn )	{ $type = 'onetoone'; break; }
+			else if ( $isResource && !$isColumn )	{ $type = 'manytoone'; break; }
+
 			// If resource && resource not current one, assume it's a relation
 			
-			// [default] 			=> 'string',
-			
+			// Otherwise, compare agains common used naming patterns 
 			// 'name$' 				=> 'string' + length 64
 			// '_name' 				=> 'string' + length 64
 			// 'title$' 			=> 'string'
@@ -1158,6 +1234,9 @@ $dbColumns = array();
 			// time, _time, year, _year, month, _month, day, _day, hour, _hour, minutes, _minutes, seconds, _seconds
 			// amout, price => floats
 		}
+
+		// Return found type if any or default it to string
+		return $type !== null ? $type : 'varchar';
 	}
 
 	static function getColumnType($resource, $column)
