@@ -94,17 +94,17 @@ class DataModel
 		'realtypes' => array(
 			# Texts
 				// strings (length=255) 
-				'string' 		=> 'string', 		// + length = 255
-				'varchar' 		=> 'string', 		// alias of string
-				'slug' 			=> 'string', 		// + length = 64
+				'string' 		=> 'varchar', 		// + length = 255
+				'varchar' 		=> 'varchar', 		// alias of string
+				'slug' 			=> 'varchar', 		// + length = 64
 				//'tag' 			=> 'string', 		// alias of slug
-				'email' 		=> 'string', 		// + validator pattern
-				'password'		=> 'string', 		// + modifiers = sha1 + length(will depend of the algorithm)
-				'url' 			=> 'string', 		// + max = 2083 + FILTER_VALIDATE_URL?
-				'tel' 			=> 'string', 		// + length = 20???, + pattern ? 
-				'color'			=> 'string', 		// + length = 32, + validator pattern (#hex, rgb(), rgba(), hsl(), ... ?)
-				'meta' 			=> 'string',
-				'ip' 			=> 'string', 		// + length = 40 + FILTER_VALIDATE_IP, ? 
+				'email' 		=> 'varchar', 		// + validator pattern
+				'password'		=> 'varchar', 		// + modifiers = sha1 + length(will depend of the algorithm)
+				'url' 			=> 'varchar', 		// + max = 2083 + FILTER_VALIDATE_URL?
+				'tel' 			=> 'varchar', 		// + length = 20???, + pattern ? 
+				'color'			=> 'varchar', 		// + length = 32, + validator pattern (#hex, rgb(), rgba(), hsl(), ... ?)
+				'meta' 			=> 'varchar',
+				'ip' 			=> 'varchar', 		// + length = 40 + FILTER_VALIDATE_IP, ? 
 				
 				// texts (length=null)				
 				'html' 			=> 'text',
@@ -209,10 +209,11 @@ class DataModel
 		'length',
 		'values',
 		'possibleValues', 						// Deprecated: use values instead
+		'unsigned', 
 		'null', 'default',
 		'fk',
 		'pk', 'ai',  
-		'unsigned', 'unique', 'index', 			// TODO: implement
+		'unique', 'index', 						// TODO: implement
 		
 		# Relations
 		'from', 								// TODO: use this to tell the column from which a slug will be created
@@ -232,13 +233,19 @@ class DataModel
 		'min', 'max', 'step', 'patterns', 'pattern',
 		'computed', 'computedValue', 'eval',	// Deprecated. 
 		'modifiers', 							// TODO: implement trim|lower|upper|camel|capitalize|now|escape, ....
-		'algo', 								// for password. TODO: implement md5,sha1 
+		'algo', 								// for password. TODO: implement md5,sha1
+		'prefix', 								// TODO?????
+		'suffix', 								// TODO?????
 		
 		// Files related
 		'forceUpload', 
 		'storeOn',  							// TODO????? (ftp|amazon_s3|amazon_ec2) 
 		'acl', 									// TODO????? (S3_ACL_PRIVATE, S3_ACL_PUBLIC, S3_ACL_OPEN, S3_ACL_AUTH_READ. default = S3_ACL_PRIVATE)
-		'destRoot', 'destName', 'destFolder', 	// TODO?????
+		'destBaseURL', 							// TODO????? 
+		'destRoot', 							// TODO?????
+		'destName', 							// TODO?????
+		'destFolder', 							// TODO?????
+
 		
 		// UI or admin purpose
 		'uiWidget',
@@ -470,7 +477,9 @@ class DataModel
 		
 		// Loop over the resources
 		foreach ( array_keys((array) $tmpColumns) as $rName )
-		{			
+		{
+			$rProps = self::resource($rName);
+				
 			// Shortcut for current resource columns
 			$rCols = &$tmpColumns[$rName];
 			
@@ -501,23 +510,29 @@ class DataModel
 											: self::guessColumnType($cName);	
 					}
 					
-					// Handle 'from'
-					elseif ( $k === 'from' )
-					{
-						//$cProps['from'] = isset($p['from']) && self::isColumn($rName, $p['from']) ? $p['from'] : null;	
-						$cProps['from'] = isset($p['from']) ? $p['from'] : null;
-					}
-					
 					// Handle 'exposed'
 					elseif ( $k === 'exposed' )
 					{	
-						$cProps['exposed'] = isset($p['exposed']) && $p['exposed'] ? true : false;
+						$cProps['exposed'] = isset($p['exposed']) ? ( $p['exposed'] == true ) : null;
+						
+						// Do not continue if the property has been defined
+						if ( !is_null($cProps['exposed']) ){ continue; }
+						
+						if ( $cProps['type'] === 'password' )	{ $cProps['exposed'] = false; }
+						else 									{ $cProps['exposed'] = true; }
 					}
 					
 					// Handle 'importance'
 					elseif ( $k === 'importance' )
 					{	
 						$cProps['importance'] = isset($p['importance']) ? intVal($p['importance']) : 0;
+						
+						// Do not continue if the property has been defined
+						if ( $cProps['importance'] ){ continue; }
+						
+						// If the colum is the name field of it's resource
+						if 		( !empty($rProps['nameField']) && $rProps['nameField'] === $cName ){ $cProps['importance'] = 100; }
+						elseif 	( $cName === 'id' ){ $cProps['importance'] = 90; }
 					}
 	
 					# SQL related
@@ -526,7 +541,7 @@ class DataModel
 					{
 						$cProps['realtype'] = isset($p['realtype']) && in_array($p['realtype'], self::$columnTypes['realtypes']) 
 											? $p['realtype'] 
-											: self::$columnTypes['reatype'][$cProps['type']];
+											: self::$columnTypes['realtypes'][$cProps['type']];
 					}
 					
 					// Handle 'length'
@@ -534,7 +549,7 @@ class DataModel
 					{
 						$cProps['length'] = isset($p['length']) ? intVal($p['length']) : null;
 						
-						// Do not continue if the length has been defined
+						// Do not continue if the property has been defined
 						if ( !empty($cProps['length']) ) { continue; }
 						
 						// Otherwise, do some magic depending of defined type
@@ -561,31 +576,42 @@ class DataModel
 										
 							case 'varchar':
 							case 'string': 		$cProps['length'] = 255; break;
-							default: 			$cProps['length'] = 11; break;							
+								
+							default: 			$cProps['length'] = null; break;							
 						}
 					}
 					
 					// Handle 'possibleValues'
 					elseif ( $k === 'possibleValues' )
 					{
-						$cProps['values'] = isset($p['possibleValues']) ? $p['possibleValues'] : null;
+						//$cProps['values'] = isset($p['possibleValues']) ? Tools::toArray($p['possibleValues']) : null;
+						if ( isset($p['possibleValues']) ){ $cProps['values'] = $p['possibleValues']; }
 					}
 					
 					// Handle 'values'
 					elseif ( $k === 'values' )
 					{
+
 						$cProps['values'] = isset($p['values']) ? $p['values'] : null;
 						
-						// TODO: if type accept several values, transform into an array
-						if ( in_array($cProps['type'], array('set','enum','choice')) ){ $cProps['values'] = Tools::toArray($cProps['values']); }
+						// TODO: if type accept several values, transform it into an array
+						if ( !empty($cProps['values']) && in_array($cProps['type'], array('set','enum','choice')) )
+						{
+							$cProps['values'] = Tools::toArray($cProps['values']);
+						}
+					}
+					
+					elseif ( $k === 'unsigned' )
+					{
+						// Do not continue if the property has been defined
+						$cProps['unsigned'] = isset($cProps['unsigned']) ? ($cProps['unsigned'] ? true : false) : null;
 					}
 					
 					// Handle 'null'
 					elseif ( $k === 'null' )
 					{
-						// Do not continue if the prop has been defined
-						if ( isset($p['null']) ){ $cProps['null'] = $cProps['null'] == true ? true : false; continue; }
-						
+						// Do not continue if the property has been defined
+						if ( isset($p['null']) ){ $cProps['null'] = $cProps['null'] == true ? true : false; }
 						
 						// Otherwise, do some magic depending of defined type
 						switch($cProps['type'])
@@ -609,66 +635,68 @@ class DataModel
 					// Handle 'default'
 					elseif ( $k === 'default' )
 					{
-						// Do not continue if the prop has been defined
-						if ( isset($p['default']) ){ $cProps['default'] = $cProps['default'] == true ? true : false; continue; }
+						// Do not continue if the property has been defined
+						if ( isset($p['default']) ){ $cProps['default'] = $cProps['default'] == true ? true : false; }
 
 						// TODO: do some magic
 						$cProps['default'] = null;
 					}
 					
-					// Handle 'default'
+					// Handle 'fk'
 					elseif ( $k === 'fk' )
 					{
-						// Do not continue if the prop has been defined
-						if ( isset($p['fk']) ){ $cProps['fk'] = $cProps['fk'] == true ? true : false; continue; }
-
-						// TODO: do some magic
-						$cProps['fk'] = $cProps['type'] === "onetoone" ? true : false;
+						$cProps['fk'] = isset($p['fk']) ? ( $p['fk'] == true ) : in_array($cProps['type'], array('onetoone'));
 					}
-				}
-				
-				/*
-				// Force booleans
-				$cProps['pk'] = $cProps['pk'] ? true : false;
-				$cProps['ai'] = $cProps['ai'] ? true : false;
-				
-				### Now, we can start to do some magic
-				
-				// Handle Numeric types
-				if ( $p['type'] === 'varchar' )
-				{
-					
-				}
-				// Handle Numbers types
-				elseif ( $p['type'] === 'int' )
-				{
-					// has AI && is first
-					if ( isset($p['AI']) && $i === 0 )
+					// Handle 'pk'
+					elseif ( $k === 'pk' )
 					{
-						$p['type'] = 'serial';
-					}	
-				}*/
-				
-				/*				
-				# Type
-				$type 			= isset($p['type']) && in_array(strtolower($p['type']), $known['types']) ? strtolower($p['type']) : 'string';
-				if 		( $cName === 'id' ) 	{ $type = 'pk'; $ai = 1; $pk = 1; }
-				elseif 	( $cName === 'slug' ) 	{ $type = 'slug'; }
-				
-				# Length
-				$length 		= isset($p['length']) && ( is_numeric($p['length']) || is_null($p['length']) )? $p['length'] : 'null';
-				if ( $realtype === 'string' )
-				{
-					if 		( $type === 'slug' ) 	{ $length = 64; }
-					elseif 	( $type === 'color' ) 	{ $length = 32; }
-					else 							{ $length = 255; }
+						$cProps['pk'] = isset($p['pk']) ? ( $p['pk'] == true ) : in_array($cProps['type'], array('pk','id','serial'));
+					}
+					
+					// Handle 'ai'
+					elseif ( $k === 'ai' )
+					{
+						$cProps['ai'] = isset($p['ai']) ? ( $p['ai'] == true ) : in_array($cProps['type'], array('pk','id','serial'));
+					}
+					
+					// Handle 'unique'
+					elseif ( $k === 'unique' )
+					{
+						$cProps['unique'] = isset($p['unique']) ? ( $p['unique'] == true ) : in_array($cProps['type'], array('pk','id','serial'));
+					}
+					// Handle 'index'
+					elseif ( $k === 'index' )
+					{
+						$cProps['index'] = isset($p['index']) 
+							? ( $p['index'] == true ) 
+							: ( in_array($cProps['type'], array('onetoone')) || $cProps['fk'] || $cProps['pk'] );
+					}
+					
+					// Handle 'from'
+					elseif ( $k === 'from' )
+					{
+						//$cProps['from'] = isset($p['from']) && self::isColumn($rName, $p['from']) ? $p['from'] : null;	
+						$cProps['from'] = isset($p['from']) ? $p['from'] : null;
+					}
+					
+					// Handle 'relResource',
+					elseif ( $k === 'relResource' )
+					{	
+						$cProps['relResource'] = isset($p['relResource']) && self::isResource($p['relResource']) 
+							? $p['relResource'] 
+							: ( in_array($cProps['type'], array('onetoone','onetomany')) ? self::guessRelatedResource($cName) : null );
+					}
+					// Handle 'relField', 							
+					// Handle 'relColumn', 							
+					// Handle 'getFields','relGetFields', 			
+					// Handle 'relGetAs', 							
+					// Handle 'getColumns',
+					// Handle 'pivotResource',
+					// Handle 'pivotLeftField',
+					// Handle 'pivotRightField',
+					// Handle 'fetchingStrategy',
+					// Handle 'lazy',
 				}
-				elseif ( $realtype === 'integer' )
-				{
-					$length = 11;
-				}
-				if ( $pk ) { $length = 11; }
-				*/
 					
 				$i++;
 			}
@@ -1148,12 +1176,15 @@ $dbColumns = array();
 	// Try to gess column type using it's name
 	static function guessColumnType($colName)
 	{
-//var_dump(__METHOD__ . ' -> ' . $colName);
+var_dump(__METHOD__ . ' -> ' . $colName);
 
 		// Init type
 		$type 		= null;
 		
-		// TODO: Check the column name as is against common naming patterns
+		# TODO: Check the column name as is against common naming patterns
+		
+		// Check if the column name as is is an existing type
+		if ( isset(self::$columnTypes['realtypes'][$colName]) ){ return $colName; }
 		
 		// Split the name on the '_'
 		$parts 		= explode('_', $colName); 
@@ -1237,6 +1268,17 @@ $dbColumns = array();
 
 		// Return found type if any or default it to string
 		return $type !== null ? $type : 'varchar';
+	}
+
+	public static function guessRelatedResource($colName)
+	{
+		// TODO
+		$ret = false;
+		
+		// TODO: split words
+		
+		
+		return $ret;	
 	}
 
 	static function getColumnType($resource, $column)
