@@ -31,6 +31,18 @@ $_resources = array(
 );
 
 $_columns = array(
+'groups' => array(
+	'items' => array(
+		'id' 					=> array('type' => 'pk'),
+		'name' 					=> array('type' => 'varchar', 'length' => 64),
+		'slug' 					=> array('type' => 'slug', 'from' => 'name'),
+		'creation_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
+		'update_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
+	),
+	'_exposed' 		=> array(),
+	'_searchable' 	=> array(),
+	'_related' 		=> array(),
+),
 'resources' => array(
 	'items' => array(
 		'id' 					=> array('type' => 'pk'),
@@ -48,6 +60,7 @@ $_columns = array(
 	),
 	'_exposed' 		=> array(),
 	'_searchable' 	=> array(),
+	'_related' 		=> array(),
 ),
 'users' => array(
 	'items' => array(
@@ -65,6 +78,7 @@ $_columns = array(
 	),
 	'_exposed' 		=> array(),
 	'_searchable' 	=> array(),
+	'_related' 		=> array(),
 ),
 'sessions' => array(
 	'items' => array(
@@ -79,6 +93,7 @@ $_columns = array(
 	),
 	'_exposed' 		=> array(),
 	'_searchable' 	=> array(),
+	'_related' 		=> array(),
 ),
 );
 

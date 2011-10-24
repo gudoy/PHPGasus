@@ -7,9 +7,9 @@ class CDatamodel extends AdminController
 		$DataModel = new DataModel();
 		
 		// Parse user defined dataModel
-		$DataModel->parse();
+		//$DataModel->parse();
 		
 		// Create the generated dataModel
-		//$DataModel->build();
+		$DataModel->build();
 	}
 }

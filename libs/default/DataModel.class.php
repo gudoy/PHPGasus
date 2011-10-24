@@ -22,11 +22,11 @@ class DataModel
 		
 		# Relations
 		'extends', 								// default = null
-		'parent', 								// default = null
-		'parents',  							// default = array()
-		'siblings',  							// default = array()
-		'children', 							// default = array()
-		'related', 								// parent + siblings + children
+		//'parent', 								// default = null
+		//'parents',  							// default = array()
+		//'siblings',  							// default = array()
+		//'children', 							// default = array()
+		//'related', 								// parent + siblings + children
 		// use relations instead of parent/siblings/children??????
 		// 'relations'  	=> array('oneToOne','oneToMany','manyToOne', 'manyToMany')
 		
@@ -35,6 +35,11 @@ class DataModel
 		'searchable', 'crudability', 'exposed',
 		
 		# Generated
+		'_parent', 								// resource name (default = null)
+		'_parents', 							// array of resource names (default = empty)
+		'_siblings', 							// array of resource names (default = empty)
+		'_children', 							// array of resource names (default = empty)
+		'_related', 							// array of resource names (default = empty)
 		'_exposedColumns', 						// array of column names (default = empty) 
 		'_searchableColumns', 					// array of column names (default = empty)
 	);
@@ -218,9 +223,9 @@ class DataModel
 		# Relations
 		'from', 								// TODO: use this to tell the column from which a slug will be created
 		//'on 									// TODO: ???
-		'relResource', 							// TODO: ??? replace by on, to, or from????
+		'relResource', 							// 
 		'relField', 							// Deprecated: use relColumn instead
-		'relColumn', 							// TODO: implement 
+		'relColumn', 							//  
 		'getFields','relGetFields', 			// Deprecated: use getColumns instead
 		'relGetAs', 							// Deprecated: use associative array getColumns
 		'getColumns', 							// TODO: 'col1,cold2,...' or array('col1','col2',...) or array('col1' => 'my_col_1', 'col2' => 'my_col_2')
@@ -273,10 +278,12 @@ class DataModel
 	public function build($params = array())
 	{
 		$params = array_merge(array(
-			'what' => 'resources,colums,groups',
+			//'what' => 'resources,colums,groups',
+			'what' => 'resources',
 		), $params); 
 		
-		$dir = 'config/dataModel/';
+		//$dir = 'config/dataModel/';
+		$dir = 'config/';
 		
 		// Create a zip archive, open it, create the proper folder and create the file
 		$zipFile 	= tempnam('tmp', 'zip');
@@ -286,14 +293,32 @@ class DataModel
 		
 		$files = Tools::toArray($params['what']);
 		
+		// TODO: make 2 pass parsing 
+		// (required to handle props depending on others props that are not already computed at the time we try to handle them )
+		
+		// 2nd pass parsing
+		$filecontent = '';
 		foreach( $files as $name)
 		{
-			$mthd = 'generate' . ucfirst($name);
-			$zip->addFromString($dir . $name . '.php', self::$mthd());
+			$parseMtdh 	= 'parse' . ucfirst($name);
+			$genMthd 	= 'generate' . ucfirst($name);
+			//$zip->addFromString($dir . $name . '.php', self::$genMthd());
+			
+			// Parse item
+			self::$parseMtdh();
+			
+			$fileContent .= self::$genMthd(array('inline' => true)) . PHP_EOL . PHP_EOL;
 		}
-		$zip->addFromString($dir . 'resources.php', self::generateResources());
-		$zip->addFromString($dir . 'columns.php', self::generateColumns());
-		$zip->addFromString($dir . 'groups.php', self::generateGroups());
+		//$zip->addFromString($dir . 'resources.php', self::generateResources());
+		//$zip->addFromString($dir . 'columns.php', self::generateColumns());
+		//$zip->addFromString($dir . 'groups.php', self::generateGroups());
+		
+//echo $fileContent;
+//var_dump($fileContent);
+//var_dump(self::$resources);
+//die();
+		
+		$zip->addFromString($dir . 'dataModel.generated.php', $fileContent);
 		
 		$zip->close();
 		
@@ -410,6 +435,12 @@ class DataModel
 				// Generated properties
 				'_exposedColumns' 		=> array(), // will be populated by parseColumns() 
 				'_searchableColumns' 	=> array(), // will be populated by parseColumns()
+				'_parent' 				=> null, 	// will be populated by parseColumns()
+				'_parents' 				=> array(), // will be populated by parseColumns()
+				'_siblings' 			=> array(), // will be populated by parseColumns()
+				'_children' 			=> array(), // will be populated by parseColumns()
+				'_related' 				=> array(), // will be populated by parseColumns()
+				
 			);
 			
 			self::$resources['_aliases'][$alias] = $realName;
@@ -422,7 +453,7 @@ class DataModel
 		}
 
 		// Sort resources by alphabetical order
-		asort(self::$resources);
+		//asort(self::$resources);
 	}
 	
 	public function parseGroups()
@@ -685,9 +716,27 @@ class DataModel
 						$cProps['relResource'] = isset($p['relResource']) && self::isResource($p['relResource']) 
 							? $p['relResource'] 
 							: ( in_array($cProps['type'], array('onetoone','onetomany')) ? self::guessRelatedResource($cName) : null );
+							
+						// Populater proper resource relation related properties
+						if ( $cProps['relResource'] )
+						{
+							self::$resources['items'][$rName]['_related'][] = $cProps['relResource'];
+							self::$resources['items'][$rName]['_children'][] = $cProps['relResource'];
+						}
 					}
-					// Handle 'relField', 							
-					// Handle 'relColumn', 							
+					// Handle 'relField',
+					elseif ( $k === 'relField' )
+					{
+						if ( isset($p['relField']) ){ $cProps['relColumn'] = $p['relField']; }
+					}
+					// Handle 'relColumn',
+					elseif ( $k === 'relColumn' )
+					{				
+						$cProps['relColumn'] = isset($p['relColumn']) && !empty($cProps['relResource']) 
+												&& self::isColumn($cProps['relResource'], $p['relColumn']) 
+													? $p['relColumn'] 
+													: self::$resources['items'][$cProps['relResource']]['nameField'];
+					} 							
 					// Handle 'getFields','relGetFields', 			
 					// Handle 'relGetAs', 							
 					// Handle 'getColumns',
@@ -768,77 +817,112 @@ $dbColumns = array();
 		$this->generateColumns();
 	}
 	
-	public function generateResources()
-	{		
-		$lb 			= "\n";
-		$tab 			= "\t";
-		$code 			= '<?php' . $lb . $lb . '$_resources = array(' . $lb;
+	public function generateResources($params = array())
+	{
+		$o 				= array_merge(array(
+			'inline' 	=> false,
+			'lb' 		=> "\n",
+			'tab' 		=> "\t",
+		), $params);
+		
+		$code 			= '<?php' . $o['lb'] . $o['lb'] . '$_resources = array(' . $o['lb'];
 		$longer 		= null;
 		
-		/*
-		$rPropNames 	= array(
-			// Semantic props
-			'type', 'singular', 'plural', 'displayName',
-			// Database binding props
-			'database', 'table', 'alias',
-			// Relation props
-			'defaultNameField', 'nameField', 'extends',
-			// Misc props
-			'searchable', 'exposed', 'crudability'
-		);*/
-		
 		// Build an array or resource names only (for perf issues)
-		$resNames 		= array_keys(self::$resources);
+		$resNames 		= array_keys(self::$resources['items']);
 		
 		// Get the longest resource name and use it to get position used to verticaly align the resource code (indentation)
 		$longRes 		= Tools::longestValue($resNames);
 		$resVertPos 	= strlen($longRes) + ( 4 - (strlen($longRes) % 4) );
+		
 		
 		// Get the longest resource propery name
 		//$longProp 		= Tools::longestValue($rPropNames);
 		$longProp 		= Tools::longestValue(self::$resourceProperties);
 		$propVertPos	= strlen($longProp) + ( 4 - (strlen($longProp) % 4) );
 		
+		$code 			.= "'items' => array(" . $o['lb'];
+		
 		// Loop over the resources
-		foreach ( array_keys((array) self::$resources) as $rName )
+		foreach ( $resNames as $rName )
 		{
 			// Shortcut for resource props
-			$p 	= &self::$resources[$rName];
+			$p 		= &self::$resources['items'][$rName];
 			
-			// Calculate the number of tabs required for proper vertical alignement of the current resource
-			//$tabsCnt = floor(($resVertPos - strlen($rName) / 4));
-			$resTabs = ($resVertPos - (strlen($rName)+3))/4;
-			//$resTabs = ( $resTabs < 1 ) ? 1 : ( ( $resTabs - ceil($resTabs) < 0.5 ) ? ceil($resTabs) : floor($resTabs) );
-			$tabs = '';
-			//for($i=0; $i<$resTabs; $i++){ $tabs .= $tab; }
+			$tabs 	= '';
 			
-			$code .= "'" . $p['name'] . "' " . $tabs . "=> array(" . $lb;
-			
-			foreach (self::$resourceProperties as $propName)
+			if ( $o['inline'] )
 			{
-				// TODO: Calculate the number of tabs required for proper vertical alignement of the current property
+				// Calculate the number of tabs required for proper vertical alignement of the current resource
 				//$tabsCnt = floor(($resVertPos - strlen($rName) / 4));
-				$propTabs = ($propVertPos - (strlen($propName)+3))/4;
-				//$propTabs = ( $propTabs < 1 ) ? 1 : ( ( $propTabs - ceil($propTabs) < 0.5 ) ? ceil($propTabs) : floor($propTabs) );
-				$tabs = '';
-				for($i=0; $i<$propTabs; $i++){ $tabs .= $tab; }
-				
-				$code .=  $tab . "'" . $propName . "' " . $tabs . "=> ";
-				
-				// Boolean props
-				if ( in_array($propName, array('searchable','exposed')) ) 	{ $code .= $p[$propName] ? 'true' : 'false'; }
-				// Defined string of default to null props
-				elseif ( in_array($propName, array('extends','database')) ) { $code .= !empty($p[$propName]) ? "'" . $p[$propName] . "'" : 'null'; }
-				// Default: string props
-				else 														{ $code .= "'" . $p[$propName] . "'"; }
-				
-				$code .=  "," . $lb;
+				$resTabs = ($resVertPos - (strlen($rName)+3))/4;
+				//$resTabs = ( $resTabs < 1 ) ? 1 : ( ( $resTabs - ceil($resTabs) < 0.5 ) ? ceil($resTabs) : floor($resTabs) );
+				for($i=0; $i<$resTabs; $i++){ $tabs .= $o['tab']; }				
 			}
 			
-			$code .= ")," . $lb;
+			$code .= $o['tab'] . "'" . $p['name'] . "' " . $tabs . "=> array(" . ( $o['inline'] ? '' : $o['lb'] );
+			
+			// Loop over properties
+			foreach (self::$resourceProperties as $propName)
+			{
+				$tabs = '';
+				
+				if ( !$o['inline'] )
+				{
+					// Calculate the number of tabs required for proper vertical alignement of the current property
+					//$tabsCnt = floor(($resVertPos - strlen($rName) / 4));
+					$propTabs = ($propVertPos - (strlen($propName)+3))/4;
+					//$propTabs = ( $propTabs < 1 ) ? 1 : ( ( $propTabs - ceil($propTabs) < 0.5 ) ? ceil($propTabs) : floor($propTabs) );
+					for($i=0; $i<$propTabs; $i++){ $tabs .= $o['tab']; }					
+				}
+				
+				$code .=  ($o['inline'] ? '' : $o['tab'] ) . "'" . $propName . "' " . $tabs . "=> ";
+				
+				$boolProps 	= array('searchable','exposed');
+				$nullProps 	= array('extends','database', '_parent');
+				$arrayProps = array('_parents','_siblings','_children','_related','_exposedColumns','_searchableColumns');
+				
+				// Boolean props
+				if ( in_array($propName, $boolProps) ) 		{ $code .= $p[$propName] ? 'true' : 'false'; }
+				// Defined string of default to null props
+				elseif ( in_array($propName, $nullProps) ) 	{ $code .= !empty($p[$propName]) ? "'" . $p[$propName] . "'" : 'null'; }
+				//
+				elseif ( in_array($propName, $arrayProps) ) { $code .= 'array(' . (join(',', (array) $p[$propName]) ) . ')'; }
+				// Default: string props
+				else 										{ $code .= "'" . $p[$propName] . "'"; }
+				
+				$code .=  "," . ( $o['inline'] ? '' : $o['lb'] );
+			}
+			
+			$code .= ")," . $o['lb'];
+		}
+
+		$code .= ")," . $o['lb'];
+		
+		// TODO: handle meta values
+		foreach(self::$resources as $propName => $propValue)
+		{
+			// Skip 'items'
+			if ( $propName === 'items' ){ continue; }
+			
+			$tabs 	= '';
+			
+			$code .= "'" . $propName . "' " . $tabs . "=> " . ( $o['inline'] ? '' : $o['lb'] );
+			
+			// TODO: do we need to handle no array values?
+			$code .= "array(";
+			$i = 0;
+			foreach ($propValue as $k => $v)
+			{
+				$code .= ( $i === 0 ? " " : '') . (is_numeric($k) ? "'" . $v . "'" : "'" . $k . "' => '" . $v . "'") . ",";
+				$i++;
+			}
+			$code .= "),";
+			
+			$code .= $o['lb'];
 		}
 		
-		$code .= ');' . $lb . '?>';
+		$code .= ');' . $o['lb'] . '?>';
 		
 		return $code;
 	}
@@ -1002,13 +1086,15 @@ $dbColumns = array();
 	
 	
 	// Checks that a column existing in a given resource
-	static function isColumn($resource, $string)
+	static function isColumn($resource, $colName)
 	{
 		global $_columns;
 		
+//var_dump(__METHOD__ . " -> $resource.$colName");
+		
 		//return !empty(self::$columns[$resource][$string]);
 		//return !empty($_columns[$resource][$string]);
-		return !empty($_columns[$resource]['items'][$string]);
+		return !empty($_columns[$resource]['items'][$colName]);
 	}
 	
 	// Returns the singular of a resource
@@ -1176,7 +1262,7 @@ $dbColumns = array();
 	// Try to gess column type using it's name
 	static function guessColumnType($colName)
 	{
-var_dump(__METHOD__ . ' -> ' . $colName);
+//var_dump(__METHOD__ . ' -> ' . $colName);
 
 		// Init type
 		$type 		= null;
@@ -1202,10 +1288,10 @@ var_dump(__METHOD__ . ' -> ' . $colName);
 			$relResource 	= self::searchResource($part);
 			$isResource 	= !!$relResource;
 			
-//var_dump('next: ' . next($parts));
-			
 			// If next part is an existing colum of this resource
-			$isColumn 	= $isResource && self::isColumn($relResource, next($parts));
+			$next = next($parts);
+//var_dump('next: ' . $next);
+			$isColumn 	= $isResource && self::isColumn($relResource, $next);
 //var_dump('relResource:' . $relResource);
 //var_dump('isResource: ' . (int) $isResource);
 //var_dump('isColumn: ' . (int) $isColumn);
@@ -1272,11 +1358,38 @@ var_dump(__METHOD__ . ' -> ' . $colName);
 
 	public static function guessRelatedResource($colName)
 	{
-		// TODO
-		$ret = false;
+var_dump(__METHOD__ . ' -> ' . $colName);
+		// Default return value to false (nothing found)
+		$ret 			= false;
 		
-		// TODO: split words
+		// Check if the column as is is an existing resource
+		$relResource 	= self::searchResource($colName);
 		
+		// If yes, just returns
+		if ( !empty($relResource) ) { return $relResource; }
+		
+		// Otherwise, split on '_' chars
+		$parts = explode('_', $colName);
+		
+		// Loop over the parts
+		$concat = '';
+		foreach ($parts as $part)
+		{
+			// Check if the concatenation of the previous parts with the current one is a resource
+			$ret = self::searchResource($concat . $part);
+			
+			// If yes, just returns
+			if ( !empty($ret) ) { break; } 
+			
+			// Check if the current part is an existing resource
+			$ret = self::searchResource($part);
+			
+			// If yes, just returns
+			if ( !empty($ret) ) { break; }
+			
+			// If a resource as not already been found 
+			$concat .= $part;
+		}
 		
 		return $ret;	
 	}
