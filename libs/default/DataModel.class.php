@@ -301,17 +301,18 @@ class DataModel
 		// 1nd pass: parse 'default' & 'yours' files and build a 1st pass dataModel.generated.php
 		foreach( $what as $v){ $parseMtdh = 'parse' . ucfirst($v); self::$parseMtdh(); }
 		
-//echo $fileContent;
-//var_dump($fileContent);
-//var_dump(self::$resources);
-//var_dump(self::$columns);
 //die();
 
 		// 2nd pass:
 		// (required to handle props depending on others props that are not already computed at the time we try to handle them )
 		foreach( $what as $v){ $parseMtdh = 'parse' . ucfirst($v); self::$parseMtdh(array('mode' => 'update', 'checkDatabase' => false)); }
+
+//echo $fileContent;
+//var_dump($fileContent);
+//var_dump(self::$resources);
+//var_dump(self::$columns);
 		
-//die();
+die();
 
 		// We can now generate the final file
 		foreach( $what as $v)
@@ -522,7 +523,10 @@ class DataModel
 		// Loop over the resources
 		foreach ( array_keys((array) $tmpColumns) as $rName )
 		{
-			$rProps = self::resource($rName);
+//var_dump($rName);
+			
+			//$rProps = self::resource($rName);
+			$rProps = self::$resources['items'][$rName];
 				
 			// Shortcut for current resource columns
 			$rCols = &$tmpColumns[$rName];
@@ -532,6 +536,7 @@ class DataModel
 			$colsNb = count($rCols); 
 			foreach ( array_keys((array) $rCols) as $cName )
 			{
+//var_dump($rName . ' -> ' . $cName);
 				// Shortcut for defined column properties
 				//$p 		= &$rCols[$cName];
 				// First step: takes the defined properties as is (just remove unknown properties)
@@ -551,14 +556,20 @@ class DataModel
 				
 				// Loop over known columns names 
 				foreach(self::$columnProperties as $k)
-				{	
+				{						
 					# PHPGasus meta
 					// Handle 'type'
 					if ( $k === 'type' )
 					{
 						$cProps['type'] = isset($p['type']) && in_array($p['type'], self::$columnTypes['types']) 
 											? $p['type'] 
-											: self::guessColumnType($cName);	
+											: self::guessColumnType($cName);
+											
+						// Handle resource 'nameField' meta:
+						// If not already defined, get the fil
+						if ( empty($rProps['nameField']) 
+							&& in_array($cProps['type'], array('string','varchar','email','url','slug','tag')) )
+						{ $rProps['nameField'] = $cName; }
 					}
 					
 					// Handle 'exposed'
@@ -737,11 +748,15 @@ class DataModel
 							? $p['relResource'] 
 							: ( in_array($cProps['type'], array('onetoone','onetomany')) ? self::guessRelatedResource($cName) : null );
 							
+//var_dump($cProps['relResource']);
+							
 						// Populater proper resource relation related properties
 						if ( $cProps['relResource'] )
 						{
-							self::$resources['items'][$rName]['_related'][] = $cProps['relResource'];
-							self::$resources['items'][$rName]['_children'][] = $cProps['relResource'];
+							//self::$resources['items'][$rName]['_related'][] = $cProps['relResource'];
+							if ( !in_array($cProps['relResource'], $rProps['_related']) ){ array_push($rProps['_related'], $cProps['relResource']); }
+							//self::$resources['items'][$rName]['_children'][] = $cProps['relResource'];
+							if ( !in_array($cProps['relResource'], $rProps['_children']) ){ array_push($rProps['_children'], $cProps['relResource']); }
 						}
 					}
 					// Handle 'relField',
@@ -769,6 +784,10 @@ class DataModel
 					
 				$i++;
 			}
+
+			// Handle resource 'nameField' meta:
+			// If not already defined, default it to 'id'
+			if ( !$rProps['nameField'] ) { $rProps['nameField'] = 'id'; }
 
 //var_dump($rName);
 //var_dump(self::$columns['items'][$rName]);
@@ -907,7 +926,7 @@ $dbColumns = array();
 				// Defined string of default to null props
 				elseif ( in_array($propName, $nullProps) ) 	{ $code .= !empty($p[$propName]) ? "'" . $p[$propName] . "'" : 'null'; }
 				//
-				elseif ( in_array($propName, $arrayProps) ) { $code .= 'array(' . (join(',', (array) $p[$propName]) ) . ')'; }
+				elseif ( in_array($propName, $arrayProps) ) { $code .= "array('" . (join("', '", (array) $p[$propName]) ) . "')"; }
 				// Default: string props
 				else 										{ $code .= "'" . $p[$propName] . "'"; }
 				
@@ -1010,7 +1029,7 @@ $dbColumns = array();
 				$tabs = '';
 				for($i=0; $i<$colTabs; $i++){ $tabs .= $tab; }
 				
-				$code .= $tab . "'" . $cName . "' " . $tabs . "=> array(";
+				$code .= $tab . "'" . $cName . "' " . $tabs . "=> array(" . ( $o['inline'] ? '' : $o['lb'] );
 				
 				// Loop over the columns properties
 				foreach (array_keys((array) $cProps) as $pName)
@@ -1300,7 +1319,7 @@ $dbColumns = array();
 	// Try to gess column type using it's name
 	static function guessColumnType($colName)
 	{
-//var_dump(__METHOD__ . ' -> ' . $colName);
+var_dump(__METHOD__ . ' -> ' . $colName);
 
 		// Init type
 		$type 		= null;
@@ -1428,6 +1447,8 @@ $dbColumns = array();
 			// If a resource as not already been found 
 			$concat .= $part;
 		}
+		
+//var_dump($ret);
 		
 		return $ret;	
 	}
