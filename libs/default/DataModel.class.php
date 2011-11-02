@@ -277,59 +277,61 @@ class DataModel
 	// 
 	public function build($params = array())
 	{
-		$params = array_merge(array(
+		$params 		= array_merge(array(
 			//'what' => 'resources,colums,groups',
-			'what' => 'resources',
+			//'what' => 'resources',
+			'what' => 'resources,columns',
 		), $params); 
 		
-		//$dir = 'config/dataModel/';
-		$dir = 'config/';
+		//$dir 			= 'config/dataModel/';
+		$dir 			= 'config/';
+		
+		// Init final file content string
+		$filecontent 	= '';
 		
 		// Create a zip archive, open it, create the proper folder and create the file
-		$zipFile 	= tempnam('tmp', 'zip');
-		$zip 		= new ZipArchive();
+		$zipFile 		= tempnam('tmp', 'zip');
+		$zip 			= new ZipArchive();
 		$zip->open($zipFile, ZipArchive::OVERWRITE);
 		$zip->addEmptyDir($dir);
 		
-		$files = Tools::toArray($params['what']);
+		// 
+		$what 	= Tools::toArray($params['what']);
 		
-		// TODO: make 2 pass parsing 
-		// (required to handle props depending on others props that are not already computed at the time we try to handle them )
-		
-		// 2nd pass parsing
-		$filecontent = '';
-		foreach( $files as $name)
-		{
-			$parseMtdh 	= 'parse' . ucfirst($name);
-			$genMthd 	= 'generate' . ucfirst($name);
-			//$zip->addFromString($dir . $name . '.php', self::$genMthd());
-			
-			// Parse item
-			self::$parseMtdh();
-			
-			$fileContent .= self::$genMthd(array('inline' => true)) . PHP_EOL . PHP_EOL;
-		}
-		//$zip->addFromString($dir . 'resources.php', self::generateResources());
-		//$zip->addFromString($dir . 'columns.php', self::generateColumns());
-		//$zip->addFromString($dir . 'groups.php', self::generateGroups());
+		// 1nd pass: parse 'default' & 'yours' files and build a 1st pass dataModel.generated.php
+		foreach( $what as $v){ $parseMtdh = 'parse' . ucfirst($v); self::$parseMtdh(); }
 		
 //echo $fileContent;
 //var_dump($fileContent);
 //var_dump(self::$resources);
+//var_dump(self::$columns);
 //die();
+
+		// 2nd pass:
+		// (required to handle props depending on others props that are not already computed at the time we try to handle them )
+		foreach( $what as $v){ $parseMtdh = 'parse' . ucfirst($v); self::$parseMtdh(array('mode' => 'update', 'checkDatabase' => false)); }
 		
+//die();
+
+		// We can now generate the final file
+		foreach( $what as $v)
+		{
+			$genMthd 	= 'generate' . ucfirst($v);
+			
+			$fileContent .= self::$genMthd(array('inline' => false));
+			$fileContent .= PHP_EOL . PHP_EOL;
+		}
+		
+		// Create the file into the zip and close it
 		$zip->addFromString($dir . 'dataModel.generated.php', $fileContent);
-		
 		$zip->close();
 		
-		// Stream the file to the client
+		// Push the file to the client & delete the zip
 		header('Content-Type: application/zip');
 		header('Content-Length: ' . filesize($zipFile));
 		header('Content-Disposition: attachment; filename="[' . _APP_NAME . ']_' . 'dataModel.zip"');
 		readfile($zipFile);
 		unlink($zipFile);
-		
-		//$this->generate();
 	}
 	
 	public function buildResources() 	{ return $this->build(array('what' => 'resources')); }
@@ -353,12 +355,14 @@ class DataModel
 			'from' 			=> array(
 				_PATH_CONF . 'default/dataModel/resources.php',
 				_PATH_CONF . 'yours/dataModel/resources.php',
-			),
-			'varname' 		=> '_resources',
-			'checkDatabase' => true,
+			), 														// From where to look for resource
+			'varname' 		=> '_resources', 						// Name of the variable containing resources 
+			'checkDatabase' => true, 								// Do we want to look for database resources
+			'mode' 			=> 'rewrite', 							// 'rewrite' (default) or 'update'
 		), $params);
 		
-		$tmpRes = array();
+		// Init temp resources var 
+		$tmpRes = $p['mode'] === 'update' ? self::$resources : array();
 		
 		// Loop over passed resources files
 		foreach(Tools::toArray($p['from']) as $item)
@@ -401,12 +405,15 @@ class DataModel
 		$tmpRes = array_merge((array) $tmpRes, (array) $dbResources);
 		
 		// Init final resources
-		self::$resources = array(
-			'items' 		=> array(),
-			'_aliases' 		=> array(),
-			'_searchable' 	=> array(),
-			'_exposed' 		=> array(),
-		);
+		if ( $p['mode'] === 'rewrite' )
+		{
+			self::$resources = array(
+				'items' 		=> array(),
+				'_aliases' 		=> array(),
+				'_searchable' 	=> array(),
+				'_exposed' 		=> array(),
+			);	
+		}
 		
 		// Loop over the resources
 		foreach ( $tmpRes as $name => &$res )
@@ -469,12 +476,14 @@ class DataModel
 			'from' 			=> array(
 				_PATH_CONF . 'default/dataModel/columns.php',
 				_PATH_CONF . 'yours/dataModel/columns.php',
-			),
-			'varname' 		=> '_columns',
-			'checkDatabase' => true,
+			), 														// // From where to look for resource
+			'varname' 		=> '_columns', 							// Name of the variable containing resources 
+			'checkDatabase' => true, 								// Do we want to look for database resources
+			'mode' 			=> 'rewrite', 							// 'rewrite' (default) or 'update'
 		), $params);
 		
-		$tmpColumns = array();
+		// Init temp columns var 
+		$tmpColumns = $p['mode'] === 'update' ? self::$columns : array();
 		
 		// Loop over passed columns files
 		foreach(Tools::toArray($p['from']) as $item)
@@ -500,11 +509,15 @@ class DataModel
 		$tmpColumns = array_merge((array) $tmpColumns, (array) $dbColumns);
 		
 		// Init final resources
-		self::$columns = array(
-			'items' 		=> array(),
-			'_exposed' 		=> array(),
-			'_searchable' 	=> array(),
-		);
+		// Init final resources
+		if ( $p['mode'] === 'rewrite' )
+		{
+			self::$columns = array(
+				//'items' 		=> array(),
+				//'_exposed' 		=> array(),
+				//'_searchable' 	=> array(),
+			);
+		}
 		
 		// Loop over the resources
 		foreach ( array_keys((array) $tmpColumns) as $rName )
@@ -525,9 +538,16 @@ class DataModel
 				$p = array_intersect_key((array) $rCols[$cName], (array) array_flip((array) self::$columnProperties));
 				
 				// Shortcut for final column properties
-				$cProps = &self::$columns['items'][$rName][$cName];
+				//$cProps = &self::$columns['items'][$rName][$cName];
+				$cProps = &self::$columns[$rName]['items'][$cName];
 //var_dump($p);
 //var_dump('-----------: ' . $cName);
+
+				// Init final resource columns metas
+				if ( $p['mode'] === 'rewrite' )
+				{
+					self::$columns[$rName] = array_merge(self::$columns[$rName], array('_exposed','_searchable'));
+				}
 				
 				// Loop over known columns names 
 				foreach(self::$columnProperties as $k)
@@ -750,8 +770,8 @@ class DataModel
 				$i++;
 			}
 
-var_dump($rName);
-var_dump(self::$columns['items'][$rName]);
+//var_dump($rName);
+//var_dump(self::$columns['items'][$rName]);
 		}
 	}
 	
@@ -907,14 +927,21 @@ $dbColumns = array();
 			
 			$tabs 	= '';
 			
-			$code .= "'" . $propName . "' " . $tabs . "=> " . ( $o['inline'] ? '' : $o['lb'] );
+			//$code .= "'" . $propName . "' " . $tabs . "=> " . ( $o['inline'] ? '' : $o['lb'] );
+			$code .= "'" . $propName . "' " . $tabs . "=> ";
 			
-			// TODO: do we need to handle no array values?
+			// TODO: do we need to handle others than array values?
 			$code .= "array(";
 			$i = 0;
 			foreach ($propValue as $k => $v)
 			{
-				$code .= ( $i === 0 ? " " : '') . (is_numeric($k) ? "'" . $v . "'" : "'" . $k . "' => '" . $v . "'") . ",";
+				$isAssoc = !is_numeric($k);
+				
+				$code .= ( $o['inline'] || (!$isAssoc && count($propValue) < 4) ) 
+							? ( $i !== 0 ? " " : '') 
+							: $o['lb'] . $o['tab'];
+				$code .= !$isAssoc ? "'" . $v . "'" : "'" . $k . "' => '" . $v . "'";
+				$code .= ',';
 				$i++;
 			}
 			$code .= "),";
@@ -941,23 +968,34 @@ $dbColumns = array();
 	}
 	
 	public function generateColumns()
-	{
+	{		
 		$lb 			= "\n";
 		$tab 			= "\t";
 		$code 			= '<?php' . $lb . $lb . '$_columns = array(' . $lb;
 				
 		// Loop over the resources columns
-		foreach ( array_keys((array) self::$resources) as $rKey )
-		{
+		foreach ( array_keys((array) self::$resources['items']) as $rKey )
+		{			
 			// Shortcut for resource name & resource cols
-			$rName 		= &self::$resources[$rKey]['name'];
-			$rCols 		= &self::$columns[$rName];
+			$rName 		= &self::$resources['items'][$rKey]['name'];
+			$rCols 		= &self::$columns[$rName]['items'];
+			
+			// Do not continue if the resource has no columns
+			//if ( !$rCols ){ continue; }
 			
 			// Get the resource columns names
 			$rColNames 	= array_keys((array) $rCols);
 			
+//var_dump($rKey);
+//var_dump($rCols);
+
+//var_dump($rColNames);			
+//var_dump(self::$columns);
+//die();
+//continue;
+			
 			// Get the longer column name
-			$longCol 		= Tools::longestValue($rColNames);
+			$longCol 		= empty($rColNames) ? '' : Tools::longestValue($rColNames);
 			$colVertPos		= strlen($longCol) + ( 4 - (strlen($longCol) % 4) );
 			
 			$code .= "'" . $rName . "' => array(" . $lb;
@@ -1358,7 +1396,7 @@ $dbColumns = array();
 
 	public static function guessRelatedResource($colName)
 	{
-var_dump(__METHOD__ . ' -> ' . $colName);
+//var_dump(__METHOD__ . ' -> ' . $colName);
 		// Default return value to false (nothing found)
 		$ret 			= false;
 		
