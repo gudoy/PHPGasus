@@ -55,12 +55,17 @@ define("_FTP_ROOT",    					'/');
 function __autoload($className)
 {
 	$first 		= $className[0]; 													// Get first letter
+	
 	$is2ndUp 	= $className[1] === strtoupper($className[1]); 						// Check if second is uppercased
+	
+if ( $first === 'C' && $is2ndUp ) { return; } 
+	
 	$known 		= array('C' =>'controller'); 										// Known classes types
 	$type 		= isset($known[$first]) && $is2ndUp ? $known[$first] : 'lib'; 		// Set class type
 	$path 		= constant('_PATH_' . strtoupper($type  . 's')); 					// Get class type base path
 	$file 		= $path . $className . '.class.php'; 								// Get class filepath
-	
+
+var_dump(__METHOD__);	
 //var_dump($className);
 //var_dump($file);
 	

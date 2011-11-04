@@ -59,6 +59,11 @@ foreach ($Request->parts as $item)
 	// Is an existing controller?
 	elseif ( ( $isFile = is_file($cFilepath) ) && $isFile ){ $RC->name = 'C' . ucfirst($item); }
 	
+//var_dump($RC);
+//var_dump($RC);
+//var_dump($RC->path . $RC->name . '.class.php');
+//var_dump(class_exists($RC->name));
+	
 	// Load controller
 	class_exists($RC->name) || require($RC->path . $RC->name . '.class.php');
 	

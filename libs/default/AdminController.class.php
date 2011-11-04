@@ -3,7 +3,9 @@
 class AdminController extends Controller
 {
 	public function __construct(&$Request)
-	{		
+	{
+//$this->log(__METHOD__);
+var_dump(__METHOD__);
 		parent::__construct($Request);
 		
 		// 
@@ -15,10 +17,12 @@ class AdminController extends Controller
 	 
 	public function index()
 	{
+//die(__METHOD__);
+//$this->log(__METHOD__);
 		//$this->triggerEvent('onBeforeIndex', array('from' => __FUNCTION__));
 	
 //var_dump($this);
-$this->log($this);
+//$this->log($this);
 //die();
 		
 		$rName 				= $this->_resource['plural']; // Shortcut to current resource name

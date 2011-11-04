@@ -21,7 +21,7 @@
 #			RewriteEngine on 
 #			
 #			# Redirect every request to index.php (request params in arguments)
-#			RewriteRule ^((?!index|public).*) index.php/$1/%{QUERY_STRING}	[L]
+#			RewriteRule ^((?!index|public|favicon\.ico).*) index.php/$1/%{QUERY_STRING}	[L]
 #
 #			SetEnv APP_CONTEXT dev
 #		
@@ -55,7 +55,7 @@
 			#RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [NC,R,L] # no case, force redirect, last rule 
 			
 			# Redirect every request to index.php (request params in arguments)
-			RewriteRule ^((?!index|public).*) index.php/$1/%{QUERY_STRING}	[L]
+			RewriteRule ^((?!index|public|favicon\.ico).*) index.php/$1/%{QUERY_STRING}	[L]
 
 			SetEnv APP_CONTEXT dev
 		

@@ -2,8 +2,8 @@
 
 ( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
 
-//class DataModel extends Core
-class DataModel
+class DataModel extends Core
+//class DataModel
 {
 	public static $resources 	= array();
 	public static $groups 		= array();
@@ -277,6 +277,9 @@ class DataModel
 	// 
 	public function build($params = array())
 	{
+var_dump('here1');
+Core::log('here1');
+die();
 		$params 		= array_merge(array(
 			//'what' => 'resources,colums,groups',
 			//'what' => 'resources',
@@ -1319,7 +1322,7 @@ $dbColumns = array();
 	// Try to gess column type using it's name
 	static function guessColumnType($colName)
 	{
-var_dump(__METHOD__ . ' -> ' . $colName);
+Core::log(__METHOD__ . ' -> ' . $colName);
 
 		// Init type
 		$type 		= null;

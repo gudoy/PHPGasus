@@ -17,23 +17,23 @@ class Controller extends Core implements ControllerInterface
 	private static $_instance;
 	
 	public function __construct($Request)
-	{		
+	{
+var_dump(__METHOD__);
 		//$this->request = &$Request;
 		$this->request = $Request;
 		
 		parent::__construct();
 		
-		$this->initDataModel();
-		$this->initView();
+		//$this->initDataModel();
+		//$this->initView();
 		//$this->initModel();
 	}
-	
 	
 	public function __get($prop)
 	{
 //var_dump(__METHOD__);
-$this->log(__METHOD__);
-$this->log('prop: ' . (string) $prop);
+//$this->log(__METHOD__);
+//$this->log('prop: ' . (string) $prop);
 		
 		# Auto-instanciation of models
 		
@@ -91,10 +91,6 @@ $this->log('prop: ' . (string) $prop);
 		// Shortcut to request controller
 		$RC = &$this->request->controller;
 		
-//var_dump($_SERVER);
-//var_dump($RC);
-//var_dump(__METHOD__);
-//die();
 		// TODO: Protect against CSRF
 		// If request method == get & overloaded method == delete
 		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->statusCode(405); }
@@ -107,6 +103,13 @@ $this->log('prop: ' . (string) $prop);
 		
 		// If method exists and does not start by un '_' char (used for not exposed method)
 		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) && $RC->method[0] !== '_' ? $RC->method : 'error404';
+		
+//var_dump($_SERVER);
+var_dump($RC);
+var_dump(__METHOD__);
+var_dump(get_called_class());
+var_dump($RC->calledMethod);
+//die();
 		
 		return call_user_func_array(array($this, $RC->calledMethod), array());
 		
@@ -229,7 +232,8 @@ $this->log('prop: ' . (string) $prop);
 	}
 	
 	public function render()
-	{		
+	{
+//$this->log(__METHOD__);
 		$renderMethod = 'render' . strtoupper($this->request->getOutputFormat());
 	
 		$this->$renderMethod();
@@ -247,6 +251,8 @@ $this->log('prop: ' . (string) $prop);
 	
 	public function renderHTML()
 	{
+//$this->log(__METHOD__);
+		
 		// Extract some magic data from the request
 		$this->request->getMagicData();
 		

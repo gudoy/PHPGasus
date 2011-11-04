@@ -13,4 +13,5 @@ include( $confdir . 'env/_common.php' );
 include( $confdir . 'paths.php' );
 include( $confdir . 'features.php' );
 include( $confdir . 'urls.php' );
+
 ?>
