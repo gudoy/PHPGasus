@@ -65,7 +65,7 @@ if ( $first === 'C' && $is2ndUp ) { return; }
 	$path 		= constant('_PATH_' . strtoupper($type  . 's')); 					// Get class type base path
 	$file 		= $path . $className . '.class.php'; 								// Get class filepath
 
-var_dump(__METHOD__);	
+var_dump(__METHOD__);
 //var_dump($className);
 //var_dump($file);
 	
