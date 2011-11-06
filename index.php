@@ -9,8 +9,11 @@ $_phpgasus = array(
 // Load config file(s)
 require 'config/config.generated.php';
 
+die('here5');
+
 $Request 	= new Request(); 			// Create a new request
 $RC 		= &$Request->controller; 	// Shortcut to request controller
+$RC->path 	= _PATH_CONTROLLERS;
 
 // If the site is in maintenance
 if ( _IN_MAINTENANCE ) 																{ $dc = true; $RC->method = 'maintenance'; }
@@ -24,13 +27,15 @@ if ( $dc )
 {
 	$RC->name 			= 'CHome'; 
 	$RC->rawName 		= 'home'; 
-	$RC->calledMethod 	= $RC->method;  
+	$RC->calledMethod 	= $RC->method;
+	
+	// Load controller
+	class_exists($RC->name) || require($RC->path . $RC->name . '.class.php');
+	
 	return call_user_func(array(new $RC->name($Request), $RC->method));
 }
 
 $RC->name 	= 'CHome';
-$RC->path 	= _PATH_CONTROLLERS;
-
 
 // Otherwise,
 // Loop over the request parts

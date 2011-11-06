@@ -18,3 +18,4 @@ config/yours/htaccess/*
 /.htaccess
 public/stylesheets/default/macaddict.old.css
 public/stylesheets/default/phpgasus.old.css
+PHPGasus-v1.esproj

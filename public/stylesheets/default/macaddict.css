@@ -48,6 +48,8 @@ footer.menu .toggler.active .plus { display:block; }
 
 /* Start Buttons */
 .action { background-repeat:no-repeat; }
+.action.primary {}
+.action.secondary {}
 /* End Buttons */
 
 
@@ -119,6 +121,7 @@ footer.menu .resize { float:right; cursor:col-resize; }
 #search { background:-webkit-linear-gradient(90deg, #a8acb9, #f2f3f5); border-bottom:1px solid #797f9; }
 #search header { display:none; }
 #search form { margin:8px 5px; height:26px; display:-moz-box; display:-webkit-box; display:-o-box; display:-ms-box; display:box; -moz-box-flex:1; -webkit-box-flex:1; -o-box-flex:1; -ms-box-flex:1; box-flex:1; -moz-box-orient:horizontal; -webkit-box-orient:horizontal; -o-box-orient:horizontal; -ms-box-orient:horizontal; box-orient:horizontal; background:#fff; border:1px solid #828282; border-radius:13px; background:-webkit-linear-gradient(#f3f3f3, #b4b4b4); background-clip:padding-box; }
+.gecko #search form { width:-moz-calc(100% - 10px); }
 #search div.field,
 #search div.label,
 #search div.input { display:inline-block; }

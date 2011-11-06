@@ -1,0 +1,33 @@
+pre {
+	overflow-x: auto; /* Use horizontal scroller if needed; for Firefox 2, not needed in Firefox 3 */
+	white-space: pre-wrap; /* css-3 */
+	white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
+	width: 99%; */
+	word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+/* Layout */
+/*
+#layout, 
+#header,
+#body,
+#footer { clear:both; }
+
+#layout:after,
+#header:after,
+#body:after,
+#footer:after { height:0; clear:both; content:' '; display:block; visibility:hidden; }
+*/
+
+/* Micro clearfix: http://nicolasgallagher.com/micro-clearfix-hack/ */
+/*
+.clearfix:before,
+.clearfix:after { content:""; display:table; }
+.clearfix:after { clear:both; }
+*/
+
+
+/* Header */
+
+
+/* Footer */
