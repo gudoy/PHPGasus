@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 WHAT IS PHPGasus
 PHPGasus is another PHP Framework which aims to allow quick and smart web developements being the more easy to learn & use than possible. 
 It's based on well known principles
@@ -515,3 +516,162 @@ $this->
         minifyCSS                   // boolean [check for ?minify=css or ?minify=all or default use _MINIFY_CSS]
         minifyJS                    // boolean [check for ?minify=js or ?minify=all or default use _MINIFY_JS]
         minifyHTML                  // boolean [check for ?minify=html or ?minify=all or default use _MINIFY_HTML]
+=======
+WHAT IS PHPGasus
+PHPGasus is another PHP Framework which aims to allow quick and smart web developements being the more easy to learn & use than possible. 
+It's based on well known principles
+
+PRINCIPLES
+- REST 
+- ROA
+- Model Driven Development
+- DRY
+- KISS
+- MVC
+- Conventions over configuration
+- less is more (“Perfection is achieved, not when there is nothing left to add, but when there is nothing left to remove.” (Antoine de Saint-Exupéry))
+- the content is the interface
+
+
+REQUIREMENTS
+- PHP 5 (best 5.3, or recommanded >5.2.6)
+- Apache 2 (with mod_rewrite)
+
+
+TOP FEATURES
+- EASY SETUP (just upload files and launch setup page)
+- AUTOMATIC DATABASE SCHEMA retrieval
+- ORM via admin interface (or by smart & simple php files for code purists)
+- DBAL with support for mysql, postgresql, sqlite & mongoDB
+- ADMIN generator (scaffholding)
+- API generator (scaffholding)
+- PERFs optimized (includes preconfigured vhost and/or .htaccess)
+- EASY to learn (no 500 pages book or 200 pages website documentation)
+- HTML5 based
+- OS/DEVICE & Browser sniffing 
+- CSS/JS minification
+- TEMPLATES engines included (smarty 3, Twig & Haanga)
+- ACL module included (users-groups-permissions)
+- PRECONFIGURED ENVIRONMENTS (local,dev,preprod,prod)
+- DEFAULT OUTPUT FORMATS included for all views/pages (html, xhtml, xml, json, jsonp, jsonreport, yaml, plist, csv, rss, atom, pdf)
+- AUTO-UPDATES
+
+
+WHY Use PHPGasus
+- you love things like Ruby on Rails, Django, Python, jQuery,
+- you can stand watching the code of Wordpress or Drupal for their uglyness
+- you can stand watching the code of Symfony for it's verbosity
+- you want to start coding immediately, code few, fast, clean & secure
+- you love the tools that try to guess want you want and act consequently
+- you love syntactic sugar
+- you don't want to read a 500 pages book or ten 20 minutes videos to start doing great things
+- you don't want to have to use a CLI (Command Line Interface) to create anything
+- you love smart & ergonomic interfaces (with lots of magic applied)
+- even if you are a code fanatic or interface hater, you can do it too (and their still some magic applied)
+- you prefer doing $this->users->getOneBirthdateByEmail('foo@bar.com') than $this->db->query("SELECT birthdate FROM users AS u WHERE u.email = 'foo@bar.com' LIMIT 1")
+
+
+Dispatcher
+In PHPGasus, every URL (except for content in public folder) is redirected to the dispatcher : index.php at the root of your project.
+This function tries to call the proper method of the proper controller with proper arguments.
+
+DISPATCHER => CONTROLLER (samples):							
+GET /                                       => /CHome->index() 									
+GET /notAMethod                             => /CHome->error404('notAMethod') 					
+GET /hello/world 							=> /CHome->hello('world') 							
+GET /hello/world/1                          => /CHome->hello('world','1')                      
+GET /hello/world/1/2                        => /CHome->hello('world','1','2')                  
+GET /hello/world/1/2/and/goes/on            => /CHome->hello('world','1','2,'and','goes','on') 
+GET /products/                              => /CProducts->index()                             
+GET /products/1                             => /CProducts->retrieve('1')                       
+GET /products/myKillerProduct               => /CProducts->retrieve('myKillerProduct')         
+GET /products/myKillerProduct/blue          => /CProducts->retrieve('myKillerProduct','blue')  
+GET /users/                                 => /CUsers->index()                                
+GET /users/me                               => /CUsers->me()                                   
+GET /users/me/42                            => /CUsers->me('42')                               
+GET /users/gudoy                            => /CUsers->retrieve('gudoy')                      
+GET /users/gudoy/42                         => /CUsers->retrieve('gudoy','42')                 
+GET /users/gudoy/birthyear/1983             => /CUsers->retrieve('gudoy','birthyear','1983')   
+GET /users/42,43,44/                        => /CUsers->index('42,43,44')                      
+GET /users/42,43,44/email                   => /CUsers->index('42,43,44','email')              
+GET /users/42,43,44/email,birthday          => /CUsers->index('42,43,44','email,birthday')     
+GET /users/42,43,foo/email,birthday         => /CUsers->index('42,43,foo','email,birthday')    
+
+
+CONTROLLER to MODEL/DATABASE (sample magic methods);
+(unless explicitely specified, all request use "LIMIT 100" clause)
+Products->findAll() 								=> SELECT * FROM products LIMIT 100
+Products->fingAll(array('limit' => -1)) 			=> SELECT * FROM products
+Products->findByName(array('foo','bar')) 			=> SELECT * FROM products WHERE name IN ('foo','bar') LIMIT 100
+Products->findOneByName('myKillerProduct') 			=> SELECT * FROM products WHERE name = myKillerProduct LIMIT 1 
+Users->findById(42) 								=> SELECT * FROM users WHERE id = 42 LIMIT 100
+Users->findAllByNameWhereBirthyearIs1983('gudoy') 	=> SELECT * FROM users WHERE nameFied = 'gudoy' AND birthyear = 1983 LIMIT 100
+Users->findAllById(array(42,43,44)) 				=> SELECT * FROM users WHERE id IN (42,43,45) LIMIT 100
+Users->findAllEmailById(array(42,43,44)) 			=> SELECT email FROM users WHERE id IN (42,43,45) LIMIT 100
+Users->findAllEmailAndBirthdayById(array(42,43,44)) => SELECT email,birthyear FROM users WHERE id IN (42,43,45) LIMIT 100
+
+
+
+CONTROLLERS
+- classname = 'C' + ucfirst(controllername)
+- have to extends built in Controller
+- require an 'index' method
+
+
+JAVASCIPTS // TODO: choose pattern
+GET     /                       => home.init() && homeIndex.init()
+GET     /about/                 => about.init() && aboutIndex.init()
+GET     /about/credits          => about.init() && credits.init() && aboutCreditsIndex.init()
+GET     /admin/                 => admin.init() && adminIndex.init()
+GET     /admin/user/42          => admin.init() && users.init() && adminUsers.init() && adminUsersRetrieve.init()
+POST    /admin/user/42          => admin.init() && users.init() && adminUsers.init() && adminUsersCreate.init()
+PUT     /admin/user/42          => admin.init() && users.init() && adminUsers.init() && adminUsersUpdate.init()
+DELETE  /admin/user/42          => admin.init() && users.init() && adminUsers.init() && adminUsersDelete.init()
+or 
+GET     /                       => home.init() && home.index()
+GET     /about/                 => about.init() && about.index()
+GET     /about/credits          => about.init() && credits.init() && aboutCreditsIndex.init()
+GET     /admin/                 => admin.init() && admin.index()
+GET     /admin/users/42         => admin.init() && admin.users.init() && admin.users.retrieve()
+POST    /admin/users/42         => admin.init() && admin.users.init() && admin.users.create()
+PUT     /admin/users/42         => admin.init() && admin.users.init() && admin.users.update()
+DELETE  /admin/users/42         => admin.init() && admin.users.init() && admin.users.delete()
+GET     /users/42/products/     => users.init() && products.init() && users.products.init()
+
+
+
+
+CODING PRACTICES
+#http://net.tutsplus.com/tutorials/php/30-php-best-practices-for-beginners/
+- know types handling, transtyping/casting, comparisions
+- WARNING with == and ==== comparisions
+- preferer ternary operator for simple if/else testing ( condition ? "condition is true" : "condition is false" )
+- avoid if/for/foreach/... nesting (more than 2 levels is BAD, more than 3 levels is REALLY BAD
+- use dynamic arguments (using $args = func_get_args()) or a $params as last param of your functions
+
+
+Magic request params
+{url}.html 					<== display the html reprensatation of the page data [default]
+{url}.xhtml 				<== display the html reprensatation of the page data
+{url}.qr 					<== display the qr code containing the url of the page data
+{url}.json 					<== return the json representation of the page data
+{url}.jsonp 				<== return the json representation of the page data
+{url}.jsontxt 				<== return the json representation of the page data, served as plain text
+{url}.jsonreport 			<== return the jsonreport (http://ajaxstack.com/jsonreport/) of the page data
+{url}.xml                	<== return the xml representation of the page data
+{url}.plist              	<== return the plist representation of the page data
+{url}.plistxml           	<== return the plist representation of the page data, served as plain text
+{url}.yaml               	<== return the yaml representation of the page data
+?css=no                     <== disable css
+?js=no                      <== disable js
+?minify=all                 <== force minification of js & css (override conf directives)
+?minify=css                 <== force minification of css
+?minify=js                  <== force minification of js
+?minify=html                <== force minification of html
+?tplSelf=1                  <== only return main template content (not the layout) [by default for ajax requests]
+?limit=100                  <== never return more than 100 items for a resource (unless you explicitely asked for more using 'limit' => -1 params in your code 
+ 
+
+REFERENCE
+soon...
+>>>>>>> 4b7d7f5ab0689830a94602ff9dd5b692a524dda3

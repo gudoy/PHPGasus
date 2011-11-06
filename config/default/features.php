@@ -25,14 +25,14 @@ define('_APP_OWNER_URL', 						_URL);
 
 
 ### TEMPLATES ###	
-define('_APP_TEMPLATES_ENGINE', 				'Smarty'); 					// Smarty, Twig or Haanga (case sensitive)
-define('_APP_TEMPLATES_EXTENSION', 				'tpl'); 					//
-//define('_APP_TEMPLATES_ENGINE', 				'Twig'); 					// Smarty, Twig or Haanga (case sensitive)
-//define('_APP_TEMPLATES_EXTENSION', 				'twig.tpl'); 			//
-define("_APP_TEMPLATES_COMPILE_CHECK", 			false);	
-define("_APP_TEMPLATES_FORCE_COMPILE", 			false);	
-define("_APP_TEMPLATES_CACHING", 				false);	
-define("_APP_TEMPLATES_CACHE_LIFETIME", 		3600); // in seconds 	
+define('_TEMPLATES_ENGINE', 					'Smarty'); 					// Smarty, Twig or Haanga (case sensitive)
+define('_TEMPLATES_EXTENSION', 					'tpl'); 					//
+//define('_TEMPLATES_ENGINE', 					'Twig'); 					// Smarty, Twig or Haanga (case sensitive)
+//define('_TEMPLATES_EXTENSION', 				'twig.tpl'); 				//
+define("_TEMPLATES_COMPILE_CHECK", 				false);
+define("_TEMPLATES_FORCE_COMPILE", 				false);
+define("_TEMPLATES_CACHING", 					false);
+define("_TEMPLATES_CACHE_LIFETIME", 			3600); // in seconds
 
 
 ### ACCOUNT & SESSIONS HANDLING ###	
@@ -51,10 +51,9 @@ define('_APP_IP_WHITELIST', 					''); 						// CSV list of IP adresses than coul
 
 
 ### DEV / DEBUG ###		
-define('_APP_USE_FIREPHP_LOGGING',      		true); 						// experimental. In local & dev environment, use FirePHP server lib to log data (using $this->dump()) into Firefox console (require related extension).
-define('_APP_USE_CHROMEPHP_LOGGING',      		true); 						// experimental. In local & dev environment, use ChromePHP server lib to log data (using $this->dump()) into Chrome console (require related extension).
-define("_ALLOW_FIREPHP_LOGGING", 				false);		
-define('_APP_USE_EVENTS',                       true);          			// Disable this if you do not need to use events 
+define('_USE_FIREPHP_LOGGING',      			true); 						// experimental. In local & dev environment, use FirePHP server lib to log data (using $this->dump()) into Firefox console (require related extension).
+define('_USE_CHROMEPHP_LOGGING',      			true); 						// experimental. In local & dev environment, use ChromePHP server lib to log data (using $this->dump()) into Chrome console (require related extension).		
+define('_USE_EVENTS',                       	true);          			// Disable this if you do not need to use events 
 define('_APP_USE_SQL_TYPEFIXING',               false);         			// experimental.
 define('_APP_USE_ONFETCH_TYPEFIXING', 			true);          			// experimental.
 define('_APP_TYPEFIX_ONETOONE_GETFIELDS',       true);          			// experimental.
@@ -75,12 +74,18 @@ define('_APP_USE_RESOURCESGROUPS',              true);          			// experiment
 ### MISC SNIFFING, FEATURES DETECTION ###		
 define('_SNIFF_PLATFORM', 						true); 						// Disable this if you don't want to try getting the platform data (prevent unnecessary processing)
 define('_SNIFF_BROWSER', 						true); 						// Disable this if you don't want to try getting the browser data (prevent unnecessary processing)
-define('_USE_MODERNIZR', 						false); 					// If allowed, the js lib Modernizr will be added to detect user browser capabilities adding subsenquent classes to the <HTML> tag
+define('_USE_MODERNIZR', 						true); 						// If allowed, the js lib Modernizr will be added to detect user browser capabilities adding subsenquent classes to the <HTML> tag
+
+
+
+### LANGUAGES & INTERNATIONALISATION ###
+define('_LANGUAGES_SYSTEM', 					'db'); 						// 'db' (database + gettext), 'po' (.po files + gettext), 'php'
+define('_DEFAULT_LANGUAGE', 					'fr_FR'); 					// or en_US, en_GB, de_DE, es_EN, it_IT, ja_JP, zh_CN, ko_KR
+define('_LANGUAGES', 							'fr_FR,en_US'); 			// List of languages availables for the app, separated by comas
+
 
 
 ### HTML & METAS ###			
-define('_APP_DEFAULT_LANGUAGE', 				'fr_FR'); 					// or en_US, en_GB, de_DE, es_EN, it_IT, ja_JP, zh_CN, ko_KR
-define('_APP_LANGUAGES', 						'fr_FR'); 					// List of languages (translatations) for the app, separated by comas
 define('_APP_DOCTYPE', 							'html5');					// 'html5', 'xhtml-strict-1.1', 'xhtml-strict', 'xhtml-transitional', 
 define('_APP_DEFAULT_OUTPUT_FORMAT', 			'html');					// Is there case where it won't be html?
 define('_APP_DEFAULT_OUTPUT_MIME', 				'text/html');				// 
@@ -89,11 +94,13 @@ define('_APP_MANIFEST_FILENAME', 				_APP_TITLE . '.manifest'); 	//
 define('_APP_META_DECRIPTION', 					'');
 define('_APP_META_KEYWORDS', 					'');
 define('_APP_META_ROBOTS_INDEXABLE', 			false);						// Allows/prevents pages to be indexed by Google & Friends?
+define('_APP_META_ROBOTS_FOLLOW', 				false);						// Allows/prevents linked pages to be indexed by Google & Friends?
 define('_APP_META_ROBOTS_ARCHIVABLE', 			false);						// Allows/prevents search engines to display "in cache" links in their search results
 define('_APP_META_ROBOTS_IMAGES_INDEXABLE', 	false);						// Allows/prevents search engines to index your images
 define('_APP_META_GOOGLE_TRANSLATABLE', 		true);						// Allows/prevents Google to offer translation link/feature for your pages
 define('_APP_ALLOW_PAGE_PRERENDERING', 			false);						// Allows/prevents Google Chrome to prepender pages in background 
-define('_APP_USE_CHROME_FRAME', 				true);						// HTML pages require Google Chrome Frame plugin? (if yes, displays plugin installation popup)
+define('_USE_CHROME_FRAME', 					true);						// HTML pages require Google Chrome Frame plugin? (if yes, displays plugin installation popup)
+define('_USE_BROWSER_UPDATE_NOTIFIER', 			true); 						// Will display a notification to users whose browsers is not up to date
 
 
 ### VIEWPORT & WEBAPP HANDLING ###		

@@ -7,8 +7,8 @@ $ypages     = 'yours/pages/'; 		// Shortcurt for your pages folder
 
 $_js = array(
 	# Libs
-	//'jquery' 				=> array($libs . 'jquery-1.6.2.min.js'),
-	'jquery' 				=> array('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'),
+	'jquery' 				=> array($libs . 'jquery-1.6.2.js'),
+	//'jquery' 				=> array('https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'),
 	
 	'jqueryUI'				=> array($libs . 'jquery-ui-1.8.15.custom.min.js'),
 	'jqueryPlusUI' 			=> array('jquery', 'jqueryUI'),
@@ -20,6 +20,7 @@ $_js = array(
 	# PHPGasus defaults
 	'common' 				=> array('jqueryPlusUI', 'modernizr', 'tools', 'default/app.js'),
 	'admin' 				=> array('default', 'timepicker', $pages . 'admin.js'),
+	'adminDashboard' 		=> array('admin', $pages . 'admin/dashboard.js'),
 	//'adminHome' 			=> array('admin', $pages . 'adminSpecifics.js'),
 	//'adminResourcesCreate' 	=> array('default', $pages . 'admin/adminResources.js'),
 	//'adminResourcesUpdate' 	=> array('default', $pages . 'admin/adminResources.js'),

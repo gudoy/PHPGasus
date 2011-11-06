@@ -1,5 +1,7 @@
 <?php
 
-$_columns = array();
+$_columns = array(
+// Add you specific resources columns below
+);
 
 ?>

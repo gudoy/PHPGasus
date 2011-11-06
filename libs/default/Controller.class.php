@@ -6,9 +6,7 @@ interface ControllerInterface
 }
 
 class Controller extends Core implements ControllerInterface
-{
-	public $debug 		= true;
-	
+{	
 	public $view 		= array();
 	public $data 		= array();
 	public $errors 		= array();
@@ -16,36 +14,66 @@ class Controller extends Core implements ControllerInterface
 	
 	public $success 	= null;
 	
+	private static $_instance;
+	
 	public function __construct($Request)
-	{		
-		$this->request = &$Request;
+	{
+var_dump(__METHOD__);
+		//$this->request = &$Request;
+		$this->request = $Request;
 		
 		parent::__construct();
 		
-		$this->initDataModel();
-		$this->initView();
-		$this->initModel();
+		//$this->initDataModel();
+		//$this->initView();
+		//$this->initModel();
+	}
+	
+	public function __get($prop)
+	{
+//var_dump(__METHOD__);
+//$this->log(__METHOD__);
+//$this->log('prop: ' . (string) $prop);
+		
+		# Auto-instanciation of models
+		
+		// Do not continue if we are not handling an existing resource
+		if ( !empty($prop) && !DataModel::isResource($prop) ){ return; }
+		
+		// Load Model
+		switch(_DB_DRIVER)
+		{
+			case 'default':
+			case 'pdo': 		$mName = 'pdoModel'; break;
+			case 'mysqli': 		$mName = 'mysqliModel'; break;
+			default: 			$mName = _DB_SYSTEM . 'Model'; break;
+		}
+		
+		// Direct access to resource model
+		$this->requireLibs($mName, 'databases/');
+		$this->{$prop} = new $mName(array('_resource' => $prop));
+		
+		return $this->{$prop};
+	}
+	
+	
+	public static function getInstance()
+	{
+		if ( !(self::$_instance instanceof self) ) { self::$_instance = new self(); } 
+		
+		return self::$_instance;
 	}
 	
 	public function initDataModel()
 	{
-		//$this->dataModel = new DataModel();
 		( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
 
 		// Check if the called controller is an existing resource
-		//if ( ($rName = DataModel::isResource($this->request->controller->rawName)) && $rName )
 		if ( ($_r = DataModel::resource($this->request->controller->rawName)) && $_r )
 		{
-			//$this->request->resource = $this->request->controller->rawName;
 			$this->request->resource 	= $_r['name'];
-			$this->_resource 			= $_r;
-		};
-		
-//var_dump($this->_resource);
-		
-		//$this->_resources 	= &$_resources;
-		//$this->_columns 	= &$_columns;
-		//$this->_groups 		= &$_groups;
+			$this->_resource 			= new ArrayObject($_r, 2);
+		}; 
 	}
 	
 	public function initView()
@@ -56,21 +84,6 @@ class Controller extends Core implements ControllerInterface
 	
 	public function initModel()
 	{
-
-		
-		// Do not continue if we are not handling an existing resource
-		//if ( empty($this->request->resource) ){ return; }
-		if ( !$this->_resource ){ return; }
-		
-//var_dump($this->_resource);
-//var_dump($this->_resource['name']);
-		
-		// Load Model
-		$mName = _DB_SYSTEM . 'Model';
-		$this->requireLibs($mName, 'databases/');
-		$this->{$this->_resource['plural']} = new $mName();
-		
-//var_dump($this->{$this->_resource['plural']});
 	}
 	
 	public function dispatchMethod()
@@ -78,10 +91,6 @@ class Controller extends Core implements ControllerInterface
 		// Shortcut to request controller
 		$RC = &$this->request->controller;
 		
-//var_dump($_SERVER);
-//var_dump($RC);
-//var_dump(__METHOD__);
-//die();
 		// TODO: Protect against CSRF
 		// If request method == get & overloaded method == delete
 		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->statusCode(405); }
@@ -92,7 +101,15 @@ class Controller extends Core implements ControllerInterface
 		// Force method to index
 		if ( !$RC->method ){ $RC->method = 'index'; }
 		
-		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) ? $RC->method : 'error404';
+		// If method exists and does not start by un '_' char (used for not exposed method)
+		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) && $RC->method[0] !== '_' ? $RC->method : 'error404';
+		
+//var_dump($_SERVER);
+var_dump($RC);
+var_dump(__METHOD__);
+var_dump(get_called_class());
+var_dump($RC->calledMethod);
+//die();
 		
 		return call_user_func_array(array($this, $RC->calledMethod), array());
 		
@@ -185,7 +202,6 @@ class Controller extends Core implements ControllerInterface
 			$multiValue = true;
 		
 			// Split on ','	
-			
 		}			
 	}
 	
@@ -216,7 +232,8 @@ class Controller extends Core implements ControllerInterface
 	}
 	
 	public function render()
-	{		
+	{
+//$this->log(__METHOD__);
 		$renderMethod = 'render' . strtoupper($this->request->getOutputFormat());
 	
 		$this->$renderMethod();
@@ -234,13 +251,15 @@ class Controller extends Core implements ControllerInterface
 	
 	public function renderHTML()
 	{
+//$this->log(__METHOD__);
+		
 		// Extract some magic data from the request
 		$this->request->getMagicData();
 		
 		// Merge some default properties with user defined ones 
 		$this->view = new ArrayObject(array_merge(array(
 			// Caching
-			'cache' 					=> _APP_TEMPLATES_CACHING,
+			'cache' 					=> _TEMPLATES_CACHING,
 			'cacheId' 					=> null,
 			'cacheLifetime' 			=> null,
 			
@@ -333,14 +352,14 @@ class Controller extends Core implements ControllerInterface
 
 	public function getViewLayout()
 	{
-		$this->view['layout'] = !empty($this->view['layout']) ? $this->view['layout'] : 'yours/layouts/page.' . _APP_TEMPLATES_EXTENSION;	
+		$this->view['layout'] = !empty($this->view['layout']) ? $this->view['layout'] : 'yours/layouts/page.' . _TEMPLATES_EXTENSION;	
 	}
 	
 	public function getViewTemplate()
 	{
 		$this->view->template = !empty($this->view['template']) ? !empty($this->view['template']) : 'yours/pages/' 
 			. ( $this->request->_magic['classes'] ? join('/', $this->request->_magic['classes']) . '/' : '' )
-			. $this->request->controller->calledMethod . '.' . _APP_TEMPLATES_EXTENSION;
+			. $this->request->controller->calledMethod . '.' . _TEMPLATES_EXTENSION;
 	}
 	
 	public function getViewName()
@@ -460,7 +479,7 @@ class Controller extends Core implements ControllerInterface
 	
 	public function initTemplate()
 	{		
-		switch ( _APP_TEMPLATES_ENGINE )
+		switch ( _TEMPLATES_ENGINE )
 		{
 			case 'Haanga':
 				
@@ -487,7 +506,7 @@ class Controller extends Core implements ControllerInterface
 					'charset' 				=> 'utf-8',
 					'base_template_class' 	=> 'Twig_Template',
 					'cache' 				=> _PATH_TEMPLATES_PRECOMPILED,
-					'auto_reload' 			=> _APP_TEMPLATES_FORCE_COMPILE,
+					'auto_reload' 			=> _TEMPLATES_FORCE_COMPILE,
 					'strict_variables' 		=> false,
 					'autoescape' 			=> true,
 					'optimizations' 		=> -1,
@@ -504,10 +523,10 @@ class Controller extends Core implements ControllerInterface
 				
 				// Instanciate a Smarty object and configure it
 				$this->Template 						= new Smarty();
-				$this->Template->compile_check 			= _APP_TEMPLATES_COMPILE_CHECK;
-				$this->Template->force_compile 			= _APP_TEMPLATES_FORCE_COMPILE;
-				$this->Template->caching 				= isset($this->view['cache']) 			? $this->view['cache'] : _APP_TEMPLATES_CACHING;
-				$this->Template->cache_lifetime 		= isset($this->view['cacheLifetime']) 	? $this->view['cache'] : _APP_TEMPLATES_CACHE_LIFETIME;
+				$this->Template->compile_check 			= _TEMPLATES_COMPILE_CHECK;
+				$this->Template->force_compile 			= _TEMPLATES_FORCE_COMPILE;
+				$this->Template->caching 				= isset($this->view['cache']) 			? $this->view['cache'] : _TEMPLATES_CACHING;
+				$this->Template->cache_lifetime 		= isset($this->view['cacheLifetime']) 	? $this->view['cache'] : _TEMPLATES_CACHE_LIFETIME;
 				$this->Template->template_dir 			= _PATH_TEMPLATES;
 				$this->Template->compile_dir 			= _PATH_TEMPLATES_PRECOMPILED;
 				$this->Template->cache_dir 				= _PATH_TEMPLATES_CACHE;
@@ -534,8 +553,11 @@ class Controller extends Core implements ControllerInterface
 
 	public function renderTemplate()
 	{
+$this->log(__METHOD__);
+$this->log($this->templateData);
+		
 		// Pass variables to the template & render it
-		switch ( _APP_TEMPLATES_ENGINE )
+		switch ( _TEMPLATES_ENGINE )
 		{
 			case 'Haanga':
 				Haanga::Load($this->view['template'], $this->templateData);

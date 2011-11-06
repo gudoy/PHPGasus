@@ -1,11 +1,5 @@
 <?php
 
-# Errors handling
-//error_reporting(2147483647); 			// === error_reporting(E_ALL | E_STRICT | E_DEPRECATED)
-error_reporting((E_ALL | E_STRICT | E_DEPRECATED) ^ E_NOTICE);
-ini_set('display_errors', 1);
-ini_set('html_errors', 1);
-
 # Security
 ini_set('register_globals', 0); 							//
 ini_set('magic_quotes_gpc', 0); 							//
@@ -19,8 +13,18 @@ ini_set('xdebug.var_display_max_depth', 6); 				//
 ini_set('xdebug.max_nesting_level', 500); 					// default is 100, which can be cumbersome
 
 
+/* 
+errors
+	key: 'MISSING_REQUIRED_FIELD',
+	summary': 'Missing required fields: %s'
+	message': 'Please pass the following missing fields: %s'
+	actions:
+		primary:
+		secondary:
+		secondary:
+		...
+*/
 
-// KEY => array('msg' => _($message), ['args' => array()]
 $_errors = array(
 
 	// CONTENT/REQUEST VALIDATION
@@ -30,8 +34,8 @@ $_errors = array(
 	'MISSING_FIELDS' 			=> array('msg' => _('Missing required fields'), 'args' => array('names')),
 
 	// DATABASE
-	'DB_CONNEXION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.')),
-	'DB_SELECTION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.')),
+	'DB_CONNEXION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.'), 'args' => array('error')),
+	'DB_SELECTION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.'), 'args' => array('error')),
 	'DB_QUERY_ERROR' 			=> array('msg' => _('An error occured on the database.')),
 
 	// SECURITY

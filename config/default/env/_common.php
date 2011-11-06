@@ -33,7 +33,8 @@ define("_URL_STATIC_1", 				_APP_PROTOCOL . 'static1.' . _DOMAIN . '/');
 
 
 # DATABASE PARAMETERS
-define("_DB_SYSTEM",   					'pdo'); 			// mysql, mysqli, postgresql, sqlite, mongodb, pdomysql, oracle
+define("_DB_SYSTEM",   					'mysql'); 			// mysql, postgresql, sqlite, mongodb, oracle, mssql
+define("_DB_DRIVER",    				'default'); 		// 'default', 'pdo' (for mysql, postresql, sqlite, mssql, orace), 'mysqli' (for mysql)   
 define("_DB_HOST",    					'localhost'); 		//
 define("_DB_USER",      				'admin'); 			//
 define("_DB_PASSWORD",  				'F4K3paSSw0rD'); 	//
@@ -54,11 +55,19 @@ define("_FTP_ROOT",    					'/');
 function __autoload($className)
 {
 	$first 		= $className[0]; 													// Get first letter
+	
 	$is2ndUp 	= $className[1] === strtoupper($className[1]); 						// Check if second is uppercased
+	
+if ( $first === 'C' && $is2ndUp ) { return; } 
+	
 	$known 		= array('C' =>'controller'); 										// Known classes types
 	$type 		= isset($known[$first]) && $is2ndUp ? $known[$first] : 'lib'; 		// Set class type
 	$path 		= constant('_PATH_' . strtoupper($type  . 's')); 					// Get class type base path
 	$file 		= $path . $className . '.class.php'; 								// Get class filepath
+
+var_dump(__METHOD__);	
+//var_dump($className);
+//var_dump($file);
 	
 	class_exists($className) || (file_exists($file) && require($file));
 }

@@ -6,6 +6,8 @@ pre {
 	word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 
+img { -ms-interpolation-mode: bicubic; }
+
 /* Layout */
 /*
 #layout, 

@@ -1,5 +1,7 @@
 <?php
 
-$_groups = array();
+$_groups = array(
+// Add you specific resources groups below
+);
 
 ?>
