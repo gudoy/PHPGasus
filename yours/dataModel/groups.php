@@ -1,5 +1,0 @@
-<?php
-
-$_groups = array();
-
-?>
