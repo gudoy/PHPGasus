@@ -5,7 +5,8 @@ class Core
 	private $inited = false;
 	
 	private static $_instance;
-	static public $debug 	= true;
+	//public static $debug = true;
+	public static $debug = true;
 	
 	public function __construct()
 	{
@@ -69,13 +70,13 @@ class Core
 		//if ( !$this->debug ){ return; }
 		//if ( !self::$debug ){ return; }
 		if ( (isset($this) && !$this->debug) || !self::$debug ){ return; }
+		//if ( (isset($this) && !$this->debug) || ( isset(self::$debug) && !self::$debug) ){ return; }
 		
 		// Get the user agent
 		$ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''; 	// Shortcut for user agent
 		//$ua = '';
 		
-var_dump($ua);
-
+//var_dump($ua);
 		
 		if 		( _USE_CHROMEPHP_LOGGING && strpos($ua, 'Chrome/') !== false )
 		{

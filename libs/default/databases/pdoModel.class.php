@@ -33,6 +33,7 @@ $this->log($dsn);
 		
 //var_dump($this->db);
 $this->log($this->db);
+$this->log($err);
 		
 		return $this;	
 	}

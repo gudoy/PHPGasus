@@ -11,34 +11,36 @@ class Controller extends Core implements ControllerInterface
 	public $data 		= array();
 	public $errors 		= array();
 	public $warnings 	= array();
-	
 	public $success 	= null;
 	
 	private static $_instance;
 	
 	public function __construct($Request)
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
 		//$this->request = &$Request;
 		$this->request = $Request;
 		
 		parent::__construct();
 		
-		//$this->initDataModel();
-		//$this->initView();
-		//$this->initModel();
+		$this->initDataModel();
+		$this->initView();
+		$this->initModel();
 	}
 	
 	public function __get($prop)
 	{
 //var_dump(__METHOD__);
-//$this->log(__METHOD__);
-//$this->log('prop: ' . (string) $prop);
+$this->log(__METHOD__);
+$this->log('prop: ' . (string) $prop);
 		
 		# Auto-instanciation of models
 		
 		// Do not continue if we are not handling an existing resource
-		if ( !empty($prop) && !DataModel::isResource($prop) ){ return; }
+		if ( empty($prop) && !DataModel::isResource($prop) ){ return; }
+		
+//var_dump($prop);
+//die();
 		
 		// Load Model
 		switch(_DB_DRIVER)
@@ -73,7 +75,10 @@ var_dump(__METHOD__);
 		{
 			$this->request->resource 	= $_r['name'];
 			$this->_resource 			= new ArrayObject($_r, 2);
-		}; 
+		};
+		
+//var_dump(__METHOD__);
+//var_dump($this->_resource);
 	}
 	
 	public function initView()
@@ -94,9 +99,7 @@ var_dump(__METHOD__);
 		// TODO: Protect against CSRF
 		// If request method == get & overloaded method == delete
 		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->statusCode(405); }
-		// If method is create/retrieve/update, generated a csrf token to we will have to check against in proper method before doing anything
-		
-		
+		// If method is create/retrieve/update, generated a csrf token to we will have to check against in proper method before doing anything		
 		
 		// Force method to index
 		if ( !$RC->method ){ $RC->method = 'index'; }
@@ -105,10 +108,10 @@ var_dump(__METHOD__);
 		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) && $RC->method[0] !== '_' ? $RC->method : 'error404';
 		
 //var_dump($_SERVER);
-var_dump($RC);
-var_dump(__METHOD__);
-var_dump(get_called_class());
-var_dump($RC->calledMethod);
+//var_dump($RC);
+//var_dump(__METHOD__);
+//var_dump(get_called_class());
+//var_dump($RC->calledMethod);
 //die();
 		
 		return call_user_func_array(array($this, $RC->calledMethod), array());
@@ -343,7 +346,8 @@ var_dump($RC->calledMethod);
 
 		if ( isset($_GET['emulate']) && !in_array($_GET['emulate'], array('0', 'false', 'no')) ) { $classes .= ' emulate'; }
 		if ( !empty($_GET['orientation']) && in_array($_GET['orientation'], array('portrait','landscape')) ) { $classes .= ' ' . $_GET['orientation']; }
-		if ( $this->debug ) { $classes .= ' debug'; }
+		//if ( $this->debug ) { $classes .= ' debug'; }
+		if ( self::$debug ) { $classes .= ' debug'; }
  
 		// TODO: add groups
 		
