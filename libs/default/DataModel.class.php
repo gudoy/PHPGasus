@@ -18,7 +18,8 @@ class DataModel extends Core
 		//'defaultNameField', 					// Deprecated: use nameField instead 
 		
 		# Database
-		'database', 'table', 'alias',
+		'database', 'engine', 
+		'table', 'alias',
 		
 		# Relations
 		'extends', 								// default = null
@@ -35,6 +36,7 @@ class DataModel extends Core
 		'searchable', 'crudability', 'exposed',
 		
 		# Generated
+		'_plurals', 							// array ([$plural => $singular])
 		'_parent', 								// resource name (default = null)
 		'_parents', 							// array of resource names (default = empty)
 		'_siblings', 							// array of resource names (default = empty)
@@ -276,10 +278,7 @@ class DataModel extends Core
 	
 	// 
 	public function build($params = array())
-	{
-var_dump('here1');
-Core::log('here1');
-die();
+	{		
 		$params 		= array_merge(array(
 			//'what' => 'resources,colums,groups',
 			//'what' => 'resources',
@@ -304,7 +303,6 @@ die();
 		// 1nd pass: parse 'default' & 'yours' files and build a 1st pass dataModel.generated.php
 		foreach( $what as $v){ $parseMtdh = 'parse' . ucfirst($v); self::$parseMtdh(); }
 		
-//die();
 
 		// 2nd pass:
 		// (required to handle props depending on others props that are not already computed at the time we try to handle them )
@@ -314,8 +312,8 @@ die();
 //var_dump($fileContent);
 //var_dump(self::$resources);
 //var_dump(self::$columns);
-		
-die();
+
+//var_dump(__METHOD__);
 
 		// We can now generate the final file
 		foreach( $what as $v)
@@ -325,10 +323,19 @@ die();
 			$fileContent .= self::$genMthd(array('inline' => false));
 			$fileContent .= PHP_EOL . PHP_EOL;
 		}
+
+//var_dump($dir);
+//var_dump($fileContent);
 		
 		// Create the file into the zip and close it
-		$zip->addFromString($dir . 'dataModel.generated.php', $fileContent);
+		$added = $zip->addFromString($dir . 'dataModel.generated.php', $fileContent);
 		$zip->close();
+		
+//var_dump($added);
+//var_dump(self::$resources);
+//var_dump(self::$columns);
+//die();
+
 		
 		// Push the file to the client & delete the zip
 		header('Content-Type: application/zip');
@@ -436,6 +443,7 @@ die();
 				'database' 			=> !empty($res['database']) ? $res['database'] : 'default',
 				'table' 			=> !empty($res['table']) ? $res['table'] : self::getDbTableName($realName),
 				'alias' 			=> $alias,
+				'engine' 			=> !empty($res['engine']) ? strtolower($res['engine']) : 'innobd',
 				'displayName' 		=> !empty($res['displayName']) ? $res['displayName'] : $name,
 				'nameField' 		=> !empty($res['nameField']) ? $res['nameField'] : ( !empty($res['defaultNameField']) ? $res['defaultNameField'] : self::guessNameField($name) ),
 				'extends' 			=> !empty($res['extends']) ? $res['extends'] : null,
@@ -990,16 +998,23 @@ $dbColumns = array();
 	}
 	
 	public function generateColumns()
-	{		
+	{
 		$lb 			= "\n";
 		$tab 			= "\t";
 		$code 			= '<?php' . $lb . $lb . '$_columns = array(' . $lb;
+		
+		// Build an array or resource names only (for perf issues)
+		$resNames 		= array_keys(self::$columns);
+		
+		// Get the longest resource name and use it to get position used to verticaly align the resource code (indentation)
+		$longRes 		= Tools::longestValue($resNames);
+		$resVertPos 	= strlen($longRes) + ( 4 - (strlen($longRes) % 4) );
 				
 		// Loop over the resources columns
-		foreach ( array_keys((array) self::$resources['items']) as $rKey )
-		{			
+		foreach ( $resNames as $rName )
+		{
 			// Shortcut for resource name & resource cols
-			$rName 		= &self::$resources['items'][$rKey]['name'];
+			//$rName 		= &self::$resources[$rKey]['name'];
 			$rCols 		= &self::$columns[$rName]['items'];
 			
 			// Do not continue if the resource has no columns
@@ -1011,8 +1026,10 @@ $dbColumns = array();
 //var_dump($rKey);
 //var_dump($rCols);
 
-//var_dump($rColNames);			
-//var_dump(self::$columns);
+//var_dump($rColNames);
+//Core::dump('here1');			
+//Core::dump(self::$columns);
+//$this->log(self::$columns);
 //die();
 //continue;
 			
@@ -1021,7 +1038,9 @@ $dbColumns = array();
 			$colVertPos		= strlen($longCol) + ( 4 - (strlen($longCol) % 4) );
 			
 			$code .= "'" . $rName . "' => array(" . $lb;
+			$code .= $tab . "'items' => array(" . $lb;
 			
+			/*
 			// Loop over the resource columns
 			foreach ( $rColNames as $cName )
 			{
@@ -1062,12 +1081,52 @@ $dbColumns = array();
 				}
 				
 				$code .= ")," . $lb;
-			}
+			}*/
 			
+			$cProps = array_keys(self::$columns[$rName]);
+			
+var_dump($cProps);
+			
+			/*
+			foreach($cProps as $propName)
+			{
+				// Skip 'items'
+				if ( $propName === 'items' ){ continue; }
+				
+				$propValue = self::$columns[$rName][$propName];
+				
+				$tabs 	= '';
+				
+				//$code .= "'" . $propName . "' " . $tabs . "=> " . ( $o['inline'] ? '' : $o['lb'] );
+				$code .= "'" . $propName . "' " . $tabs . "=> ";
+				
+				// TODO: do we need to handle others than array values?
+				$code .= "array(";
+				$i = 0;
+				foreach ($propValue as $k => $v)
+				{
+					$isAssoc = !is_numeric($k);
+					
+					$code .= ( $o['inline'] || (!$isAssoc && count($propValue) < 4) ) 
+								? ( $i !== 0 ? " " : '') 
+								: $o['lb'] . $o['tab'];
+					$code .= !$isAssoc ? "'" . $v . "'" : "'" . $k . "' => '" . $v . "'";
+					$code .= ',';
+					$i++;
+				}
+				$code .= "),";
+				
+				$code .= $o['lb'];
+			}*/
+			
+			$code .= $tab . ")," . $lb;
 			$code .= ")," . $lb;
 		}
 		
 		$code .= ');' . $lb . '?>';
+		
+var_dump($code);
+die();
 		
 		return $code;		
 	}

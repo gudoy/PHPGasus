@@ -93,6 +93,9 @@ $this->log('prop: ' . (string) $prop);
 	
 	public function dispatchMethod()
 	{
+//$this->log(__METHOD__);
+//$this->log($this->request);
+		
 		// Shortcut to request controller
 		$RC = &$this->request->controller;
 		

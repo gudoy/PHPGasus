@@ -69,8 +69,9 @@ class Core
 		// Do not continue if the debug is not activated
 		//if ( !$this->debug ){ return; }
 		//if ( !self::$debug ){ return; }
-		if ( (isset($this) && !$this->debug) || !self::$debug ){ return; }
+		//if ( (isset($this) && !$this->debug) || !self::$debug ){ return; }
 		//if ( (isset($this) && !$this->debug) || ( isset(self::$debug) && !self::$debug) ){ return; }
+		if ( (isset($this) && isset($this->debug) && !$this->debug) || !self::$debug ){ return; }
 		
 		// Get the user agent
 		$ua = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''; 	// Shortcut for user agent
@@ -123,7 +124,7 @@ class Core
 	
 	public function debug()
 	{
-		if ( !$this->debug ){ return; }
+		if ( (isset($this) && isset($this->debug) && !$this->debug) || !self::$debug ){ return; }
 		
 		$_phpgasus['mend'] = memory_get_usage();
 		
