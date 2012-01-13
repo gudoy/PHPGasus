@@ -95,24 +95,83 @@ $this->log('prop: ' . (string) $prop);
 	{
 //$this->log(__METHOD__);
 //$this->log($this->request);
+
+		// Get passed arguments & extends default params with passed one
+		$args 	= func_get_args();
+		$p 		= !empty($args[0]) ? $args[0] : array();
+		$p 		= array_merge(array(
+			# Default params
+			'allowedMethods' => array('')
+			
+		), $p, array(
+			# Forced params
+			
+			// Allowed methods
+			'allowedMethods' => array_intersect(Tools::toArray($p['allowed']), array('index','create','update','delete')),
+			
+			// Known methods
+			'kownMethods' => array(
+				// Native HTTP
+				'get' 		=> 'index',
+				'post' 		=> 'create',
+				'put' 		=> 'update',
+				'delete' 	=> 'delete',
+				
+				// Called methods
+				'create' 	=> 'create',
+				'update' 	=> 'update',			
+			)
+		));
 		
 		// Shortcut to request controller
 		$RC = &$this->request->controller;
+		 
+		// Do not continue if the method name is passed in params with falsy value 
+		if ( isset($p[__METHOD__]) && !$p[__METHOD__] ){ return $this; }
+		
+		// Try to get method from GET, POST, SERVER supersglobals (in this order)
+		// Validating that it's a known method and that it is allowed for the current controller
+		foreach ( array('get', 'post', 'server' => 'REQUEST_METHOD') as $k => $v )
+		{
+			// Get current superglobal name & index to use
+			$spName = '_' . strtoupper(is_numeric($k) ? $v : $k);
+			$index 	= is_numeric($k) ? 'method' : $v;
+			
+			// Do not continue if the proper method index is not defined in the current superglobal
+			if ( empty(${$spName}[$index]) ){ continue; } 
+			
+			// Shortcut to request method
+			$rqM = strtolower(${$spName}[$index]); 
+			
+			// Do not continue if the requested method is not a known one
+			if ( empty($p['knownMethods'][$rqM]) ){ continue; }
+			
+			// Do not continue if the requested method is not a valid one for the called controller
+			if ( !in_array($p['allowedMethods'][$p['knownMethods'][$rqM]]) ){ continue; }
+			
+			// Otherwise, set the calledMethod
+			$RC->method = $p['knownMethods'][$rqM];
+		}
+		
+		// If at this point the method has still not been set,
+		// default it to index
+		
+		// TODO: handle special case: if 1st request param is 'new' : method => created
 		
 		// TODO: Protect against CSRF
 		// If request method == get & overloaded method == delete
 		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->statusCode(405); }
 		// If method is create/retrieve/update, generated a csrf token to we will have to check against in proper method before doing anything		
 		
-		// Force method to index
-		if ( !$RC->method ){ $RC->method = 'index'; }
+// Force method to index
+if ( !$RC->method ){ $RC->method = 'index'; }
 		
 		// If method exists and does not start by un '_' char (used for not exposed method)
 		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) && $RC->method[0] !== '_' ? $RC->method : 'error404';
 		
 //var_dump($_SERVER);
-//var_dump($RC);
 //var_dump(__METHOD__);
+//var_dump($RC);
 //var_dump(get_called_class());
 //var_dump($RC->calledMethod);
 //die();

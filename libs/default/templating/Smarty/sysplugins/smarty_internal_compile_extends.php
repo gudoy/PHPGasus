@@ -1,47 +1,48 @@
 <?php
 
 /**
- * Smarty Internal Plugin Compile extend
- *
- * Compiles the {extends} tag
- *
- * @package Smarty
- * @subpackage Compiler
- * @author Uwe Tews
- */
+* Smarty Internal Plugin Compile extend
+*
+* Compiles the {extends} tag
+*
+* @package Smarty
+* @subpackage Compiler
+* @author Uwe Tews
+*/
 
 /**
- * Smarty Internal Plugin Compile extend Class
- *
- * @package Smarty
- * @subpackage Compiler
- */
+* Smarty Internal Plugin Compile extend Class
+*
+* @package Smarty
+* @subpackage Compiler
+*/
 class Smarty_Internal_Compile_Extends extends Smarty_Internal_CompileBase {
 
     /**
-     * Attribute definition: Overwrites base class.
-     *
-     * @var array
-     * @see Smarty_Internal_CompileBase
-     */
+    * Attribute definition: Overwrites base class.
+    *
+    * @var array
+    * @see Smarty_Internal_CompileBase
+    */
     public $required_attributes = array('file');
     /**
-     * Attribute definition: Overwrites base class.
-     *
-     * @var array
-     * @see Smarty_Internal_CompileBase
-     */
+    * Attribute definition: Overwrites base class.
+    *
+    * @var array
+    * @see Smarty_Internal_CompileBase
+    */
     public $shorttag_order = array('file');
 
     /**
-     * Compiles code for the {extends} tag
-     *
-     * @param array  $args     array with attributes from parser
-     * @param object $compiler compiler object
-     * @return string compiled code
-     */
+    * Compiles code for the {extends} tag
+    *
+    * @param array  $args     array with attributes from parser
+    * @param object $compiler compiler object
+    * @return string compiled code
+    */
     public function compile($args, $compiler)
     {
+        static $_is_stringy = array('string' => true, 'eval' => true);
         $this->_rdl = preg_quote($compiler->smarty->right_delimiter);
         $this->_ldl = preg_quote($compiler->smarty->left_delimiter);
         $filepath = $compiler->template->source->filepath;
@@ -60,7 +61,7 @@ class Smarty_Internal_Compile_Extends extends Smarty_Internal_CompileBase {
         // create template object
         $_template = new $compiler->smarty->template_class($include_file, $compiler->smarty, $compiler->template);
         // save file dependency
-        if (in_array($_template->source->type, array('eval', 'string'))) {
+        if (isset($_is_stringy[$_template->source->type])) {
             $template_sha1 = sha1($include_file);
         } else {
             $template_sha1 = sha1($_template->source->filepath);
@@ -71,17 +72,24 @@ class Smarty_Internal_Compile_Extends extends Smarty_Internal_CompileBase {
         $compiler->template->properties['file_dependency'][$template_sha1] = array($_template->source->filepath, $_template->source->timestamp, $_template->source->type);
         $_content = substr($compiler->template->source->content, $compiler->lex->counter - 1);
         if (preg_match_all("!({$this->_ldl}block\s(.+?){$this->_rdl})!", $_content, $s) !=
-                preg_match_all("!({$this->_ldl}/block{$this->_rdl})!", $_content, $c)) {
+        preg_match_all("!({$this->_ldl}/block{$this->_rdl})!", $_content, $c)) {
             $compiler->trigger_template_error('unmatched {block} {/block} pairs');
         }
-        preg_match_all("!{$this->_ldl}block\s(.+?){$this->_rdl}|{$this->_ldl}/block{$this->_rdl}!", $_content, $_result, PREG_OFFSET_CAPTURE);
+        preg_match_all("!{$this->_ldl}block\s(.+?){$this->_rdl}|{$this->_ldl}/block{$this->_rdl}|{$this->_ldl}\*([\S\s]*?)\*{$this->_rdl}!", $_content, $_result, PREG_OFFSET_CAPTURE);
         $_result_count = count($_result[0]);
         $_start = 0;
-        while ($_start < $_result_count) {
+        while ($_start+1 < $_result_count) {
             $_end = 0;
             $_level = 1;
+            if (substr($_result[0][$_start][0],0,strlen($compiler->smarty->left_delimiter)+1) == $compiler->smarty->left_delimiter.'*') {
+                $_start++;
+                continue;
+            }
             while ($_level != 0) {
                 $_end++;
+                if (substr($_result[0][$_start + $_end][0],0,strlen($compiler->smarty->left_delimiter)+1) == $compiler->smarty->left_delimiter.'*') {
+                    continue;
+                }
                 if (!strpos($_result[0][$_start + $_end][0], '/')) {
                     $_level++;
                 } else {
@@ -89,7 +97,7 @@ class Smarty_Internal_Compile_Extends extends Smarty_Internal_CompileBase {
                 }
             }
             $_block_content = str_replace($compiler->smarty->left_delimiter . '$smarty.block.parent' . $compiler->smarty->right_delimiter, '%%%%SMARTY_PARENT%%%%',
-                substr($_content, $_result[0][$_start][1] + strlen($_result[0][$_start][0]), $_result[0][$_start + $_end][1] - $_result[0][$_start][1] - + strlen($_result[0][$_start][0])));
+            substr($_content, $_result[0][$_start][1] + strlen($_result[0][$_start][0]), $_result[0][$_start + $_end][1] - $_result[0][$_start][1] - + strlen($_result[0][$_start][0])));
             Smarty_Internal_Compile_Block::saveBlockData($_block_content, $_result[0][$_start][0], $compiler->template, $filepath);
             $_start = $_start + $_end + 1;
         }
