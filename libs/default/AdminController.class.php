@@ -34,18 +34,18 @@ class AdminController extends Controller
 		// Get all (limited to _APP_LIMIT_RETRIEVED_RESOURCES) items of this resource
 		//$this->{$this->_resource['plural']}->find();
 		
-		//$this->triggerEvent('onAfterIndex', array('from' => __FUNCTION__));
+		//$this->trigger('onAfterIndex', array('from' => __FUNCTION__));
 		
 		// Get count of total existings items for this resources
 		//$this->{$this->_resource['plural']}->count();
 		
 		// Handle pagination (get previous, next)
 		
-		//$this->triggerEvent('onBeforeRender', array('from' => __FUNCTION__));
+		//$this->trigger('onBeforeRender', array('from' => __FUNCTION__));
 		
 		$this->render();
 		
-		//$this->triggerEvent('onAfterRender', array('from' => __FUNCTION__));
+		//$this->trigger('onAfterRender', array('from' => __FUNCTION__));
 	}
 	
 	public function create()
@@ -97,8 +97,6 @@ class AdminController extends Controller
 		$this->templateData['_groups'] 		= &$_groups;
 		$this->templateData['_resources'] 	= &$_resources;
 		$this->templateData['_columns'] 	= &$_columns;
-		
-//$this->log($this->templateData['_resources']);
 	}
 	
 	public function getViewLayout()

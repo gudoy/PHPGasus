@@ -17,15 +17,16 @@ class Controller extends Core implements ControllerInterface
 	
 	public function __construct($Request)
 	{
-//var_dump(__METHOD__);
-		//$this->request = &$Request;
-		$this->request = $Request;
+		$this->request 	= $Request;
+		$this->response = new Response(); 
 		
 		parent::__construct();
 		
 		$this->initDataModel();
 		$this->initView();
 		$this->initModel();
+		
+		$this->initEvents();
 	}
 	
 	public function __get($prop)
@@ -68,6 +69,7 @@ $this->log('prop: ' . (string) $prop);
 	
 	public function initDataModel()
 	{
+		// Load dataModel if not already loaded
 		( isset($_resources) && isset($_columns) ) || require(_PATH_CONFIG . 'dataModel.generated.php');
 
 		// Check if the called controller is an existing resource
@@ -76,9 +78,6 @@ $this->log('prop: ' . (string) $prop);
 			$this->request->resource 	= $_r['name'];
 			$this->_resource 			= new ArrayObject($_r, 2);
 		};
-		
-//var_dump(__METHOD__);
-//var_dump($this->_resource);
 	}
 	
 	public function initView()
@@ -90,6 +89,38 @@ $this->log('prop: ' . (string) $prop);
 	public function initModel()
 	{
 	}
+	
+	
+	public function bind()
+	{
+		// Do not continue if events have not been instanciated
+		if ( empty($this->events) || !($this->events instanceof Events) ){ }
+		
+		// TODO: properly forward arguments
+		
+		$this->events->bind();
+		
+		return $this;
+	}
+	
+	public function trigger()
+	{
+		// Do not continue if events have not been instanciated
+		if ( empty($this->events) || !($this->events instanceof Events) ){ }
+		
+		// TODO: properly forward arguments
+		
+		$this->events->trigger();
+		
+		return $this;
+	}
+	
+	public function initEvents()
+	{
+		if ( !defined('_USE_EVENTS') || !_USE_EVENTS ){ $this->events = null; return $this; }
+		
+		$this->events = new Events();
+	} 
 	
 	public function dispatchMethod()
 	{
@@ -107,7 +138,7 @@ $this->log('prop: ' . (string) $prop);
 			# Forced params
 			
 			// Allowed methods
-			'allowedMethods' => array_intersect(Tools::toArray($p['allowed']), array('index','create','update','delete')),
+			'allowedMethods' => array_intersect(Tools::toArray((array) $p['allowedMethods']), array('index','create','update','delete')),
 			
 			// Known methods
 			'kownMethods' => array(
@@ -147,21 +178,38 @@ $this->log('prop: ' . (string) $prop);
 			if ( empty($p['knownMethods'][$rqM]) ){ continue; }
 			
 			// Do not continue if the requested method is not a valid one for the called controller
-			if ( !in_array($p['allowedMethods'][$p['knownMethods'][$rqM]]) ){ continue; }
+			//if ( !in_array($p['allowedMethods'][$p['knownMethods'][$rqM]]) ){ continue; }
 			
 			// Otherwise, set the calledMethod
 			$RC->method = $p['knownMethods'][$rqM];
 		}
 		
+		// Check that the requested method is allowed
+		// Do not continue if the requested method is not a valid one for the called controller
+		//if ( !in_array($p['allowedMethods'][$p['knownMethods'][$rqM]]) ){ continue; }
+		if ( !empty($RC->method) && !in_array($p['allowedMethods'][$p['knownMethods'][$rqM]]) )
+		{
+			// Return a 405
+			$this->response->setStatuscode(405);
+		}
+		
 		// If at this point the method has still not been set,
 		// default it to index
 		
-		// TODO: handle special case: if 1st request param is 'new' : method => created
+		// Handle special case: if 1st request param is 'new' : method => created
+		// ex: /products/new
+		if ( !empty($RC->params[0]) && $RC->params[0] === 'new' )
+		{
+			// Check that the create method is allowed for this resource
+		}
 		
 		// TODO: Protect against CSRF
 		// If request method == get & overloaded method == delete
 		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->statusCode(405); }
-		// If method is create/retrieve/update, generated a csrf token to we will have to check against in proper method before doing anything		
+		// If method is create/retrieve/update, generated a csrf token to we will have to check against in proper method before doing anything
+		
+var_dump($RC);
+die();
 		
 // Force method to index
 if ( !$RC->method ){ $RC->method = 'index'; }
@@ -177,77 +225,20 @@ if ( !$RC->method ){ $RC->method = 'index'; }
 //die();
 		
 		return call_user_func_array(array($this, $RC->calledMethod), array());
-		
-		/*
-		
-		if ( isset($args[__METHOD__]) && !$args[__METHOD__] ){ return $this; }
-		
-		// Known methods (alias => used)
-		$known = array(
-			'index' 	=> 'index',
-			'put' 		=> 'update',
-			'update' 	=> 'update',
-			'post' 		=> 'create',
-			'create'	=> 'create',
-			'get' 		=> 'retrieve',
-			'retrieve' 	=> 'retrieve',
-			'delete' 	=> 'delete',
-			'search'	=> 'search',
-			'duplicate' => 'duplicate',
-		);
-
-		$id 		= !empty($args[0]) ? $args[0] : null;														// Shortcut for resource identifier(s)
-		$p 			= &$params; 																				// Shortcut for params
-		$allowed 	= !empty($p['allowed']) 
-						? ( is_array($p['allowed']) ? $p['allowed'] : explode(',', $p['allowed']) ) 
-						: array(); 																				// Get the allowed methods
-		$gM 		= isset($this->options['method']) ? strtolower($this->options['method']) : null; 			// Shortcut for GET "method" param
-		$pM 		= !empty($_POST['method']) 
-						? strtolower(filter_var($_POST['method'], FILTER_SANITIZE_STRING)) 
-						: null; 																				// Shortcut for POST "method" param
-		$srM 		= isset($_SERVER['REQUEST_METHOD']) ? strtolower($_SERVER['REQUEST_METHOD']) : null; 		// Shortcut for request method
-		$foundM 	= !empty($pM) ? $pM : ( !empty($gM) ? $gM : ( !empty($srM) ? $srM : null )); 				// 
-		$m 			= !empty($foundM) && isset($known[$foundM]) ? $known[$foundM] : 'index';
-
-
-// $this->dump('gM: ' . $gM);
-// $this->dump('pM: ' . $pM);
-// $this->dump('srM: ' . $srM);		
-// $this->dump('found: ' . $foundM);
-// $this->dump('m: ' . $m);
-// $this->dump('id: ' . $id);
-// $this->dump($allowed);
-
-//var_dump($id);
-//die($m);
-		
-		// Special case if method is 'retrieve' but resource id is not set
-		// In this case, method is forced back to index 
-		if ( $m === 'retrieve' && is_null($id) ) { $m = 'index'; }
-		
-		//$m 			= !empty($pM) 
-		//					? $pM : !empty($gM) 
-		//					? $gM : ( !isset($known[$srM]) || ( $known[$srM] === 'retrieve' && empty($id) ) 
-		// 					? 'index' : $known[$srM] ); 														// Get the class method to use
-		
-		// Store the final method
-		$this->data['view']['method'] = $m;
-        
-		// If the method is not index and belongs to the allowed methods, call it
-		//if ( $m !== 'index' && in_array($m, $allowed) ) { return call_user_func_array(array($this, $m), $args); }
-		if ( $m !== 'index' && in_array($m, $allowed) ) { return call_user_func_array(array($this, $m), $args); }
-		// Otherwise, just continue
-		else if ( $m === 'index' ) { } // just continue
-		// The following case should not append
-		else
-		{
-			return $this->statusCode(405); // Method not allowed
-		}
-		*/
 	}
 
 	public function dispatchParams()
 	{
+		// Get passed arguments & extends default params with passed one
+		$args 	= func_get_args();
+		$p 		= !empty($args[0]) ? $args[0] : array();
+		
+		// Do not continue if the method name is passed in params with falsy value 
+		if ( isset($p[__METHOD__]) && !$p[__METHOD__] ){ return $this; }
+		
+		// Shortcut to request controller
+		$RC = &$this->request->controller;
+		
 		// TODO: handle path args
 		// assume pattern is [[$column]/$value]/[...]
 		// Split on '/'
