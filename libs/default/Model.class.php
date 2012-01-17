@@ -61,7 +61,7 @@ class Model extends Core
 //var_dump($method);
 //var_dump($args);
 
-		// PATTERN: verb[Limiters][offseters][restricters][conditioners][condition operator][sorters]
+		// PATTERN: verb[Limiters][offseters][restricters][columns][conditioners][condition operator][sorters]
 		
 		$verbs = array(
 			'find' 				=> 'select',
@@ -96,6 +96,8 @@ class Model extends Core
 			//{$colName}
 			'distinct' 		=> array(), // TODO
 		);
+		
+		$columns 		= array(); // TODO
 		
 		$conditioners 	= array(
 			'by',

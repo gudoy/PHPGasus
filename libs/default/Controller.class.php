@@ -193,9 +193,6 @@ $this->log('prop: ' . (string) $prop);
 			$this->response->setStatuscode(405);
 		}
 		
-		// If at this point the method has still not been set,
-		// default it to index
-		
 		// Handle special case: if 1st request param is 'new' : method => created
 		// ex: /products/new
 		if ( !empty($RC->params[0]) && $RC->params[0] === 'new' )
@@ -208,11 +205,13 @@ $this->log('prop: ' . (string) $prop);
 		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->statusCode(405); }
 		// If method is create/retrieve/update, generated a csrf token to we will have to check against in proper method before doing anything
 		
-var_dump($RC);
-die();
+		// If at this point the method has still not been set,
+		// default it to index
+		if ( !$RC->method ){ $RC->method = 'index'; }
 		
-// Force method to index
-if ( !$RC->method ){ $RC->method = 'index'; }
+		// Handle request params
+		//call_user_func_array(array($this, 'dispatchParams'), $p);
+		$this->dispatchParams($p);
 		
 		// If method exists and does not start by un '_' char (used for not exposed method)
 		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) && $RC->method[0] !== '_' ? $RC->method : 'error404';
@@ -227,8 +226,16 @@ if ( !$RC->method ){ $RC->method = 'index'; }
 		return call_user_func_array(array($this, $RC->calledMethod), array());
 	}
 
+
+	// users/1 				=> findUserById(1)
+	// users/1,2 			=> findUserById(array(1,2))
+	// users/id/1 			=> findUserById(1)
+	// users/id/1,2 		=> findUserById(array(1,2))
+	// users/john 			=> findUserByNameField('john')
+	// users/john,jack 		=> findUserByNameField(array('john','jack'))
+	// users/john,jack 		=> findUserByNameField(array('john','jack'))
 	public function dispatchParams()
-	{
+	{		
 		// Get passed arguments & extends default params with passed one
 		$args 	= func_get_args();
 		$p 		= !empty($args[0]) ? $args[0] : array();
@@ -236,29 +243,77 @@ if ( !$RC->method ){ $RC->method = 'index'; }
 		// Do not continue if the method name is passed in params with falsy value 
 		if ( isset($p[__METHOD__]) && !$p[__METHOD__] ){ return $this; }
 		
-		// Shortcut to request controller
-		$RC = &$this->request->controller;
+		// Shortcuts
+		$RC = &$this->request->controller; 			// request controller
+		$_r = &$this->_resource; 					// resource
 		
 		// TODO: handle path args
 		// assume pattern is [[$column]/$value]/[...]
 		// Split on '/'
-		// If current is id ==> add filters/conditions + go to next()
 		// else if is column ==> get next and add couple to filters/conditions + go to next()
 		// else get current resource nameField and add to filters/conditions + go to next()
 		
 		// TODO: handle query strings
 		
 		// Loop over params
+		$i = 0
 		foreach ($params as $param)
 		{
-			// Is column
-			// => add to filters/conditions: $column => $values
+			// Does the current param contains ','
+			$isMulti 	= strpos($param, ',') !== false;
 			
-			// If contains ','
-			$multiValue = true;
+			// Split on ',' & force the result to be an array (even if the param has no ',')
+			$items 		= Tools::toArray(explode(',',$param));
+			
+			$values 	= next($param);
+			
+			foreach($items as $item)
+			{
+				// If the item is numeric, assume it's an id
+				if ( is_numeric($item) )
+				{
+					// TODO
+					// ==> add filters/conditions + go to next()
+					$this->request->filters['id'] = $item; 
+				}
+				// If the current resource is defined and the current item is one of it's columns
+				elseif ( !empty($_r) && DataModel::isResource($_r, (string) $item) )
+				{
+					// TODO
+					// If no values passed, assume it's a columns/getFields restricter
+					if ( $values !== false )
+					{
+						
+					}
+					else
+					{
+						// TODO
+						// => add to filters/conditions: $column => $values	
+					}
+				}
+				// If the current resource is defined but the current item is NOT one of it's columns
+				elseif ( !empty($_r) )
+				{
+					// Assume that the current item is a {$nameField} value to check against
+					// TODO
+					// => add to filters/conditions: $column => $values
+				}
+				else
+				{
+					
+				}
+				
+				// ==> add filters/conditions + go to next()	
+			}
+			
+			$i++;	
+		}
 		
-			// Split on ','	
-		}			
+var_dump(__METHOD__);
+//var_dump($this->request);
+//var_dump($RC);
+var_dump($this);
+die();
 	}
 	
 	public function initCSRFtoken()

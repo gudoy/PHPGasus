@@ -17,35 +17,28 @@ class AdminController extends Controller
 	 
 	public function index()
 	{
-//die(__METHOD__);
-//$this->log(__METHOD__);
-		//$this->triggerEvent('onBeforeIndex', array('from' => __FUNCTION__));
+		$this->retieve();
+	}
 	
-//var_dump($this);
-//$this->log($this);
+	
+	public function retrieve()
+	{
+		// Shortcut to current resource name
+		$_r = $this->_resource['plural'];
 		
-		$rName 				= $this->_resource['plural']; // Shortcut to current resource name
-		
-//var_dump($this->{$rName});
-		
-		//$this->data[$rName] = $this->{$rName}->findAll();
-		$this->data[$rName] = $this->{$rName}->query('SELECT * FROM resources');
+		$this->trigger('onBeforeRetrieve', array('from' => __FUNCTION__));
 		
 		// Get all (limited to _APP_LIMIT_RETRIEVED_RESOURCES) items of this resource
-		//$this->{$this->_resource['plural']}->find();
+		$this->data[$_r] = $this->{$_r}->find();
+		//$this->data[$_r] = $this->{$_r}->query('SELECT * FROM resources');
 		
-		//$this->trigger('onAfterIndex', array('from' => __FUNCTION__));
+		$this->trigger('onAfterRetrieve', array('from' => __FUNCTION__));
 		
-		// Get count of total existings items for this resources
-		//$this->{$this->_resource['plural']}->count();
-		
-		// Handle pagination (get previous, next)
-		
-		//$this->trigger('onBeforeRender', array('from' => __FUNCTION__));
+		$this->trigger('onBeforeRender', array('from' => __FUNCTION__));
 		
 		$this->render();
 		
-		//$this->trigger('onAfterRender', array('from' => __FUNCTION__));
+		$this->trigger('onAfterRender', array('from' => __FUNCTION__));		
 	}
 	
 	public function create()

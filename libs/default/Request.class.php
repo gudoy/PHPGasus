@@ -44,6 +44,8 @@ class Request
 		$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $this->relative_uri), '/'));
 		//$this->parts = preg_split('/\//', trim($_SERVER['REDIRECT_URL'], '/'));
 		
+		$this->filters 		= ArrayObject(array(), 2);
+		
 		$this->getURL();
 		
 		//$this->extension 	= strpos($uriParts['path'], '.') !== false ? preg_replace('/(.*)\.(.*)/', '$2', $uriParts['path']) : null;
