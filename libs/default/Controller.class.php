@@ -256,7 +256,7 @@ $this->log('prop: ' . (string) $prop);
 		// TODO: handle query strings
 		
 		// Loop over params
-		$i = 0
+		$i = 0;
 		foreach ($params as $param)
 		{
 			// Does the current param contains ','
