@@ -6,9 +6,12 @@ interface ControllerInterface
 }
 
 class Controller extends Core implements ControllerInterface
-{	
+{
+	public $request 	= null;
+	public $response 	= null;
 	public $view 		= array();
 	public $data 		= array();
+	
 	public $errors 		= array();
 	public $warnings 	= array();
 	public $success 	= null;
@@ -25,15 +28,14 @@ class Controller extends Core implements ControllerInterface
 		$this->initDataModel();
 		$this->initView();
 		$this->initModel();
-		
 		$this->initEvents();
 	}
 	
 	public function __get($prop)
 	{
 //var_dump(__METHOD__);
-$this->log(__METHOD__);
-$this->log('prop: ' . (string) $prop);
+//$this->log(__METHOD__);
+//$this->log('prop: ' . (string) $prop);
 		
 		# Auto-instanciation of models
 		
@@ -130,18 +132,19 @@ $this->log('prop: ' . (string) $prop);
 		// Get passed arguments & extends default params with passed one
 		$args 	= func_get_args();
 		$p 		= !empty($args[0]) ? $args[0] : array();
-		$p 		= array_merge(array(
-			# Default params
-			'allowedMethods' => array('')
-			
-		), $p, array(
-			# Forced params
-			
+		
+		// Do not continue if the method name is passed in params with falsy value 
+		if ( isset($p[__METHOD__]) && !$p[__METHOD__] ){ return $this; }
+		
+		// Extends passed params
+		$p 		= array_merge($p, array(
 			// Allowed methods
-			'allowedMethods' => array_intersect(Tools::toArray((array) $p['allowedMethods']), array('index','create','update','delete')),
+			'allowed' => isset($p['allowed']) 
+				? array_intersect(Tools::toArray((array) $p['allowed']), array('index','create','update','delete'))
+				: array('index','create','update','delete'),
 			
 			// Known methods
-			'kownMethods' => array(
+			'known' => array(
 				// Native HTTP
 				'get' 		=> 'index',
 				'post' 		=> 'create',
@@ -155,12 +158,13 @@ $this->log('prop: ' . (string) $prop);
 		));
 		
 		// Shortcut to request controller
-		$RC = &$this->request->controller;
-		 
-		// Do not continue if the method name is passed in params with falsy value 
-		if ( isset($p[__METHOD__]) && !$p[__METHOD__] ){ return $this; }
+		$_rqc = &$this->request->controller;
 		
-		// Try to get method from GET, POST, SERVER supersglobals (in this order)
+		// Handle request params
+		//call_user_func_array(array($this, 'dispatchParams'), $p);
+		$this->dispatchParams($p);
+		
+		// Try to get REST method from GET, POST, SERVER supersglobals (in this order)
 		// Validating that it's a known method and that it is allowed for the current controller
 		foreach ( array('get', 'post', 'server' => 'REQUEST_METHOD') as $k => $v )
 		{
@@ -175,55 +179,48 @@ $this->log('prop: ' . (string) $prop);
 			$rqM = strtolower(${$spName}[$index]); 
 			
 			// Do not continue if the requested method is not a known one
-			if ( empty($p['knownMethods'][$rqM]) ){ continue; }
+			if ( empty($p['known'][$rqM]) ){ continue; }
 			
 			// Do not continue if the requested method is not a valid one for the called controller
-			//if ( !in_array($p['allowedMethods'][$p['knownMethods'][$rqM]]) ){ continue; }
+			//if ( !in_array($p['allowed'][$p['known'][$rqM]]) ){ continue; }
 			
 			// Otherwise, set the calledMethod
-			$RC->method = $p['knownMethods'][$rqM];
+			$_rqc->method 		= $p['known'][$rqM];
 		}
+
+//var_dump(__METHOD__);		
+//var_dump($_rqc);
 		
 		// Check that the requested method is allowed
 		// Do not continue if the requested method is not a valid one for the called controller
-		//if ( !in_array($p['allowedMethods'][$p['knownMethods'][$rqM]]) ){ continue; }
-		if ( !empty($RC->method) && !in_array($p['allowedMethods'][$p['knownMethods'][$rqM]]) )
+		if ( !empty($_rqc->method) && !in_array($p['allowed'][$p['known'][$rqM]]) )
 		{
 			// Return a 405
-			$this->response->setStatuscode(405);
+			$this->response->setStatusCode(405);
 		}
 		
 		// Handle special case: if 1st request param is 'new' : method => created
 		// ex: /products/new
-		if ( !empty($RC->params[0]) && $RC->params[0] === 'new' )
+		if ( !empty($_rqc->params[0]) && $_rqc->params[0] === 'new' )
 		{
 			// Check that the create method is allowed for this resource
 		}
 		
 		// TODO: Protect against CSRF
 		// If request method == get & overloaded method == delete
-		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->statusCode(405); }
+		//if ( strtolower($_SERVER['REQUEST_METHOD']) !== 'delete' ){ return $this->response->setStatusCode(405); }
 		// If method is create/retrieve/update, generated a csrf token to we will have to check against in proper method before doing anything
 		
 		// If at this point the method has still not been set,
 		// default it to index
-		if ( !$RC->method ){ $RC->method = 'index'; }
-		
-		// Handle request params
-		//call_user_func_array(array($this, 'dispatchParams'), $p);
-		$this->dispatchParams($p);
+		if ( !$_rqc->method ){ $_rqc->method = 'index'; }
 		
 		// If method exists and does not start by un '_' char (used for not exposed method)
-		$RC->calledMethod = $RC->method && method_exists($RC->name, $RC->method) && $RC->method[0] !== '_' ? $RC->method : 'error404';
+		$_rqc->calledMethod = $_rqc->method && method_exists($_rqc->name, $_rqc->method) && $_rqc->method[0] !== '_' 
+			? $_rqc->method 
+			: 'error404';
 		
-//var_dump($_SERVER);
-//var_dump(__METHOD__);
-//var_dump($RC);
-//var_dump(get_called_class());
-//var_dump($RC->calledMethod);
-//die();
-		
-		return call_user_func_array(array($this, $RC->calledMethod), array());
+		return call_user_func_array(array($this, $_rqc->calledMethod), array());
 	}
 
 
@@ -244,41 +241,56 @@ $this->log('prop: ' . (string) $prop);
 		if ( isset($p[__METHOD__]) && !$p[__METHOD__] ){ return $this; }
 		
 		// Shortcuts
-		$RC = &$this->request->controller; 			// request controller
-		$_r = &$this->_resource; 					// resource
-		
-		// TODO: handle path args
-		// assume pattern is [[$column]/$value]/[...]
-		// Split on '/'
-		// else if is column ==> get next and add couple to filters/conditions + go to next()
-		// else get current resource nameField and add to filters/conditions + go to next()
-		
-		// TODO: handle query strings
+		$_rq 	= &$this->request;
+		$_rqc 	= &$this->request->controller; 			// request controller
+		$_r 	= &$this->_resource->name; 				// resource
+		$params = &$_rqc->params;
+
+//var_dump($_rq);
+var_dump('params');	
+var_dump($params);
 		
 		// Loop over params
 		$i = 0;
-		foreach ($params as $param)
+		foreach ((array) $params as $param)
 		{
+var_dump($param);
+			
 			// Does the current param contains ','
 			$isMulti 	= strpos($param, ',') !== false;
 			
+var_dump('isMulti: ' . (int) $isMulti);
+			
 			// Split on ',' & force the result to be an array (even if the param has no ',')
 			$items 		= Tools::toArray(explode(',',$param));
+
+var_dump('items (arrayfied)');			
+var_dump($items);
 			
-			$values 	= next($param);
+			$values 	= next($params);
+
+var_dump('values');			
+var_dump($values);
 			
 			foreach($items as $item)
 			{
 				// If the item is numeric, assume it's an id
 				if ( is_numeric($item) )
 				{
+var_dump('case id (is numeric): ' . $item);
 					// TODO
 					// ==> add filters/conditions + go to next()
-					$this->request->filters['id'] = $item; 
+					//$_rq->filters['id'] = $item;
+//var_dump($_rq->filters);
+					$_rq->filters['id'] = !empty($_rq->filters['id']) ? (array) $_rq->filters['id'] : array();
+					$_rq->filters['id'][] = $item;
+					
+					// TODO: remove duplicates? (ex, /users/1,3,1)
 				}
 				// If the current resource is defined and the current item is one of it's columns
-				elseif ( !empty($_r) && DataModel::isResource($_r, (string) $item) )
+				elseif ( !empty($_r->name) && DataModel::isResource($_r->name, (string) $item) )
 				{
+var_dump('case resource column: ' . $item);
 					// TODO
 					// If no values passed, assume it's a columns/getFields restricter
 					if ( $values !== false )
@@ -312,7 +324,7 @@ $this->log('prop: ' . (string) $prop);
 var_dump(__METHOD__);
 //var_dump($this->request);
 //var_dump($RC);
-var_dump($this);
+//var_dump($this);
 die();
 	}
 	
@@ -404,16 +416,12 @@ die();
 			'minifyHTML' 				=> isset($_GET['minify']) ? in_array($_GET['minify'], array('html','all')) : $this->view->minifyHTML,
 		)), 2);
 		
-//var_dump($this->request);
-		
 		$this->getViewName();
 		$this->getViewLayout();
 		$this->getViewTemplate();
 		$this->getClasses();
 		$this->getCSS();
 		$this->getJS();
-		
-//var_dump($this->view);
 		
 		$this->initTemplate();
 		$this->initTemplateData();
@@ -425,7 +433,7 @@ die();
 
 	public function getClasses()
 	{
-		$_b 		= $this->request->browser;
+		$b 			= $this->request->browser;
 		$classes 	= '';
 		
 		// Add platform, device & browser data as classes
@@ -435,12 +443,12 @@ die();
 			//' ' . _SUBDOMAIN .
 			_SUBDOMAIN .
 			' ' . $this->request->platform['name'] .
-			' ' . $_b['engine'] .
-			' ' . $_b['alias'] .
-			' ' . $_b['alias'] . $_b['version']['major'] .
-			' ' . $_b['alias'] . $_b['version']['major'] . '-' . $_b['version']['minor']
-			//' ' . $_b['alias'] . $_b['version']['major'] . '-' . $_b['version']['minor'] . '-' . $_b['version']['build'] .
-			//' ' . $_b['alias'] . str_replace('.', '-', $_b['version']['full'])
+			' ' . $b['engine'] .
+			' ' . $b['alias'] .
+			' ' . $b['alias'] . $b['version']['major'] .
+			' ' . $b['alias'] . $b['version']['major'] . '-' . $b['version']['minor']
+			//' ' . $b['alias'] . $b['version']['major'] . '-' . $b['version']['minor'] . '-' . $b['version']['build'] .
+			//' ' . $b['alias'] . str_replace('.', '-', $b['version']['full'])
 		; 
 		
  		if ( empty($this->view['classes']) )
@@ -452,8 +460,13 @@ die();
 			;
 		}
 
+		// 
 		if ( isset($_GET['emulate']) && !in_array($_GET['emulate'], array('0', 'false', 'no')) ) { $classes .= ' emulate'; }
+		
+		// 
 		if ( !empty($_GET['orientation']) && in_array($_GET['orientation'], array('portrait','landscape')) ) { $classes .= ' ' . $_GET['orientation']; }
+		
+		// 
 		//if ( $this->debug ) { $classes .= ' debug'; }
 		if ( self::$debug ) { $classes .= ' debug'; }
  
@@ -469,26 +482,30 @@ die();
 	
 	public function getViewTemplate()
 	{
-		$this->view->template = !empty($this->view['template']) ? !empty($this->view['template']) : 'yours/pages/' 
-			. ( $this->request->_magic['classes'] ? join('/', $this->request->_magic['classes']) . '/' : '' )
-			. $this->request->controller->calledMethod . '.' . _TEMPLATES_EXTENSION;
+		$this->view->template = !empty($this->view['template']) 
+			? !empty($this->view['template']) 
+			: 'yours/pages/' 
+				. ( $this->request->_magic['classes'] ? join('/', $this->request->_magic['classes']) . '/' : '' )
+				. $this->request->controller->calledMethod . '.' . _TEMPLATES_EXTENSION;
 	}
 	
 	public function getViewName()
 	{
-		$this->view->name = !empty($this->view->name) ? $this->view->name : $this->request->_magic['name'];
+		// Shortcut for view
+		$_v 		= &$this->view;
+		
+		$_v->name 	= !empty($_v->name) ? $_v->name : $this->request->_magic['name'];
 		
 		return $this->view->name;
 	}
 	
 	public function getCSS(){ return $this->getAssets('css'); }
-	public function getJS(){ return $this->getAssets('js'); }
+	public function getJS()	{ return $this->getAssets('js'); }
 	public function getAssets($type)
 	{
-		//$ret 		= array();
-		$_v 		= &$this->view; 			// Shortcut for view
-		$_mg 		= &$this->request->_magic; 	// Shortcut for view
-		$upper 		= strtoupper($type);
+		$_v 			= &$this->view; 			// Shortcut for view
+		$_mg 			= &$this->request->_magic; 	// Shortcut request 'magic' data
+		$upper 			= strtoupper($type);
 		
 		// If the view is explicitely specified as not containing css, or if the css param is passed with a falsy value 
 		// do not continue
@@ -498,7 +515,7 @@ die();
 		// Get group names to loop over
 		// Use user defined groups if specified
 		// Otherwise, get magic ones
-		$groups 		= !empty($v[$type]) ? Tools::toArray($v[$type]) : array_merge( 						 
+		$groups 		= !empty($_v[$type]) ? Tools::toArray($_v[$type]) : array_merge( 						 
 			array('common'), 
 			(array) $_mg['objects'], 
 			(array) $_mg['classes'],
@@ -506,16 +523,16 @@ die();
 		);
 		
 		// Remove doubles
-		$groups = array_unique($groups);
+		$groups 		= array_unique($groups);
 		
 		// Call proper method to parse assets group
-		$parseMethod = 'parse' . $upper . 'Group';
-		$this->view->$type = self::$parseMethod($groups);
+		$parseMethod 	= 'parse' . $upper . 'Group';
+		$_v->$type 		= self::$parseMethod($groups);
 		
-		if ( $this->view->{'minify' . $upper} )
+		if ( $_v->{'minify' . $upper} )
 		{
-			$minMethod 			= 'getMinified' . $upper;
-			$this->view->$type 	= self::$minMethod($this->view->$type);
+			$minMethod 	= 'getMinified' . $upper;
+			$_v->$type 	= self::$minMethod($_v->$type);
 		}
 	}
 

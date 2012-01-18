@@ -39,12 +39,13 @@ class Request
 		// In case where the app do not use a hostname but is accessed instead via an IP, we are to remove the app base base from the request URI
 		$this->relative_uri = str_replace(rtrim(_PATH_REL, '/'), '', $_SERVER['REQUEST_URI']);
 		
-		// TODO: bench preg_split + replacedd request uri, preg_split + redirect_url, explode + skiping '/' in dispatch
+		// TODO: bench preg_split + replaced request uri, preg_split + redirect_url, explode + skiping '/' in dispatch
 		//$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']), '/'));
 		$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $this->relative_uri), '/'));
 		//$this->parts = preg_split('/\//', trim($_SERVER['REDIRECT_URL'], '/'));
 		
-		$this->filters 		= ArrayObject(array(), 2);
+		// Init request filters
+		$this->filters 		= new ArrayObject(array(), 2);
 		
 		$this->getURL();
 		
@@ -60,7 +61,7 @@ class Request
         $this->sniffBrowserData();
 	}
 	
-	public function getLanguage($lang = null)
+	public function setLanguage($lang = null)
 	{
 		// Get known languages and force them into lowercase
 		$known 		= defined('_APP_LANGUAGES') && is_array(_APP_LANGUAGES) 
@@ -68,19 +69,19 @@ class Request
 						: explode(',', strtolower(_APP_LANGUAGES));
 		
 		// Get  Accept-Language http header 
-		// fr,fr-fr;q=0.8,en-us;q=0.5,en;q=0.3
+		// ex: fr,fr-fr;q=0.8,en-us;q=0.5,en;q=0.3
 		$accptHeader = !empty($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? str_replace('-', '_', $_SERVER['HTTP_ACCEPT_LANGUAGE']) : '';
 		
 		// Try to find lang in GET param
-		if ( empty($lang) && in_array(strtolower($_GET['lang']), $known) )		{ $lang = strtolower($_GET['lang']); }
+		if ( empty($lang) && isset($_GET['lang']) && in_array(strtolower($_GET['lang']), $known) )			{ $lang = strtolower($_GET['lang']); }
 		
 		// Try to find lang in POST param
-		if ( empty($lang) && in_array(strtolower($_POST['lang']), $known) )		{ $lang = strtolower($_POST['lang']); }
+		if ( empty($lang) && isset($_POST['lang']) && in_array(strtolower($_POST['lang']), $known) )		{ $lang = strtolower($_POST['lang']); }
 		
 		// Try to find lang in SESSION param
-		if ( empty($lang) && in_array(strtolower($_SESSION['lang']), $known) )	{ $lang = strtolower($_SESSION['lang']); }
+		if ( empty($lang) && isset($_SESSION['lang']) && in_array(strtolower($_SESSION['lang']), $known) )	{ $lang = strtolower($_SESSION['lang']); }
 		
-		// If the lang has not been found and if there's an Accept-Llanguage http header
+		// If the lang has not been found and if there's an Accept-language http header
 		if ( empty($lang) && !empty($accptHeader) )
 		{
 			$acptLangs 	= array(); 						//  
@@ -94,11 +95,11 @@ class Request
 				$acptLangs[$key] 	= $pos ? substr($lg, $pos + 3) : 1;
 			}
 			
-			// Sort array by value
+			// Sort array by value (priority)
 			arsort($acptLangs);
 			
 			// Check for match between accepted languages and known ones
-			foreach ($acptLangs as $lg) { if ( in_array($lg, $known) ){ $lang = $lg; break; } }
+			foreach ($acptLangs as $lg => $priority){ if ( in_array(strtolower($lg), $known) ){ $lang = $lg; break; } }
 		}
 		
 		// If the lang has still not been found, use the default language
@@ -134,9 +135,10 @@ class Request
 			'cacheId' 	=> null,
 		);
 		
-		$_rq 			= &$this->request; 				// Shortcut for request
-		$_ctr 			= &$this->controller; 			// Shortcut for request controller
-		$_mg 			= &$this->_magic; 				// Shortcut for view magic data
+		// Set some shortcuts
+		$_rq 			= &$this->request; 				// Request
+		$_c 			= &$this->controller; 			// Controller
+		$_mg 			= &$this->_magic; 				// View magic data
 
 		$camel 			= '';
 		$pointed 		= '';
@@ -147,7 +149,7 @@ class Request
 		$_mg['jsCalls'] .= PHP_EOL . $jsObject;
 		
 		$items 			= $this->breadcrumbs;
-		array_push($items, $_ctr->rawName, $_ctr->calledMethod);		
+		array_push($items, $_c->rawName, $_c->calledMethod);		
 		$i 				= 0;
 		$lim 			= count($items);
 		$curObj 		= '';

@@ -1,0 +1,15 @@
+Common shortcuts
+----------------
+$_rq 	=> Request
+$_rp 	=> Response
+
+$_r 	=> Resource
+$_dm 	=> DataModel
+
+$_m 	=> Model
+$_v 	=> View
+$_c 	=> Controller
+
+
+
+$p 		=> params
