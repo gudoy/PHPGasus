@@ -214,13 +214,16 @@ class Controller extends Core implements ControllerInterface
 		// If at this point the method has still not been set,
 		// default it to index
 		//if ( !$_rqc->method ){ $_rqc->method = 'index'; }
-		
-		// TODO: when/where should we redirect to _error404() 
+		 
 		// If method exists and does not start by un '_' char (used for not exposed method)
-		$_rqc->calledMethod = !empty($_rqc->method) && method_exists($_rqc->name, $_rqc->method) && $_rqc->method[0] !== '_' 
+		
+		// Otherwise
+		$_rqc->calledMethod = !empty($_rqc->method) && method_exists($_rqc->name, $_rqc->method) && $_rqc->method[0] !== '_'
+			// Redirect to it 
 			? $_rqc->method 
-			//: '_error404';
-			: 'index';
+			// If the current controller is an existing resource
+			// redirect to 'index' method, otherwise redirect to _error404 method
+			: ( empty($this->_resource) ? '_error404' : 'index' );
 		
 		return call_user_func_array(array($this, $_rqc->calledMethod), array());
 	}

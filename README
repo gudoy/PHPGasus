@@ -3,12 +3,12 @@ PHPGasus is another PHP Framework which aims to allow quick and smart web develo
 It's based on well known principles
 
 PRINCIPLES
-- REST 
+- REST
+- MVC 
 - ROA
 - Model Driven Development
 - DRY
 - KISS
-- MVC
 - Conventions over configuration
 - less is more (“Perfection is achieved, not when there is nothing left to add, but when there is nothing left to remove.” (Antoine de Saint-Exupéry))
 - the content is the interface
@@ -29,32 +29,32 @@ TOP FEATURES
 - PERFs optimized (includes preconfigured vhost and/or .htaccess)
 - EASY to learn (no 500 pages book or 200 pages website documentation)
 - HTML5 based
-- OS/DEVICE & Browser sniffing 
+- OS/DEVICE & BROWSER sniffing 
 - CSS/JS minification
 - TEMPLATES engines included (smarty 3, Twig & Haanga)
-- ACL module included (users-groups-permissions)
-- PRECONFIGURED ENVIRONMENTS (local,dev,preprod,prod)
-- DEFAULT OUTPUT FORMATS included for all views/pages (html, xhtml, xml, json, jsonp, jsonreport, yaml, plist, csv, rss, atom, pdf)
-- AUTO-UPDATES
+- ACL module included (users, groups & permissions)
+- PRECONFIGURED ENVIRONMENTS (local, dev, preprod, prod)
+- DEFAULT OUTPUT FORMATS included for all views/pages (html, xhtml, xml, json, jsonp, jsonreport, yaml, plist, csv, rss, atom)
+- SEMI-AUTOMATIC UPDATES
 
 
 WHY Use PHPGasus
 - you love things like Ruby on Rails, Django, Python, jQuery,
-- you can stand watching the code of Wordpress or Drupal for their uglyness
-- you can stand watching the code of Symfony for it's verbosity
+- you can stand watching the code of Wordpress & likes for their uglyness
+- you're fed your current framework's verbosity (things like this "use vendor\framework\FrameworkName\And\So\On\...\Path\To\My\Lib");
 - you want to start coding immediately, code few, fast, clean & secure
 - you love the tools that try to guess want you want and act consequently
 - you love syntactic sugar
 - you don't want to read a 500 pages book or ten 20 minutes videos to start doing great things
 - you don't want to have to use a CLI (Command Line Interface) to create anything
-- you love smart & ergonomic interfaces (with lots of magic applied)
-- even if you are a code fanatic or interface hater, you can do it too (and their still some magic applied)
+- you love smart & ergonomic interfaces (with lots of magic-ness)
+- even if you are a code fanatic or interfaces hater, you can do it too (and their still some magic-ness applied)
 - you prefer doing $this->users->getOneBirthdateByEmail('foo@bar.com') than $this->db->query("SELECT birthdate FROM users AS u WHERE u.email = 'foo@bar.com' LIMIT 1")
 
 
 Dispatcher
-In PHPGasus, every URL (except for content in public folder) is redirected to the dispatcher : index.php at the root of your project.
-This function tries to call the proper method of the proper controller with proper arguments.
+In PHPGasus, every URL (except for content in public folder) is redirected to the dispatcher: index.php at the root of your project.
+This function tries to call the proper method of the proper controller with proper arguments, depending of your dataModel and request params.
 
 DISPATCHER => CONTROLLER (samples):							
 GET /                                       => /CHome->index() 									
