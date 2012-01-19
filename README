@@ -132,25 +132,27 @@ CODING PRACTICES
 
 
 Magic request params
-{url}.html 					<== display the html reprensatation of the page data [default]
-{url}.xhtml 				<== display the html reprensatation of the page data
-{url}.qr 					<== display the qr code containing the url of the page data
-{url}.json 					<== return the json representation of the page data
-{url}.jsonp 				<== return the json representation of the page data
-{url}.jsontxt 				<== return the json representation of the page data, served as plain text
-{url}.jsonreport 			<== return the jsonreport (http://ajaxstack.com/jsonreport/) of the page data
-{url}.xml                	<== return the xml representation of the page data
-{url}.plist              	<== return the plist representation of the page data
-{url}.plistxml           	<== return the plist representation of the page data, served as plain text
-{url}.yaml               	<== return the yaml representation of the page data
-?css=no                     <== disable css
-?js=no                      <== disable js
-?minify=all                 <== force minification of js & css (override conf directives)
-?minify=css                 <== force minification of css
-?minify=js                  <== force minification of js
-?minify=html                <== force minification of html
-?tplSelf=1                  <== only return main template content (not the layout) [by default for ajax requests]
-?limit=100                  <== never return more than 100 items for a resource (unless you explicitely asked for more using 'limit' => -1 params in your code 
+{url}.html 			<== display the html reprensatation of the page data [default]
+{url}.xhtml 		<== display the html reprensatation of the page data
+{url}.qr 			<== display the qr code containing the url of the page data
+{url}.json 			<== return the json representation of the page data
+{url}.jsonp 		<== return the jsonp representation of the page data
+{url}.jsontxt 		<== return the json representation of the page data, served as plain text
+{url}.jsonreport 	<== return the jsonreport (http://ajaxstack.com/jsonreport/) of the page data
+{url}.xml           <== return the xml representation of the page data
+{url}.plist         <== return the plist representation of the page data
+{url}.plistxml      <== return the plist representation of the page data, served as plain text
+{url}.yaml          <== return the yaml representation of the page data
+{url}.rss           <== return the rss representation of the page data
+{url}.atom          <== return the atom representation of the page data
+?css=no             <== disable css
+?js=no              <== disable js
+?minify=all         <== force minification of js & css (override conf directives)
+?minify=css         <== force minification of css
+?minify=js          <== force minification of js
+?minify=html        <== force minification of html
+?tplSelf=1          <== only return main template content (not the layout) [by default for ajax requests]
+?limit=100          <== never return more than 100 items for a resource (unless you explicitely asked for more using 'limit' => -1 params in your code 
  
 
 REFERENCE
