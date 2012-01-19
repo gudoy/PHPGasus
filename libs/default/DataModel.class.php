@@ -1203,17 +1203,29 @@ die();
 		return $_resources;
 	}
 	
+	/*
+	static function resourceProp($resource, $prop)
+	{
+		global $_resources;
+		
+		return isset($_resources['items'][$resource][$prop]) ? $_resources['items'][$resource][$prop] : null;		
+	}*/
+	
 	
 	// Checks that a column existing in a given resource
-	static function isColumn($resource, $colName)
+	static function isColumn($resource, $column)
 	{
 		global $_columns;
 		
-//var_dump(__METHOD__ . " -> $resource.$colName");
+//var_dump(__METHOD__);
+//var_dump($resource);
+//var_dump($column);
+//var_dump($_columns);
 		
-		//return !empty(self::$columns[$resource][$string]);
-		//return !empty($_columns[$resource][$string]);
-		return !empty($_columns[$resource]['items'][$colName]);
+//var_dump(__METHOD__ . " -> $resource.$column");
+		
+		//return !empty($_columns[$resource]['items'][$colName]);
+		return isset($_columns[$resource]['items'][$column]);
 	}
 	
 	// Returns the singular of a resource

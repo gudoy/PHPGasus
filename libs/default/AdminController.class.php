@@ -14,12 +14,16 @@ class AdminController extends Controller
 		//$this->_columns 	= &$_columns;
 		//$this->_groups 		= &$_groups;
 	}
+	
+	public function _error404()
+	{
+		
+	}
 	 
 	public function index()
 	{
 		$this->retieve();
 	}
-	
 	
 	public function retrieve()
 	{
@@ -34,11 +38,11 @@ class AdminController extends Controller
 		
 		$this->trigger('onAfterRetrieve', array('from' => __FUNCTION__));
 		
-		$this->trigger('onBeforeRender', array('from' => __FUNCTION__));
-		
-		$this->render();
-		
-		$this->trigger('onAfterRender', array('from' => __FUNCTION__));		
+		// TODO
+		// If request filters have been passed but data has not been found redirect (or just call ???) to error404()
+		// return $this->error404();
+				
+		$this->render();		
 	}
 	
 	public function create()

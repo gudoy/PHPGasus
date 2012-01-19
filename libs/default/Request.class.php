@@ -44,8 +44,12 @@ class Request
 		$this->parts 		= preg_split('/\//', trim(str_replace('?' . $_SERVER['QUERY_STRING'], '', $this->relative_uri), '/'));
 		//$this->parts = preg_split('/\//', trim($_SERVER['REDIRECT_URL'], '/'));
 		
-		// Init request filters
-		$this->filters 		= new ArrayObject(array(), 2);
+		// Init request data (filters, condtions, columns, values)
+		$this->filters 		= array();
+		$this->columns 		= array();
+		$this->conditions 	= array();
+		$this->values 		= array();
+		$this->restrictions = array();
 		
 		$this->getURL();
 		

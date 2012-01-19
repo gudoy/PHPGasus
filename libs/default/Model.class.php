@@ -61,7 +61,7 @@ class Model extends Core
 //var_dump($method);
 //var_dump($args);
 
-		// PATTERN: verb[Limiters][offseters][restricters][columns][conditioners][condition operator][sorters]
+		// PATTERN: verb[Limiters][offseters][restricters][conditioners][condition operator][sorters]
 		
 		$verbs = array(
 			'find' 				=> 'select',
@@ -94,6 +94,7 @@ class Model extends Core
 		
 		$restricters 	= array(
 			//{$colName}
+			'count' 		=> array(), // TODO
 			'distinct' 		=> array(), // TODO
 		);
 		
@@ -116,6 +117,16 @@ class Model extends Core
 			'having',
 			'maching',
 			'verifying',
+		);
+		
+		$orderers = array(
+			'sortedBy' 				=> array(), // TODO
+			'indexedBy' 			=> array(), // TODO
+			'indexedByUnique' 		=> array(), // TODO
+			// 'groupedBy' 			=> array(), // TODO ???
+			// 'groupedByUnique' 	=> array(), // TODO ???
+			// 'regroupedBy' 		=> array(), // TODO ???
+			// 'regroupedByUnique' 	=> array(), // TODO ???
 		);
 			
 		// Default request options	

@@ -213,12 +213,14 @@ class Controller extends Core implements ControllerInterface
 		
 		// If at this point the method has still not been set,
 		// default it to index
-		if ( !$_rqc->method ){ $_rqc->method = 'index'; }
+		//if ( !$_rqc->method ){ $_rqc->method = 'index'; }
 		
+		// TODO: when/where should we redirect to _error404() 
 		// If method exists and does not start by un '_' char (used for not exposed method)
-		$_rqc->calledMethod = $_rqc->method && method_exists($_rqc->name, $_rqc->method) && $_rqc->method[0] !== '_' 
+		$_rqc->calledMethod = !empty($_rqc->method) && method_exists($_rqc->name, $_rqc->method) && $_rqc->method[0] !== '_' 
 			? $_rqc->method 
-			: 'error404';
+			//: '_error404';
+			: 'index';
 		
 		return call_user_func_array(array($this, $_rqc->calledMethod), array());
 	}
@@ -243,37 +245,40 @@ class Controller extends Core implements ControllerInterface
 		// Shortcuts
 		$_rq 	= &$this->request;
 		$_rqc 	= &$this->request->controller; 			// request controller
-		$_r 	= &$this->_resource->name; 				// resource
+		$rName 	= &$this->_resource->name; 				// resource
 		$params = &$_rqc->params;
 
-//var_dump($_rq);
-var_dump('params');	
+//var_dump($_r);
+//var_dump('params');
 var_dump($params);
 		
 		// Loop over params
 		$i = 0;
 		foreach ((array) $params as $param)
 		{
-var_dump($param);
+//var_dump($param);
 			
 			// Does the current param contains ','
 			$isMulti 	= strpos($param, ',') !== false;
 			
-var_dump('isMulti: ' . (int) $isMulti);
+//var_dump('isMulti: ' . (int) $isMulti);
 			
 			// Split on ',' & force the result to be an array (even if the param has no ',')
 			$items 		= Tools::toArray(explode(',',$param));
 
-var_dump('items (arrayfied)');			
-var_dump($items);
+//var_dump('items (arrayfied)');			
+//var_dump($items);
 			
 			$values 	= next($params);
 
-var_dump('values');			
+//var_dump('values:');
 var_dump($values);
 			
 			foreach($items as $item)
 			{
+//var_dump((int) DataModel::isColumn($_r->name, (string) $item));
+//var_dump('is column: ' . $item . ' : ' . (int) DataModel::isColumn($_r, (string) $item));
+				
 				// If the item is numeric, assume it's an id
 				if ( is_numeric($item) )
 				{
@@ -288,27 +293,32 @@ var_dump('case id (is numeric): ' . $item);
 					// TODO: remove duplicates? (ex, /users/1,3,1)
 				}
 				// If the current resource is defined and the current item is one of it's columns
-				elseif ( !empty($_r->name) && DataModel::isResource($_r->name, (string) $item) )
+				elseif ( !empty($rName) && DataModel::isColumn($rName, (string) $item) )
 				{
-var_dump('case resource column: ' . $item);
 					// TODO
 					// If no values passed, assume it's a columns/getFields restricter
 					if ( $values !== false )
 					{
-						
+var_dump('case resource column with values: ' . $item);
+						$_rq->filters[$item] = !empty($rName->filters[$item]) ? (array) $rName->filters[$item] : array();
+						$_rq->filters[$item][] = Tools::toArray($values);
 					}
 					else
 					{
-						// TODO
-						// => add to filters/conditions: $column => $values	
+var_dump('case resource column WITHOUT values: ' . $item);
+//var_dump($this->request['columns']);
+						// Restrict gotten columns to passed one(s) 
+						//$_rq->restricters[] = 'distinct';
+						$_rq->columns[] 	= $item;
 					}
 				}
-				// If the current resource is defined but the current item is NOT one of it's columns
-				elseif ( !empty($_r) )
+				// If the current resource is defined and has a nameField
+				// but the current item is NOT one of it's columns 
+				elseif ( !empty($this->_resource) && !empty($this->_resource->nameField) )
 				{
 					// Assume that the current item is a {$nameField} value to check against
-					// TODO
-					// => add to filters/conditions: $column => $values
+					$_rq->filters[$nameField] = !empty($_rq->filters[$nameField]) ? (array) $_rq->filters[$nameField] : array();
+					$_rq->filters[$nameField][] = $item;
 				}
 				else
 				{
@@ -322,7 +332,8 @@ var_dump('case resource column: ' . $item);
 		}
 		
 var_dump(__METHOD__);
-//var_dump($this->request);
+//var_dump($this);
+var_dump($this->request);
 //var_dump($RC);
 //var_dump($this);
 die();
@@ -349,17 +360,20 @@ die();
 		$this->render();
 	}
 	
-	public function error404()
+	public function _error404()
 	{
 		$this->render();
 	}
 	
 	public function render()
 	{
-//$this->log(__METHOD__);
+		$this->trigger('onBeforeRender', array('from' => __FUNCTION__));
+		
 		$renderMethod = 'render' . strtoupper($this->request->getOutputFormat());
 	
 		$this->$renderMethod();
+		
+		$this->trigger('onAfterRender', array('from' => __FUNCTION__));
 	}
 	
 	public function renderJSON()
