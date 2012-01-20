@@ -22,7 +22,7 @@ class AdminController extends Controller
 	 
 	public function index()
 	{
-		$this->retieve();
+		$this->retrieve();
 	}
 	
 	public function retrieve()
@@ -32,15 +32,21 @@ class AdminController extends Controller
 		
 		$this->trigger('onBeforeRetrieve', array('from' => __FUNCTION__));
 		
-		// Get all (limited to _APP_LIMIT_RETRIEVED_RESOURCES) items of this resource
+		// TODO
+		// Should not have to save return value
+		// Model should be instanciated with controller passed as a reference so that 
+		// adding to {model}->data also add to {controller->data} 
+		// Retrieve resource(s) depending of the request params (if passed)
 		$this->data[$_r] = $this->{$_r}->find();
-		//$this->data[$_r] = $this->{$_r}->query('SELECT * FROM resources');
+		//$this->{$_r}->find();
 		
 		$this->trigger('onAfterRetrieve', array('from' => __FUNCTION__));
 		
 		// TODO
 		// If request filters have been passed but data has not been found redirect (or just call ???) to error404()
 		// return $this->error404();
+		// If no params (=> find all) but no data
+		// return a 204???
 				
 		$this->render();		
 	}

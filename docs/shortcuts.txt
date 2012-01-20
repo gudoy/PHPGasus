@@ -1,4 +1,4 @@
-Common shortcuts
+Global shortcuts
 ----------------
 $_rq 	=> Request
 $_rp 	=> Response
@@ -11,5 +11,9 @@ $_v 	=> View
 $_c 	=> Controller
 
 
-
+// Local shortcut
+$qp 	=> queryPlan
 $p 		=> params
+
+
+

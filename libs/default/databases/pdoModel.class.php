@@ -18,7 +18,7 @@ $this->log(__METHOD__);
 		$dsn = $driver . ':host=' . _DB_HOST . ';port=' . _DB_PORT . ';dbname=' . _DB_NAME;
 		
 //var_dump($dsn);
-$this->log($dsn);
+$this->log('dsn: ' . $dsn);
 		
 		try
 		{
@@ -32,36 +32,43 @@ $this->log($dsn);
 		}
 		
 //var_dump($this->db);
-$this->log($this->db);
-$this->log($err);
+//$this->log($this->db);
+//$this->log($err);
 		
 		return $this;	
 	}
 	
 	public function setEncoding(){} // nothing since this is done on connection opening;
 	
-	public function doQuery($query, array $params = array())
+	public function doQuery(array $params = array())
 	{
+//var_dump($query);
+$this->log(__METHOD__);
+
+//$this->log('builtQuery: ' . (string) $this->queryString);
+		
+		// Do not continue if there's no querySting
+		if ( !$this->queryString ){ return; } 
+		
 		$p = &$params;
 		
-//var_dump(__METHOD__);
-$this->log(__METHOD__);
 		// Log launched query
 		// $this->log($query);
 		// $this->logs['launched'][] = $query;
 		
 		if ( $p['type'] === 'select' )
 		{
-			$this->results = $this->db->query($query);
-			$this->results->setFetchMode(PDO::FETCH_ASSOC);
+			$this->results = $this->db->query($this->queryString);
+			
+//var_dump($this->results);
+			
+			// 
+			if ( $this->results ) { $this->results->setFetchMode(PDO::FETCH_ASSOC); }
 		}
 		else
 		{
-			$this->results = $this->db->exec($query); 
+			$this->results = $this->db->exec($this->queryString); 
 		}
-		
-//var_dump($this->results);
-//$this->log(__METHOD__);
 		
 		$this->success = is_bool($this->results) && !$this->results ? false : true;
 		

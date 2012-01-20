@@ -45,18 +45,7 @@ class Controller extends Core implements ControllerInterface
 //var_dump($prop);
 //die();
 		
-		// Load Model
-		switch(_DB_DRIVER)
-		{
-			case 'default':
-			case 'pdo': 		$mName = 'pdoModel'; break;
-			case 'mysqli': 		$mName = 'mysqliModel'; break;
-			default: 			$mName = _DB_SYSTEM . 'Model'; break;
-		}
-		
-		// Direct access to resource model
-		$this->requireLibs($mName, 'databases/');
-		$this->{$prop} = new $mName(array('_resource' => $prop));
+		$this->initModel(array('resource' => $prop));
 		
 		return $this->{$prop};
 	}
@@ -90,6 +79,25 @@ class Controller extends Core implements ControllerInterface
 	
 	public function initModel()
 	{
+		$args 	= func_get_args();
+		$p 		= !empty($args[0]) ? $args[0] : array(
+			'resource' => $this->_resource->name,
+		);
+		
+		// Get resource
+		
+		// Load Model
+		switch(_DB_DRIVER)
+		{
+			case 'default':
+			case 'pdo': 		$mName = 'pdoModel'; break;
+			case 'mysqli': 		$mName = 'mysqliModel'; break;
+			default: 			$mName = _DB_SYSTEM . 'Model'; break;
+		}
+		
+		// Direct access to resource model
+		$this->requireLibs($mName, 'databases/');
+		$this->{$p['resource']} = new $mName($this, array('resource' => $p['resource']));
 	}
 	
 	
@@ -150,6 +158,7 @@ class Controller extends Core implements ControllerInterface
 				'post' 		=> 'create',
 				'put' 		=> 'update',
 				'delete' 	=> 'delete',
+				//'head' 		=> 'index', // TODO: how to handle
 				
 				// Called methods
 				'create' 	=> 'create',
@@ -253,7 +262,7 @@ class Controller extends Core implements ControllerInterface
 
 //var_dump($_r);
 //var_dump('params');
-var_dump($params);
+//var_dump($params);
 		
 		// Loop over params
 		$i = 0;
@@ -275,7 +284,7 @@ var_dump($params);
 			$values 	= next($params);
 
 //var_dump('values:');
-var_dump($values);
+//var_dump($values);
 			
 			foreach($items as $item)
 			{
@@ -285,7 +294,7 @@ var_dump($values);
 				// If the item is numeric, assume it's an id
 				if ( is_numeric($item) )
 				{
-var_dump('case id (is numeric): ' . $item);
+//var_dump('case id (is numeric): ' . $item);
 					// TODO
 					// ==> add filters/conditions + go to next()
 					//$_rq->filters['id'] = $item;
@@ -302,13 +311,13 @@ var_dump('case id (is numeric): ' . $item);
 					// If no values passed, assume it's a columns/getFields restricter
 					if ( $values !== false )
 					{
-var_dump('case resource column with values: ' . $item);
+//var_dump('case resource column with values: ' . $item);
 						$_rq->filters[$item] = !empty($rName->filters[$item]) ? (array) $rName->filters[$item] : array();
 						$_rq->filters[$item][] = Tools::toArray($values);
 					}
 					else
 					{
-var_dump('case resource column WITHOUT values: ' . $item);
+//var_dump('case resource column WITHOUT values: ' . $item);
 //var_dump($this->request['columns']);
 						// Restrict gotten columns to passed one(s) 
 						//$_rq->restricters[] = 'distinct';
@@ -334,12 +343,12 @@ var_dump('case resource column WITHOUT values: ' . $item);
 			$i++;	
 		}
 		
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
 //var_dump($this);
-var_dump($this->request);
+//var_dump($this->request);
 //var_dump($RC);
 //var_dump($this);
-die();
+//die();
 	}
 	
 	public function initCSRFtoken()

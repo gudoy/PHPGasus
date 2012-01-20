@@ -2,13 +2,26 @@
 
 class _SQLModel extends Model
 {
+	public $queryString = ''; 
+	
+	public function find()
+	{
+//var_dump($query);
+$this->log(__METHOD__);
+
+		$this->buildQuery();
+		$this->handleOptions();
+		$this->query();
+	}
+	
+	
 	public function setEncoding()
 	{
 		// Tell mysql we are sending already utf8 encoded data
 		$this->db->query("SET NAMES 'UTF8'");
 	}
 	
-	public function query($query, array $params = array())
+	public function query(array $params = array())
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
@@ -27,22 +40,23 @@ $this->log(__METHOD__);
 //var_dump($query);
 $this->log(__METHOD__);
 		
-		$this->doQuery($query, $p);
+		$this->doQuery($p);
 		
 		return $this->data;
 	}
 	
-	public function doQuery($query, array $params = array())
+	public function doQuery(array $params = array())
 	{
-		$p = &$params;
-		
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
+		
+		$p = &$params;
+
 		// Log launched query
 		// $this->log($query);
 		// $this->logs['launched'][] = $query;
 		
-		$this->results = $this->db->query($query);
+		$this->results = $this->db->query($this->queryString);
 		
 		$this->success = is_bool($this->results) && !$this->results ? false : true;
 		
@@ -132,7 +146,10 @@ $this->log(__METHOD__);
 	}
 	
 	public function escapeColName(){}
-	public function escapeString(){}
+	public function escape($string)
+	{
+		return '`' . (string) $string . '`';
+	}
 	
 	public function getResources()
 	{
@@ -141,18 +158,48 @@ $this->log(__METHOD__);
 		
 		$this->data['resources'] = $this->query('SHOW TABLES');
 	}
+	
+	
+	public function buildQuery(array $params = array())
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		$p = array_merge(array(
+			'type' => 'select',
+		), $params);
+		
+		switch ($p['type'])
+		{
+			case 'insert': 	$this->buildInsert(); break;
+			case 'update':	$this->buildUpdate(); break;
+			case 'delete': 	$this->buildDelete(); break;
+			
+			// TODO
+			//case 'upsert': 	$this->buildUpsert(); break;
+			
+			case 'select': 
+			default: 		$this->buildSelect(); break;
+		}
+		
+$this->log('builtQuery: ' . $this->queryString);
+	}
+	
 
 	public function buildSelect(array $params = array())
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		// Define shortcuts
 		$this->queryPlan = array(
 			'tables' 	=> array(),
 			'columns' 	=> array(),
 		);
-		$_qp 	= &$this->queryPlan; 
+		$qp 	= &$this->queryPlan; 
 		
 		// Build final query  
-		$_q = 	"SELECT "
+		$this->queryString = 
+			"SELECT "
 				. $this->buildColumnsList()
 				. $this->buildFrom()
 				. $this->buildLeftJoins()
@@ -165,20 +212,24 @@ $this->log(__METHOD__);
 				. $this->buildOffset()
 		;
 		
-		return $_q;
+		//return $qp;
 	}
 	
 	public function buildInsert()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		// Define shortcuts
 		$this->queryPlan = array(
 			'tables' 	=> array(),
 			'columns' 	=> array(),
 		);
-		$_qp 	= &$this->queryPlan; 
+		$qp 	= &$this->queryPlan; 
 		
-		// Build final query  
-		$_q = 	"INSERT INTO "
+		// Build final query
+		$this->queryString = 
+			"INSERT INTO "
 				. $this->buildFrom()
 				. $this->buildColumnsList()
 				. $this->buildLeftJoins()
@@ -191,20 +242,24 @@ $this->log(__METHOD__);
 				. $this->buildOffset()
 		;
 		
-		return $_q;
+		return $qp;
 	}
 	
 	public function buildUpdate()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		// Define shortcuts
 		$this->queryPlan = array(
 			'tables' 	=> array(),
 			'columns' 	=> array(),
 		);
-		$_qp 	= &$this->queryPlan; 
+		$qp 	= &$this->queryPlan; 
 		
 		// Build final query  
-		$_q = 	"UPDATE "
+		$this->queryString = 
+			"UPDATE "
 				. $this->buildFrom()
 				. $this->buildColumnsList()
 				. $this->buildLeftJoins()
@@ -216,22 +271,24 @@ $this->log(__METHOD__);
 				. $this->buildLimit()
 				. $this->buildOffset()
 		;
-		
-		return $_q;
 	}
 	
 	
 	public function buildDelete()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		// Define shortcuts
 		$this->queryPlan = array(
 			'tables' 	=> array(),
 			'columns' 	=> array(),
 		);
-		$_qp 	= &$this->queryPlan; 
+		$qp 	= &$this->queryPlan; 
 		
 		// Build final query  
-		$_q = 	"DELETE "
+		$this->queryString = 
+			"DELETE "
 				. $this->buildFrom()
 				. $this->buildColumnsList()
 				. $this->buildLeftJoins()
@@ -250,24 +307,36 @@ $this->log(__METHOD__);
 
 	public function buildColumnsList()
 	{
-		$o = &$this->options;
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
+		$o 	= &$this->options;
+		$_r = &$this->_resource;
 		
 		// TODO
 		
-		return '';	
+		return $this->escape($_r['alias']) . '.* ';	
 	}
 	
 	public function buildFrom()
 	{
-		$o = &$this->options;
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
+		$o 	= &$this->options;
+		$_r = &$this->_resource;
 		
 		// TODO
 		
-		return '';	
+		return 'FROM ' 
+			. $this->escape($_r['table']) . ' AS ' . $this->escape($_r['alias']) . ' ';	
 	}
 	
 	public function buildLeftJoins()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		$o = &$this->options;
 		
 		// TODO
@@ -277,6 +346,9 @@ $this->log(__METHOD__);
 	
 	public function buildRightJoins()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		$o = &$this->options;
 		
 		// TODO
@@ -286,6 +358,9 @@ $this->log(__METHOD__);
 	
 	public function buildCrossJoins()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		$o = &$this->options;
 		
 		// TODO
@@ -295,6 +370,9 @@ $this->log(__METHOD__);
 	
 	public function buildWhere()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		$o = &$this->options;
 		
 		// TODO
@@ -304,6 +382,9 @@ $this->log(__METHOD__);
 	
 	public function buildGroupBy()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		$o = &$this->options;
 		
 		// TODO
@@ -313,6 +394,9 @@ $this->log(__METHOD__);
 	
 	public function buildOrderBy()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		$o = &$this->options;
 		
 		// TODO
@@ -322,6 +406,9 @@ $this->log(__METHOD__);
 	
 	public function buildLimit()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		$o = &$this->options;
 		
 		!empty($o['limit']) && $o['limit'] != -1 ? "LIMIT " . $o['limit'] . " " : " ";
@@ -329,6 +416,9 @@ $this->log(__METHOD__);
 	
 	public function buildOffset()
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
 		$o = &$this->options;
 		
 		return !empty($o['offset']) ? "OFFSET " . $o['offset'] . " " : " ";

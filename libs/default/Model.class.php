@@ -3,9 +3,9 @@
 class Model extends Core
 {
 	
-	public $db 			= null;
+	public $db 			= null; 
 	
-	public $success 	= null;
+	//public $success 	= null;
 	
 	public $data 		= array();
 	public $errors 		= array();
@@ -39,20 +39,28 @@ class Model extends Core
 		'launched' 	=> array(),
 	);
 	
-	public function __construct(array $params = array())
+	// Model should be instanciated with controller passed as a reference so that 
+	// adding to {model}->data also add to {controller->data}
+	public function __construct(Controller &$Controller, array $params = array())
 	{
 //var_dump(__METHOD__);
-//$this->log(__METHOD__);
-//die();
+$this->log(__METHOD__);
+
 		$p = &$params;
+		
+		// Set reference to controller members
+		$this->data 		= &$Controller->data;
+		$this->errors 		= &$Controller->errors;
+		$this->warnings 	= &$Controller->warnings;
+		$this->_resource 	= &$Controller->_resource;
 
 		//if ( !($this->_resource = DataModel::resource($params['_resource']))) { return false; }
-		if ( !DataModel::isResource($p['_resource']) ){ return false; }
+		if ( !DataModel::isResource($p['resource']) ){ return false; }
 		
-		$this->_resource = new ArrayObject(DataModel::resource($p['_resource'], 2));
+		$this->_resource = new ArrayObject(DataModel::resource($p['resource'], 2));
 		
 		// Shortcut to current resource columns
-		$this->_resourcecolumns = DataModel::columns($p['_resource']);
+		$this->_resourcecolumns = DataModel::columns($p['resource']);
 	}
 	
 	public function __call($method, $args)
@@ -198,10 +206,6 @@ $this->log(__METHOD__);
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
-
-		$this->handleOptions();
-
-		$this->query();
 	}
 	
 	public function update()

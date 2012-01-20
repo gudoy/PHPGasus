@@ -436,6 +436,13 @@ class Request
 		return self::$isAjax; 
 	}
 	
+	
+	public function getClientIP()
+	{
+		// TODO
+	}
+	
+	
 	//public static function getURL()
 	public function getURL()
 	{
