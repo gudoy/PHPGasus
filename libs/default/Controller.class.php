@@ -18,17 +18,24 @@ class Controller extends Core implements ControllerInterface
 	
 	private static $_instance;
 	
-	public function __construct($Request)
+	public function __construct(Request $Request)
 	{
 		$this->request 	= $Request;
-		$this->response = new Response(); 
 		
 		parent::__construct();
 		
-		$this->initDataModel();
-		$this->initView();
-		$this->initModel();
+		$this->init();
+	}
+	
+	public function init()
+	{
 		$this->initEvents();
+		$this->initResponse();
+		$this->initDataModel();
+		//$this->initView();
+		$this->initModel();
+		
+		$this->inited = true;
 	}
 	
 	public function __get($prop)
@@ -71,18 +78,27 @@ class Controller extends Core implements ControllerInterface
 		};
 	}
 	
+	/*
 	public function initView()
 	{
 		// Init view
 		$this->view = new ArrayObject($this->view, 2);
+	}*/
+	
+	public function initResponse()
+	{
+		$this->response = new Response($this);
 	}
 	
 	public function initModel()
 	{
 		$args 	= func_get_args();
 		$p 		= !empty($args[0]) ? $args[0] : array(
-			'resource' => $this->_resource->name,
+			'resource' => isset($this->_resource->name) ? $this->_resource->name : null,
 		);
+		
+		// Do not continue if there's no requested resource
+		if ( !$p['resource'] ){ return; }
 		
 		// Get resource
 		
@@ -381,82 +397,12 @@ class Controller extends Core implements ControllerInterface
 	{
 		$this->trigger('onBeforeRender', array('from' => __FUNCTION__));
 		
-		$renderMethod = 'render' . strtoupper($this->request->getOutputFormat());
-	
-		$this->$renderMethod();
+		$this->response->render();
 		
 		$this->trigger('onAfterRender', array('from' => __FUNCTION__));
 	}
 	
-	public function renderJSON()
-	{
-		// TODO
-	}
 	
-	public function renderJSONP()
-	{
-		// TODO
-	}
-	
-	public function renderHTML()
-	{
-//$this->log(__METHOD__);
-		
-		// Extract some magic data from the request
-		$this->request->getMagicData();
-		
-		// Merge some default properties with user defined ones 
-		$this->view = new ArrayObject(array_merge(array(
-			// Caching
-			'cache' 					=> _TEMPLATES_CACHING,
-			'cacheId' 					=> null,
-			'cacheLifetime' 			=> null,
-			
-			// Metas
-			'title' 					=> null,
-			'metas' 					=> array(),
-			'description' 				=> _APP_META_KEYWORDS,
-			'keywords' 					=> _APP_META_KEYWORDS,
-			'htmlAttributes' 			=> null,
-			'robotsArchivable' 			=> _APP_META_ROBOTS_ARCHIVABLE,
-			'robotsIndexable' 			=> _APP_META_ROBOTS_INDEXABLE,
-			'robotsImagesIndexable' 	=> _APP_META_ROBOTS_IMAGES_INDEXABLE,
-			'googleTranslatable' 		=> _APP_META_GOOGLE_TRANSLATABLE,
-			'refresh' 					=> null,
-			'allowPrerendering' 		=> _APP_ALLOW_PAGE_PRERENDERING,
-			
-			// Viewport
-			'iosWebappCapable' 			=> _APP_IOS_WEBAPP_CAPABLE,
-			'viewportWidth' 			=> _APP_VIEWPORT_WIDTH,
-			'viewportIniScale' 			=> _APP_VIEWPORT_INI_SCALE,
-			'viewportMaxScale' 			=> _APP_VIEWPORT_MAX_SCALE,
-			'viewportUserScalable' 		=> _APP_VIEWPORT_USER_SCALABLE,
-			
-			'minifyCSS' 				=> _MINIFY_CSS,
-			'minifyJS' 					=> _MINIFY_JS,
-			'minifyHTML' 				=> _MINIFY_HTML,
-		), (array) $this->view,
-		array(
-			'minifyCSS' 				=> isset($_GET['minify']) ? in_array($_GET['minify'], array('css','all')) : $this->view->minifyCSS,
-			'minifyJS' 					=> isset($_GET['minify']) ? in_array($_GET['minify'], array('js','all')) : $this->view->minifyJS,
-			'minifyHTML' 				=> isset($_GET['minify']) ? in_array($_GET['minify'], array('html','all')) : $this->view->minifyHTML,
-		)), 2);
-		
-		$this->getViewName();
-		$this->getViewLayout();
-		$this->getViewTemplate();
-		$this->getClasses();
-		$this->getCSS();
-		$this->getJS();
-		
-		$this->initTemplate();
-		$this->initTemplateData();
-		$this->renderTemplate();
-		
-		$this->debug();
-	}
-
-
 	public function getClasses()
 	{
 		$b 			= $this->request->browser;
@@ -631,102 +577,13 @@ class Controller extends Core implements ControllerInterface
 		
 		return $files;
 	}
-	
-	public function initTemplate()
-	{		
-		switch ( _TEMPLATES_ENGINE )
-		{
-			case 'Haanga':
-				
-				class_exists('Haanga') || require (_PATH_HAANGA . 'lib/Haanga.php');
-				
-				Haanga::configure(array(
-				    'template_dir' 	=> _PATH_TEMPLATES,
-				    'cache_dir' 	=> _PATH_TEMPLATES_PRECOMPILED,
-				));
-				break;
-			
-			case 'Twig':
-				
-				class_exists('Twig_Autoloader') || require (_PATH_TWIG . 'lib/Twig/Autoloader.php');
-				Twig_Autoloader::register();
-				
-				class_exists('Twig_Extensions_Autoloader') || require (_PATH_TWIG . 'lib/Twig/Extensions/Autoloader.php');
-				Twig_Extensions_Autoloader::register();
-				
-				//$loader 	= new Twig_Loader_String();
-				$loader 				= new Twig_Loader_Filesystem(_PATH_TEMPLATES);
-				$this->Template 		= new Twig_Environment($loader, array(
-					'debug' 				=> false,
-					'charset' 				=> 'utf-8',
-					'base_template_class' 	=> 'Twig_Template',
-					'cache' 				=> _PATH_TEMPLATES_PRECOMPILED,
-					'auto_reload' 			=> _TEMPLATES_FORCE_COMPILE,
-					'strict_variables' 		=> false,
-					'autoescape' 			=> true,
-					'optimizations' 		=> -1,
-				));
-				
-				$this->Template->addExtension(new Twig_Extensions_Extension_Text());
-				$this->Template->addExtension(new Twig_Extensions_Extension_I18n());
-				break;
-				
-			case 'Smarty':
-			default:
-				
-				class_exists('Smarty') || require (_PATH_SMARTY . 'Smarty.class.php');
-				
-				// Instanciate a Smarty object and configure it
-				$this->Template 						= new Smarty();
-				$this->Template->compile_check 			= _TEMPLATES_COMPILE_CHECK;
-				$this->Template->force_compile 			= _TEMPLATES_FORCE_COMPILE;
-				$this->Template->caching 				= isset($this->view['cache']) 			? $this->view['cache'] : _TEMPLATES_CACHING;
-				$this->Template->cache_lifetime 		= isset($this->view['cacheLifetime']) 	? $this->view['cache'] : _TEMPLATES_CACHE_LIFETIME;
-				$this->Template->template_dir 			= _PATH_TEMPLATES;
-				$this->Template->compile_dir 			= _PATH_TEMPLATES_PRECOMPILED;
-				$this->Template->cache_dir 				= _PATH_TEMPLATES_CACHE;
-				//$this->Template->config_dir 			= _PATH_SMARTY . 'configs/';
-				
-				// Fix required since smarty 3.0.5 that use defined error reporting level by
-        		//$this->Template->error_reporting  	= E_ALL & ~E_NOTICE;
-        		
-        		//$this->Template->allow_php_templates 	= true; // no longer allowed since smarty 3.1
-				//$this->Template->allow_php_tag 		= true; // no longer allowed since smarty 3.1
-				break;
-		}
-
-		$this->templateData = array();
-	}
 
 	public function initTemplateData()
 	{
 		// Variables passed to the templates 
-		$this->templateData['data'] 	= &$this->data;
-		$this->templateData['request'] 	= &$this->request;
-		$this->templateData['view'] 	= &$this->view;
-	}
-
-	public function renderTemplate()
-	{
-$this->log(__METHOD__);
-$this->log($this->templateData);
-		
-		// Pass variables to the template & render it
-		switch ( _TEMPLATES_ENGINE )
-		{
-			case 'Haanga':
-				Haanga::Load($this->view['template'], $this->templateData);
-				break;
-			case 'Twig':
-				$this->Template = $this->Template->loadTemplate($this->view['template']);
-				echo $this->Template->render($this->templateData);
-				break;
-			case 'Smarty':
-			default:
-				$this->Template->assign($this->templateData);
-				$this->Template->display($this->view['template'], $cacheId);
-				break;
-		}
+		$this->response->templateData['data'] 	= $this->data;
+		$this->response->templateData['request'] 	= $this->request;
+		$this->response->templateData['view'] 	= $this->view;
 	}
 }
 

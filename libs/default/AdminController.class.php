@@ -87,21 +87,6 @@ class AdminController extends Controller
 		$this->render();
 	}
 	
-	public function initTemplateData()
-	{
-		parent::initTemplateData();
-		
-		global $_groups, $_resources, $_columns;
-		
-		//$this->templateData['_groups'] 		= &$this->_groups; 
-		//$this->templateData['_resources'] 	= &$this->_resources;
-		//$this->templateData['_columns'] 		= &$this->_columns;
-		
-		$this->templateData['_groups'] 		= &$_groups;
-		$this->templateData['_resources'] 	= &$_resources;
-		$this->templateData['_columns'] 	= &$_columns;
-	}
-	
 	public function getViewLayout()
 	{
 		$this->view['layout'] = 'yours/layouts/pageAdmin.' . _TEMPLATES_EXTENSION;	
