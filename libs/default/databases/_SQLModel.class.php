@@ -12,6 +12,8 @@ $this->log(__METHOD__);
 		$this->buildQuery();
 		$this->handleOptions();
 		$this->query();
+		
+		return $this->data;
 	}
 	
 	
@@ -37,12 +39,9 @@ $this->log(__METHOD__);
 		
 		// TODO: handle prepared queries
 		
-//var_dump($query);
-$this->log(__METHOD__);
-		
 		$this->doQuery($p);
 		
-		return $this->data;
+		//return $this->data;
 	}
 	
 	public function doQuery(array $params = array())
@@ -78,9 +77,9 @@ $this->log(__METHOD__);
 		$this->numFields();
 		
 //var_dump($this->numRows);
-$this->log($this->numRows);
+$this->log('numrows: ' . $this->numRows);
 //var_dump($this->numFields);
-$this->log($this->numFields);
+$this->log('numfields: ' . $this->numFields);
 		
 		if ( $p['type'] === 'insert' )
 		{
@@ -142,7 +141,7 @@ $this->log(__METHOD__);
 		elseif ( $this->numRows > 1 && $this->numFields > 1 )		{ $this->fetchCols(); }
 		
 //var_dump($this->data);
-//$this->log($this->data);
+$this->log($this->data);
 	}
 	
 	public function escapeColName(){}

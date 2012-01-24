@@ -9,6 +9,6 @@
 		{/foreach}
 	</ul>
 	{else}
-		{include file='default/blocks/admin/nav/resources.tpl' resourcesNames=array_keys($_resources.items)}	
+		{include file='default/blocks/admin/nav/resources.tpl' resourcesNames=array_keys((array)$_resources.items)}	
 	{/if}
 </nav>

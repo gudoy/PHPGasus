@@ -581,9 +581,9 @@ class Controller extends Core implements ControllerInterface
 	public function initTemplateData()
 	{
 		// Variables passed to the templates 
-		$this->response->templateData['data'] 	= $this->data;
+		$this->response->templateData['data'] 		= $this->data;
 		$this->response->templateData['request'] 	= $this->request;
-		$this->response->templateData['view'] 	= $this->view;
+		$this->response->templateData['view'] 		= $this->view;
 	}
 }
 

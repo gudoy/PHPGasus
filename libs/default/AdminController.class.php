@@ -40,6 +40,10 @@ class AdminController extends Controller
 		$this->data[$_r] = $this->{$_r}->find();
 		//$this->{$_r}->find();
 		
+//var_dump($this->data);
+$this->log(__METHOD__);
+$this->log($this->data);
+		
 		$this->trigger('onAfterRetrieve', array('from' => __FUNCTION__));
 		
 		// TODO
@@ -85,6 +89,21 @@ class AdminController extends Controller
 		// TODO
 		
 		$this->render();
+	}
+	
+	public function initTemplateData()
+	{
+		parent::initTemplateData();
+		
+		global $_groups, $_resources, $_columns;
+		
+		//$this->templateData['_groups'] 		= &$this->_groups; 
+		//$this->templateData['_resources'] 	= &$this->_resources;
+		//$this->templateData['_columns'] 		= &$this->_columns;
+		
+		$this->response->templateData['_groups'] 		= &$_groups;
+		$this->response->templateData['_resources'] 	= &$_resources;
+		$this->response->templateData['_columns'] 		= &$_columns;
 	}
 	
 	public function getViewLayout()

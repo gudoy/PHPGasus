@@ -49,7 +49,7 @@ $this->log(__METHOD__);
 		$p = &$params;
 		
 		// Set reference to controller members
-		$this->data 		= &$Controller->data;
+		//$this->data 		= &$Controller->data;
 		$this->errors 		= &$Controller->errors;
 		$this->warnings 	= &$Controller->warnings;
 		$this->_resource 	= &$Controller->_resource;

@@ -144,7 +144,7 @@ class Response extends Core
 	
 	public function render()
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
 		
 		$renderMethod = 'render' . strtoupper($this->request->getOutputFormat());
 	
@@ -164,7 +164,7 @@ var_dump(__METHOD__);
 	public function renderHTML()
 	{
 //$this->log(__METHOD__);
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
 		
 		// Extract some magic data from the request
 		$this->request->getMagicData();
