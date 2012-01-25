@@ -25,8 +25,8 @@ class Model extends Core
 		'distinct' 			=> null,
 		'count' 			=> array(),
 		
-		'by' 				=> null,
-		'values' 			=> null,
+		'by' 				=> null, // TODO: maybe should be kept for BC only
+		'values' 			=> null, // TODO: maybe should be kept for BC only
 		'getFields' 		=> null, // TODO: deprecate in favor if 'columns'
 		'columns' 			=> null,
 		
@@ -198,7 +198,8 @@ $this->log(__METHOD__);
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 
-		$this->handleOptions();
+		$args = func_get_args();
+		$this->handleOptions($args);
 	}
 	
 	//public function retrieve(){ $this->find(); }
@@ -206,6 +207,16 @@ $this->log(__METHOD__);
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
+
+		$args = func_get_args();
+		$this->handleOptions($args);
+		
+		// find(1)
+		// find('id', 1)
+		
+		// If arg 1 is numeric, assume it's an id
+		// elseif arg 1 is string, assume it's a {namefield}
+		// else
 	}
 	
 	public function update()
@@ -213,7 +224,8 @@ $this->log(__METHOD__);
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 
-		$this->handleOptions();		
+		$args = func_get_args();
+		$this->handleOptions($args);
 	}
 	
 	public function delete()
@@ -221,7 +233,8 @@ $this->log(__METHOD__);
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 
-		$this->handleOptions();
+		$args = func_get_args();
+		$this->handleOptions($args);
 	}
 	
 	public function createOrUpdate(){ $this->upsert(); }
@@ -230,7 +243,8 @@ $this->log(__METHOD__);
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 
-		$this->handleOptions();
+		$args = func_get_args();
+		$this->handleOptions($args);
 	}
 	
 	public function count()
@@ -238,27 +252,45 @@ $this->log(__METHOD__);
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 
-		$this->handleOptions();
+		$args = func_get_args();
+		$this->handleOptions($args);
 	}
 	public function distinct()
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 
-		$this->handleOptions();
+		$args = func_get_args();
+		$this->handleOptions($args);
 	}
 	
 	
 	public function handleOptions()
 	{
-		# Handle Indexes
+		$args = func_get_args();
+		
+		// TODO:
+		// Merge passed options with default options
+		$this->options = array_merge($this->options, (array) $args[0]);
+		
+		// TODO:
+		// Do we need to validate options
+		
+		# Handle indexes
 		// Check that the passed index are existing columns
 		if 		( !empty($o['indexByUnique']) && !DataModel::isColumn($o['indexByUnique']) ) 	{ $o['indexByUnique'] 	= null; }
 		elseif 	( !empty($o['indexBy']) && !DataModel::isColumn($o['indexBy']) )				{ $o['indexBy'] 		= null; }
 		
-		# Handle orderBy
+		# Handle 'by' & 'values'
+		// TODO: transform into a condition??? 
 		
 		# Handle conditions
+		// TODO:
+		// If the current resource match the request resource and filters have not already been used
+		//  request filters to conditions and mark them as used
+		// $this->request->isFiltersUsed = true;
+		
+		# Handle orderBy
 	}
 	
 	

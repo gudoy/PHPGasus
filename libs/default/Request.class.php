@@ -63,6 +63,8 @@ class Request
 		$this->sniffPlatformData();
         $this->sniffDeviceData();
         $this->sniffBrowserData();
+		
+		$this->getOutputFormat();
 	}
 	
 	public function setLanguage($lang = null)

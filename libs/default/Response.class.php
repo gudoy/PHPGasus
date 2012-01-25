@@ -110,7 +110,7 @@ class Response extends Core
 		$this->inited = true;
 	}
 	
-	public function setSatusCode(int $code)
+	public function setSatusCode($code = 200)
 	{
 		// Do not continue if the passed statuscode is unknown
 		if ( empty($this->$statusCodes[$code]) ){ return $this; } 
@@ -214,7 +214,8 @@ class Response extends Core
 		$this->controller->getJS();
 		
 		$this->initTemplate();
-		$this->controller->initTemplateData();
+		//$this->controller->initTemplateData();
+		$this->initTemplateData();
 		$this->renderTemplate();
 		
 		$this->debug();
@@ -283,7 +284,15 @@ class Response extends Core
 				break;
 		}
 
-		$this->templateData = array();
+		$this->templateData = !empty($this->templateData) ? (array) $this->templateData : array();
+	}
+
+	public function initTemplateData()
+	{
+		// Variables passed to the templates 
+		$this->templateData['data'] 	= $this->controller->data;
+		$this->templateData['request'] 	= $this->request;
+		$this->templateData['view'] 	= $this->view;
 	}
 
 

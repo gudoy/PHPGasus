@@ -211,6 +211,7 @@ class Controller extends Core implements ControllerInterface
 			
 			// Otherwise, set the calledMethod
 			$_rqc->method 		= $p['known'][$rqM];
+			$_rqc->httpMethod 	= $p['known'][$rqM];
 		}
 
 //var_dump(__METHOD__);		
@@ -218,10 +219,10 @@ class Controller extends Core implements ControllerInterface
 		
 		// Check that the requested method is allowed
 		// Do not continue if the requested method is not a valid one for the called controller
-		if ( !empty($_rqc->method) && !in_array($p['allowed'][$p['known'][$rqM]]) )
+		if ( !empty($_rqc->method) && !in_array($p['known'][$rqM], $p['allowed']) )
 		{
 			// Return a 405
-			$this->response->setStatusCode(405);
+			$this->response->setSatusCode(405);
 		}
 		
 		// Handle special case: if 1st request param is 'new' : method => created
@@ -398,8 +399,6 @@ class Controller extends Core implements ControllerInterface
 		$this->trigger('onBeforeRender', array('from' => __FUNCTION__));
 		
 		$this->response->render();
-		
-		$this->trigger('onAfterRender', array('from' => __FUNCTION__));
 	}
 	
 	
@@ -578,13 +577,14 @@ class Controller extends Core implements ControllerInterface
 		return $files;
 	}
 
+	/*
 	public function initTemplateData()
 	{
 		// Variables passed to the templates 
 		$this->response->templateData['data'] 		= $this->data;
 		$this->response->templateData['request'] 	= $this->request;
 		$this->response->templateData['view'] 		= $this->view;
-	}
+	}*/
 }
 
 ?>

@@ -2,15 +2,55 @@
 
 class _SQLModel extends Model
 {
-	public $queryString = ''; 
+	public $queryString = '';
+	
+	public $uniqueOperators 	= array('>','<','>=','<=');             			// Operator whose value can only by unique
+	public $oneAtATimeOperators = array('LIKE','NOT LIKE','=','!=','SOUNDS LIKE'); 	// Operators allowing multiple conditions but with only 1 at a time
+	public $knownOperators 		= array( 											// Known condition operators
+		'contains' 			=> 'LIKE',          // + %value% // TODO
+		'like' 				=> 'LIKE',          // + %value% // TODO
+		'doesnotcontains' 	=> 'NOT LIKE',      // Deprecated: typo mistake
+		'doesnotcontain' 	=> 'NOT LIKE',      // + %value% // TODO
+		'notlike' 			=> 'NOT LIKE',      // + %value% // TODO
+		'startsby' 			=> 'LIKE',          // + value% // TODO
+		'endsby' 			=> 'LIKE',          // + %value // TODO
+		'doesnotstartsby' 	=> 'NOT LIKE',      // Deprecated: typo mistake
+		'doesnotstartby' 	=> 'NOT LIKE',      // + value% // TODO
+		'doesnotendsby' 	=> 'NOT LIKE',      // Deprecated: typo mistake
+		'doesnotendby' 		=> 'NOT LIKE',      // + %value // TODO
+		'not' 				=> '!=',
+		'notin' 			=> 'NOT IN',
+		'greater' 			=> '>',
+		'>' 				=> '>',
+		'lower' 			=> '<',
+		'<' 				=> '<',
+		'greaterorequal' 	=> '>=',
+		'>=' 				=> '>=',
+		'lowerorequal' 		=> '<=',
+		'<=' 				=> '<=',
+		'is' 				=> '=',
+		'equal' 			=> '=',
+		'=' 				=> '=',
+		'in' 				=> 'IN',
+		'isnot' 			=> '!=',
+		'notequal' 			=> '!=',
+		'!=' 				=> '!=',
+		'notin' 			=> 'NOT IN',
+		'between' 			=> 'BETWEEN',       // TODO
+		'notbetween' 		=> 'NOT BETWEEN', 	//
+		'soundslike' 		=> 'SOUNDS LIKE',
+		'match' 			=> 'MATCH', 		// + AGAINST(). Only for MyISAM tables
+		'search' 			=> 'MATCH', 		// + AGAINST(). Only for MyISAM tables
+	);
 	
 	public function find()
 	{
 //var_dump($query);
 $this->log(__METHOD__);
+		$args = func_get_args();
+		$this->handleOptions($args);
 
 		$this->buildQuery();
-		$this->handleOptions();
 		$this->query();
 		
 		return $this->data;
@@ -371,10 +411,11 @@ $this->log(__METHOD__);
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
-		
-		$o = &$this->options;
-		
-		// TODO
+		// Initialize conditions request outptut
+		$output = '';
+				
+		// Do not continue if there's no conditions to handle 
+		//if ( empty($o['conditions']) ) { return $output; }
 		
 		return '';		
 	}

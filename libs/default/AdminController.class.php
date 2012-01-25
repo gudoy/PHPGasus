@@ -27,6 +27,8 @@ class AdminController extends Controller
 	
 	public function retrieve()
 	{
+		if ( !$this->_resource ){ return; }
+		
 		// Shortcut to current resource name
 		$_r = $this->_resource['plural'];
 		
@@ -91,19 +93,29 @@ $this->log($this->data);
 		$this->render();
 	}
 	
-	public function initTemplateData()
+	public function render()
 	{
-		parent::initTemplateData();
+//var_dump($this->request);
 		
-		global $_groups, $_resources, $_columns;
+		if ( $this->request->getOutputFormat() === 'html' )
+		{
+			// If the response format is HTML,
+			// We need to add dataModel to template vars
+			global $_groups, $_resources, $_columns;
+			$_dmData = array(
+				// TODO: what's the best: pass by reference or not???
+				'_groups' 		=> &$_groups,
+				'_resources' 	=> &$_resources,
+				'_columns' 		=> &$_columns,
+			);
+			$this->response->templateData = array_merge((array) $this->response->templateData, $_dmData);
+			
+			//$this->response->templateData['_groups'] 		= &$_groups;
+			//$this->response->templateData['_resources'] 	= &$_resources;
+			//$this->response->templateData['_columns'] 		= &$_columns;	
+		}
 		
-		//$this->templateData['_groups'] 		= &$this->_groups; 
-		//$this->templateData['_resources'] 	= &$this->_resources;
-		//$this->templateData['_columns'] 		= &$this->_columns;
-		
-		$this->response->templateData['_groups'] 		= &$_groups;
-		$this->response->templateData['_resources'] 	= &$_resources;
-		$this->response->templateData['_columns'] 		= &$_columns;
+		parent::render();
 	}
 	
 	public function getViewLayout()
