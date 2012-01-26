@@ -52,15 +52,16 @@ $this->log(__METHOD__);
 		//$this->data 		= &$Controller->data;
 		$this->errors 		= &$Controller->errors;
 		$this->warnings 	= &$Controller->warnings;
-		$this->_resource 	= &$Controller->_resource;
+		$this->request 		= &$Controller->request;
 
 		//if ( !($this->_resource = DataModel::resource($params['_resource']))) { return false; }
 		if ( !DataModel::isResource($p['resource']) ){ return false; }
 		
-		$this->_resource = new ArrayObject(DataModel::resource($p['resource'], 2));
+		$this->_resource 	= &$Controller->_resource;
+		//$this->_resource = new ArrayObject(DataModel::resource($p['resource'], 2));
 		
 		// Shortcut to current resource columns
-		$this->_resourcecolumns = DataModel::columns($p['resource']);
+		$this->_columns 	= DataModel::columns($p['resource']);
 	}
 	
 	public function __call($method, $args)
@@ -269,9 +270,15 @@ $this->log(__METHOD__);
 	{
 		$args = func_get_args();
 		
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+$this->log($this->request);
+		
 		// TODO:
 		// Merge passed options with default options
-		$this->options = array_merge($this->options, (array) $args[0]);
+		$this->options 	= array_merge($this->options, (array) $args[0]);
+		$o 				= &$this->options;
 		
 		// TODO:
 		// Do we need to validate options
@@ -285,10 +292,18 @@ $this->log(__METHOD__);
 		// TODO: transform into a condition??? 
 		
 		# Handle conditions
-		// TODO:
 		// If the current resource match the request resource and filters have not already been used
-		//  request filters to conditions and mark them as used
-		// $this->request->isFiltersUsed = true;
+		// add request filters to conditions and mark them as used
+		if ( $this->_resource->name === $this->request->resource && empty($this->request->wasFiltersUsed) )
+		{
+			foreach((array) $this->request->filters as $col => $val)
+			{
+				$o['conditions'][] = array('column' => $col, 'value' => $val);
+				//$o['conditions'][] = array($col => $val); 
+			}
+			
+			$this->request->wasFiltersUsed = true;
+		}
 		
 		# Handle orderBy
 	}

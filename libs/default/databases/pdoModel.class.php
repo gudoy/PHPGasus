@@ -1,8 +1,8 @@
 <?php
 
-class_exists('_SQLModel') || require _PATH_LIBS . 'databases/_SQLModel.class.php';
+class_exists('SQLModel') || require _PATH_LIBS . 'databases/SQLModel.class.php';
 
-class pdoModel extends _SQLModel
+class pdoModel extends SQLModel
 {
 	
 	public function connect()

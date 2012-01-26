@@ -1,0 +1,73 @@
+SIMPLE CONDITIONS
+---------------
+
+user/?id=1
+WHERE id = 1
+
+user/?id=1,2
+WHERE id IN (1,2)
+
+user/?id=1|2
+WHERE id IN (1,2)
+
+user/?id=1,2|3,4
+WHERE id IN (1,2,3,4)
+
+
+user/?name=john
+WHERE name = 'john'
+
+user/?name=john,bill
+WHERE name IN ('john','bill')
+
+user/?name=john,bill
+WHERE name IN ('john','bill')
+
+user/?name=john&age=42
+WHERE name = 'john' AND age = 42
+
+user/?name=john|age=42
+WHERE name = 'john' OR age = 42
+
+
+user/?name=john,bill|age=42
+WHERE name IN ('john','bill') OR age = 42
+
+
+'|' ==> OR
+
+',' ==> AND
+
+
+COMPLEX SYNTAX (allow fine grained conditions with conditions grouping, 'AND' or 'OR', operators) 
+---------------
+?condition = $conditionsGroup [[$conditionLinker $conditionGroup], ...]
+
+$conditionGroup: [(] $column ':' [[$operator] ':'] [)]
+$conditionLinker: 
+	';' ==> AND 
+	'|' ==> OR
+
+user?condition=name:john|age=42&condition=status:not:null
+WHERE (
+	( name is 'john' OR age = 42 ) 
+	AND ( status IS NOT NULL )
+)
+
+user?condition=(name:john;age=42)|status:not:null
+WHERE ( 
+	( name is 'john' AND age = 42 ) 
+	OR ( status IS NOT NULL )
+)
+
+user?condition=((name:john;age=42)|status:not:null)|mail:endsby:example.org)
+WHERE (
+	( ( name is 'john' AND age = 42 ) OR ( status IS NOT NULL ) )
+	OR ( mail LIKE '%example.org' )
+)  
+
+
+
+OLD SYNTAX
+--------------------
+$condition: $column [| [$operator] | $values

@@ -1,6 +1,6 @@
 <?php
 
-class _SQLModel extends Model
+class SQLModel extends Model
 {
 	public $queryString = '';
 	
@@ -411,6 +411,9 @@ $this->log(__METHOD__);
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
+
+$this->log($this->options['conditions']);
+
 		// Initialize conditions request outptut
 		$output = '';
 				
@@ -462,6 +465,57 @@ $this->log(__METHOD__);
 		$o = &$this->options;
 		
 		return !empty($o['offset']) ? "OFFSET " . $o['offset'] . " " : " ";
+	}
+	
+	
+	public function escape()
+	{
+	}
+	
+	public function escapeString($string)
+	{
+		$string = !empty($string) ? (string) $string : '';
+		
+		$this->db->real_escape_string($string);
+	}
+	
+	
+	public function handleQueryTypes($val, $options = array())
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
+		$o            = array_merge(array(
+			'resource'   => null,
+			'column'     => null,
+			'operator'   => null,
+		), $options);
+		
+		// TODO: get column type in datamodel
+		$type 		= 'string';
+		
+		// TODO
+		$valPrefix = '';
+		$valSuffix = '';
+		
+		/*
+		$res          = $o['resource'];
+		$col          = $o['column'];
+		$colModel     = !empty($res) && !empty($col) && !empty($this->application->dataModel[$res][$col]) ? $this->application->dataModel[$res][$col] : null;
+		$type      		= !empty($colModel['type']) ? $colModel['type'] : null;
+		$valPrefix    = !empty($o['operator']) && in_array($o['operator'], array('contains','like','doesnotcontains','notlike','endsby','doesnotendsby','doesnotendby')) ? '%' : '';
+		$valSuffix    = !empty($o['operator']) && in_array($o['operator'], array('contains','like','doesnotcontains','notlike','startsby','doesnotstartsby','doesnotstartby')) ? '%' : '';
+		 */
+		
+		if 		( $type === 'timestamp' && !is_null($val) ) 		{ $val = "FROM_UNIXTIME('" . $this->escapeString($val) . "')"; }
+		else if ( $type === 'bool'  ) 								{ $val = in_array($val, array(1,true,'1','true','t'), true) ? 1 : 0; }
+		else if ( is_int($val) ) 									{ $val = (int) $val; }
+		else if ( is_float($val) ) 									{ $val = (float) $val; }
+		else if ( is_bool($val) ) 									{ $val = (int) $val; }
+		else if ( is_null($val) || strtolower($val === 'null') ) 	{ $val = 'NULL'; }
+		else if ( is_string($val) ) 								{ $val = "'" . $valPrefix . $this->escapeString($val) . $valSuffix . "'"; }
+		
+		return $val;
 	}
 }
 
