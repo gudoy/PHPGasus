@@ -184,12 +184,6 @@ $this->log(__METHOD__);
 $this->log($this->data);
 	}
 	
-	public function escapeColName(){}
-	public function escape($string)
-	{
-		return '`' . (string) $string . '`';
-	}
-	
 	public function getResources()
 	{
 //var_dump(__METHOD__);
@@ -400,6 +394,7 @@ $this->log(__METHOD__);
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 		
+		// Shortcut to options
 		$o = &$this->options;
 		
 		// TODO
@@ -414,13 +409,102 @@ $this->log(__METHOD__);
 
 $this->log($this->options['conditions']);
 
+		// Shortcut to options
+		$o = &$this->options;
+
 		// Initialize conditions request outptut
 		$output = '';
 				
 		// Do not continue if there's no conditions to handle 
-		//if ( empty($o['conditions']) ) { return $output; }
+		if ( empty($o['conditions']) ) { return $output; }
+		
+		// Loop over the passed conditions
+		foreach ($o['conditions'] as $key => $item)
+		{
+			# Determine pattern
+			// Get condition depending of the used pattern:
+			// basic key-value (KV): 						$column = $values
+			// or indexed array with index array (II): 		$index 	= array($column,[$operator,],$values)
+			// or assoc array with index array (AI): 		$column = array($column,[$operator,],$values)
+			// or assoc array with assoc array (AA): 		$column = array('colum' => $columns, ['operator' => $operator, ] 'values' => $values)
+			// or indexed array with assoc array (IA): 		$index 	= array('colum' => $columns, ['operator' => $operator, ] 'values' => $values)
+			
+			$kIsNum 		= is_numeric($key);
+			$isArray 		= is_array($item);
+			$iCount 		= $isArray ? count($item) : null;
+			
+			if 		( $kIsNum && $isArray && $iCount > 2 && isset($item[0]) )			{ $pattern = 'II'; }
+			if 		( !$kIsNum && !$isArray )											{ $pattern = 'KV'; }
+			elseif 	( !$kIsNum && $isArray && $iCount > 2 && isset($item[0]) ) 			{ $pattern = 'AI'; }
+			elseif 	( !$kIsNum && $isArray && $iCount > 2 && isset($item['colum']) ) 	{ $pattern = 'AA'; }
+			else 																		{ $pattern = false; }
+
+			$column 		= $this->getConditionColumn($key, $item, $pattern);
+			$rqOperator 	= $this->getConditionOperator($item);
+			$values 		= $this->getConditionValues($key, $item);
+			
+			// Do not continue if the pattern is invalid
+			// The condition will be ignored
+			// throwing a warning by the way
+			if ( !$pattern || !$column || !$values )
+			{
+				$this->warnings[_ERR_INVALID_CONDITION_FORMAT] = array('key' => $key, 'value' => $item); 
+				continue;
+			}
+			
+			$output .= $this->buidConditionColumn($column) . $operator . $this->buidConditionValues($values);
+		}
 		
 		return '';		
+	}
+
+	public function getConditionOperator($condition)
+	{
+		if 		( in_array($pattern, array('II','AI')) )		{ return count($condition) === 2 ? '=' : $condition[1]; }
+		elseif 	( $pattern === 'KV' )							{ return '='; }
+		elseif 	( in_array($pattern, array('AA','IA')) )		{ return !isset($condition['operator']) ? '=' : $condition['operator']; }
+		else 	{ return false; }
+	}
+
+	public function getConditionColumn($key, $condition, $pattern)
+	{
+		if 		( in_array($pattern, array('KV','AI', 'AA')) )	{ return $key; }
+		elseif 	( $pattern === 'II' )							{ return $condition[1]; }
+		elseif 	( $pattern === 'IA' )							{ return $condition['column']; }
+		else 													{ return false; }
+	}
+
+	public function getConditionValues($condition, $pattern)
+	{
+		//if 		( in_array($pattern, array('II','AI')) )		{ return $condition[1]; }
+		if 		( in_array($pattern, array('II','AI')) )		{ return count($condition) === 2 ? $condition[1] : $condition[2]; }
+		elseif 	( $pattern === 'KV' )							{ return $condition; }
+		if 		( in_array($pattern, array('AA','IA')) )		{ return $condition['values']; }
+		else 													{ return false; }
+	}
+	
+	public function buildConditionColumn($column)
+	{
+		return $this->escape($column);	
+	}
+	
+	public function buildConditionValues($values)
+	{
+		$output = '';
+		
+		if ( is_array($values) )
+		{
+			$j = 0; 
+			foreach ( $values as $val )
+			{
+				$output .= ($j !== 0 ? ',' : '') . $this->handleSqlInputTypes($val);
+				$j++;
+			}
+		}
+		else
+		{
+			return $this->handleSqlInputTypes($values);
+		}
 	}
 	
 	public function buildGroupBy()
@@ -468,8 +552,10 @@ $this->log(__METHOD__);
 	}
 	
 	
-	public function escape()
+	public function escapeColName(){}
+	public function escape($string)
 	{
+		return '`' . (string) $string . '`';
 	}
 	
 	public function escapeString($string)
@@ -480,7 +566,7 @@ $this->log(__METHOD__);
 	}
 	
 	
-	public function handleQueryTypes($val, $options = array())
+	public function handleSqlInputTypes($val, $options = array())
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);

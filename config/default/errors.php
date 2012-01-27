@@ -32,6 +32,8 @@ $_errors = array(
 	'MISSING_PARAMS' 			=> array('msg' => _('Missing required parameters'), 'args' => array('names')),
 	'MISSING_FIELD' 			=> array('msg' => _('Missing required field'), 'args' => array('name')),
 	'MISSING_FIELDS' 			=> array('msg' => _('Missing required fields'), 'args' => array('names')),
+	
+	'INVALID_CONDITION_FORMAT' 	=> array('msg' => _('Invalid condition format'), 'args' => array('key', 'value')),
 
 	// DATABASE
 	'DB_CONNEXION_ERROR' 		=> array('msg' => _('We could not connect to the database. Please retry later.'), 'args' => array('error')),

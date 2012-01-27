@@ -298,7 +298,7 @@ $this->log($this->request);
 		{
 			foreach((array) $this->request->filters as $col => $val)
 			{
-				$o['conditions'][] = array('column' => $col, 'value' => $val);
+				$o['conditions'][] = array('column' => $col, 'values' => $val);
 				//$o['conditions'][] = array($col => $val); 
 			}
 			
