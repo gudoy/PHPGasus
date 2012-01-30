@@ -40,6 +40,13 @@ $this->log('dsn: ' . $dsn);
 	
 	public function setEncoding(){} // nothing since this is done on connection opening;
 	
+	public function escapeString($string)
+	{
+		$string = !empty($string) ? (string) $string : '';
+		
+		return $this->db->quote($string);
+	}
+	
 	public function doQuery(array $params = array())
 	{
 //var_dump($query);

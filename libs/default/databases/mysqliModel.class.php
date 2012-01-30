@@ -38,6 +38,13 @@ $this->log(__METHOD__);
 		// Tell mysql we are sending already utf8 encoded data
 		$this->db->real_query("SET NAMES 'UTF8'");
 	}
+	
+	public function escapeString($string)
+	{
+		$string = !empty($string) ? (string) $string : '';
+		
+		return $this->db->real_escape_string($string);
+	}
 
 }
 

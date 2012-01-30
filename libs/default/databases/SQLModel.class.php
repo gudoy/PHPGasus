@@ -431,17 +431,57 @@ $this->log($this->options['conditions']);
 			
 			$kIsNum 		= is_numeric($key);
 			$isArray 		= is_array($item);
-			$iCount 		= $isArray ? count($item) : null;
+			$count 			= $isArray ? count($item) : null;
 			
-			if 		( $kIsNum && $isArray && $iCount > 2 && isset($item[0]) )			{ $pattern = 'II'; }
-			if 		( !$kIsNum && !$isArray )											{ $pattern = 'KV'; }
-			elseif 	( !$kIsNum && $isArray && $iCount > 2 && isset($item[0]) ) 			{ $pattern = 'AI'; }
-			elseif 	( !$kIsNum && $isArray && $iCount > 2 && isset($item['colum']) ) 	{ $pattern = 'AA'; }
+$this->dump('kIsNum: ' . $kIsNum);
+$this->dump('isArray: ' . $isArray);
+$this->dump('count: ' . $count);
+$this->dump('isset column: ' . isset($item['colum']));
+$this->dump('isset 0: ' . isset($item[0]));
+			
+			if 		( $kIsNum && $isArray && $count >= 2 && isset($item['column']) ) 	{ $pattern = 'IA'; }
+			elseif 	( $kIsNum && $isArray && $count >= 2 && isset($item[0]) )			{ $pattern = 'II'; }
+			elseif 	( !$kIsNum && !$isArray )											{ $pattern = 'KV'; }
+			elseif 	( !$kIsNum && $isArray && $count >= 2 && isset($item[0]) ) 			{ $pattern = 'AI'; }
+			elseif 	( !$kIsNum && $isArray && $count >= 2 && isset($item['column']) ) 	{ $pattern = 'AA'; }
 			else 																		{ $pattern = false; }
+			
+$this->dump('pattern: ' . ($pattern ? $pattern : 'false'));
 
-			$column 		= $this->getConditionColumn($key, $item, $pattern);
-			$rqOperator 	= $this->getConditionOperator($item);
-			$values 		= $this->getConditionValues($key, $item);
+			$column 		= $this->getConditionColumn($key, $item, $pattern); // Get condition column depending of the used pattern
+			$usedOperator 	= $this->getConditionOperator($item, $pattern); 	// Get requested operator depending of the used pattern
+			$tmpValues 		= $this->getConditionValues($item, $pattern); 		// Get condition value(s) depending of the used pattern
+			
+			// Force values into an array
+			$values 		= Tools::toArray($tmpValues);
+			$vCount 		= count($values);
+			
+			// Get SQL operator accordingly to used operator
+			$op 			= isset($this->knownOperators[$usedOperator]) ? $this->knownOperators[$usedOperator] : false;
+			
+			// Case when operator is IN/NOT IN and value is single, use =/!= instead
+			if ( in_array($op, array('IN','NOT IN')) && $vCount === 1 )
+			{
+				$op = $op === 'NOT IN' ? '!=' : '=';
+			}
+			// Case when the operator is '=' and the passed value is null, we have to use IS/IS NOT operator instead
+			elseif ( in_array($op, array('=','!=','IN','NOT IN')) && is_null($tmpValues) )
+			{
+				$op = in_array($op, array('!=','NOT IN')) ? 'IS NOT' : 'IS';
+			}
+			// Case when the operator is '=' or '!=' and passed values are multiple
+			elseif ( in_array($usedOperator, array('=','!=')) && $vCount >= 2 )
+			{
+				$op = $op === '!=' ? 'NOT IN' : 'IN'; 
+			}
+			
+			// Special case if the operator is '=' or "!=" and passed values are multiple
+			$usedOperator  = in_array($usedOperator, array('=','!=')) && $multiValues ? ( $usedOperator === '!=' ? 'NOT IN' : 'IN' ) : $usedOperator;
+			
+$this->dump('column: ' . $column);
+$this->dump('usedOperator: ' . $usedOperator);
+$this->dump('values: ' . $values);
+$this->dump('op: ' . $op);
 			
 			// Do not continue if the pattern is invalid
 			// The condition will be ignored
@@ -452,17 +492,23 @@ $this->log($this->options['conditions']);
 				continue;
 			}
 			
-			$output .= $this->buidConditionColumn($column) . $operator . $this->buidConditionValues($values);
+			
+			// TODO:
+			// handle operators properly since some like MATCH 
+			// may have a different pattern than "$column $operator $value" 
+			$output .= $this->buildConditionColumn($column) . $op . $this->buildConditionValues($values, array('column' => $column));
+			
+$this->dump('output: ' . $output);
 		}
 		
-		return '';		
+		return $output;		
 	}
 
-	public function getConditionOperator($condition)
+	public function getConditionOperator($condition, $pattern)
 	{
 		if 		( in_array($pattern, array('II','AI')) )		{ return count($condition) === 2 ? '=' : $condition[1]; }
 		elseif 	( $pattern === 'KV' )							{ return '='; }
-		elseif 	( in_array($pattern, array('AA','IA')) )		{ return !isset($condition['operator']) ? '=' : $condition['operator']; }
+		elseif 	( in_array($pattern, array('AA','IA')) )		{ return ( !isset($condition['operator']) ? '=' : $condition['operator'] ); }
 		else 	{ return false; }
 	}
 
@@ -479,7 +525,7 @@ $this->log($this->options['conditions']);
 		//if 		( in_array($pattern, array('II','AI')) )		{ return $condition[1]; }
 		if 		( in_array($pattern, array('II','AI')) )		{ return count($condition) === 2 ? $condition[1] : $condition[2]; }
 		elseif 	( $pattern === 'KV' )							{ return $condition; }
-		if 		( in_array($pattern, array('AA','IA')) )		{ return $condition['values']; }
+		elseif 	( in_array($pattern, array('AA','IA')) )		{ return $condition['values']; }
 		else 													{ return false; }
 	}
 	
@@ -488,8 +534,13 @@ $this->log($this->options['conditions']);
 		return $this->escape($column);	
 	}
 	
-	public function buildConditionValues($values)
+	public function buildConditionValues($values, $params = array())
 	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+
+$this->log($values);
+		
 		$output = '';
 		
 		if ( is_array($values) )
@@ -497,14 +548,16 @@ $this->log($this->options['conditions']);
 			$j = 0; 
 			foreach ( $values as $val )
 			{
-				$output .= ($j !== 0 ? ',' : '') . $this->handleSqlInputTypes($val);
+				$output .= ($j !== 0 ? ',' : '') . $this->handleSqlInputTypes($val, $params);
 				$j++;
 			}
 		}
 		else
 		{
-			return $this->handleSqlInputTypes($values);
+			$output .= $this->handleSqlInputTypes($values, $params);
 		}
+		
+		return $output;
 	}
 	
 	public function buildGroupBy()
@@ -562,20 +615,22 @@ $this->log(__METHOD__);
 	{
 		$string = !empty($string) ? (string) $string : '';
 		
-		$this->db->real_escape_string($string);
+		return '`' . $string . '`';
 	}
 	
 	
-	public function handleSqlInputTypes($val, $options = array())
+	public function handleSqlInputTypes($val, $params = array())
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
+
+$this->dump('val: ' . $this->val);
 		
-		$o            = array_merge(array(
+		$p            = array_merge(array(
 			'resource'   => null,
 			'column'     => null,
 			'operator'   => null,
-		), $options);
+		), $params);
 		
 		// TODO: get column type in datamodel
 		$type 		= 'string';
@@ -585,14 +640,16 @@ $this->log(__METHOD__);
 		$valSuffix = '';
 		
 		/*
-		$res          = $o['resource'];
-		$col          = $o['column'];
+		$res          = $p['resource'];
+		$col          = $p['column'];
 		$colModel     = !empty($res) && !empty($col) && !empty($this->application->dataModel[$res][$col]) ? $this->application->dataModel[$res][$col] : null;
 		$type      		= !empty($colModel['type']) ? $colModel['type'] : null;
-		$valPrefix    = !empty($o['operator']) && in_array($o['operator'], array('contains','like','doesnotcontains','notlike','endsby','doesnotendsby','doesnotendby')) ? '%' : '';
-		$valSuffix    = !empty($o['operator']) && in_array($o['operator'], array('contains','like','doesnotcontains','notlike','startsby','doesnotstartsby','doesnotstartby')) ? '%' : '';
+		$valPrefix    = !empty($p['operator']) && in_array($p['operator'], array('contains','like','doesnotcontains','notlike','endsby','doesnotendsby','doesnotendby')) ? '%' : '';
+		$valSuffix    = !empty($p['operator']) && in_array($p['operator'], array('contains','like','doesnotcontains','notlike','startsby','doesnotstartsby','doesnotstartby')) ? '%' : '';
 		 */
 		
+		// TODO
+		// Handle this depending of the column type (in dataModel) 
 		if 		( $type === 'timestamp' && !is_null($val) ) 		{ $val = "FROM_UNIXTIME('" . $this->escapeString($val) . "')"; }
 		else if ( $type === 'bool'  ) 								{ $val = in_array($val, array(1,true,'1','true','t'), true) ? 1 : 0; }
 		else if ( is_int($val) ) 									{ $val = (int) $val; }
