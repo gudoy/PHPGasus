@@ -1526,12 +1526,29 @@ Core::log(__METHOD__ . ' -> ' . $colName);
 		
 		return $ret;	
 	}
+	
+	static function getColumn($resource, $column)
+	{
+//var_dump(__METHOD__);
+//$this->dump(__METHOD__);
+		
+		return $_columns[$resource][$column];
+	}
 
 	static function getColumnType($resource, $column)
 	{
-var_dump(__METHOD__);
+//var_dump(__METHOD__);
+//$this->dump(__METHOD__);
 		
 		return $_columns[$resource][$column]['type'];
+	}
+	
+	static function getColumnRealType($resource, $column)
+	{
+//var_dump(__METHOD__);
+//$this->dump(__METHOD__);
+		
+		return $_columns[$resource][$column]['realtype'];
 	}
 	
 	

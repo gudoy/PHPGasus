@@ -418,6 +418,9 @@ $this->log($this->options['conditions']);
 		// Do not continue if there's no conditions to handle 
 		if ( empty($o['conditions']) ) { return $output; }
 		
+		// Counter for valid conditions
+		$i = 0;
+		
 		// Loop over the passed conditions
 		foreach ($o['conditions'] as $key => $item)
 		{
@@ -492,16 +495,94 @@ $this->dump('op: ' . $op);
 				continue;
 			}
 			
+			// Set condition linker keyword
+			$condKeyword = !empty($item['linker']) && $i !== 0 && in_array(strtoupper($item['linker']), array('AND','OR'))  
+							? strtoupper($item['linker']) 
+							: ( $i === 0 ? 'WHERE' : 'AND' );
 			
 			// TODO:
 			// handle operators properly since some like MATCH 
 			// may have a different pattern than "$column $operator $value" 
-			$output .= $this->buildConditionColumn($column) . $op . $this->buildConditionValues($values, array('column' => $column));
+			// TODO:
+			// handle the triplet column/operator/value in 1 time
+			//$output .= $this->buildConditionColumn($column) . $op . $this->buildConditionValues($values, array('column' => $column));
+			$output .= $condKeyword . ' ' 
+						. $this->buildKeyValueCouple($column, $values, array('operator' => $op, 'context' => 'condition'));
+			
+			$i++;
 			
 $this->dump('output: ' . $output);
 		}
 		
 		return $output;		
+	}
+
+
+	public function buildKeyValueCouple($column, $values, $params = array())
+	{
+//var_dump(__METHOD__);
+$this->log(__METHOD__);
+		
+		$p = array_merge(array(
+			'operator' 	=> null,
+			'resource' 	=> $this->_resource->name,
+			'prefix' 	=> '',
+			'suffix' 	=> '',
+			'context' 	=> null
+		), $params);
+		$output = '';
+		
+		# Handle value(s)
+		// Get column props
+		$colProps 	= DataModel::getColumn($p['resource'], $p['column']);
+		$type 		= $colProps['type'];
+		$realtype 	= $colProps['realtype'];
+
+$this->dump($column);	
+$this->dump($values);
+		
+		// TODO
+		// Validate formats?????
+		
+		// Prepare formated value
+		$fVal = '';
+		
+		// Force value(s) into an array
+		$values = Tools::toArray($values);
+		foreach ($values as $val)
+		{
+			/*
+			// Transform it into an the proper format
+			if 		( in_array($type, array('enum','choice','set')) )	{ $val .= "'" . $this->escapeString(join(',',$values)) . "'"; }
+			elseif 	( $realtype === 'timestamp' ) 	{ $val = "FROM_UNIXTIME('" . $this->escapeString($values) . "')"; }
+			elseif 	( $realtype === 'boolean' ) 	{ $val = in_array($values, array(1,true,'1','true','t'), true) ? 1 : 0; }
+			elseif 	( $realtype === 'float' ) 		{ $val = (float) $values; }
+			elseif 	( $realtype === 'int' ) 		{ $val = (int) $values; }
+			else 									{ $val = "'" . $this->escapeString($this->escapeString(join(',',$values))) . "'"; } 
+			 */
+			$fVal .= $val;
+		}	
+
+		// Get resource alias
+		$alias = $this->_resource->alias;
+		
+		// TODO
+		// context condition: $column $operator $value
+		// context UPDATE: 
+		// context default: $column = $value
+		if ( $p['context'] === 'condition' )
+		{
+			// TODO:
+			// Get proper column name with using proper alias (or not)
+			$output .= $alias . '.' . $this->escapeColName($column) . ' ' . $p['operator'] . ' ' . $p['prefix'] . $fVal . $p['prefix'];
+		}
+		else
+		{
+			// Get proper column name with using proper alias (or not)
+			$output .= $alias . '.' . $this->escapeColName($column) . ' = ' . $fVal; 
+		}
+		
+		return $output;
 	}
 
 	public function getConditionOperator($condition, $pattern)
@@ -529,11 +610,13 @@ $this->dump('output: ' . $output);
 		else 													{ return false; }
 	}
 	
+	/*
 	public function buildConditionColumn($column)
 	{
 		return $this->escape($column);	
-	}
+	}*/
 	
+	/*
 	public function buildConditionValues($values, $params = array())
 	{
 //var_dump(__METHOD__);
@@ -558,7 +641,7 @@ $this->log($values);
 		}
 		
 		return $output;
-	}
+	}*/
 	
 	public function buildGroupBy()
 	{
@@ -605,7 +688,11 @@ $this->log(__METHOD__);
 	}
 	
 	
-	public function escapeColName(){}
+	public function escapeColName($column)
+	{
+		return '`' . $column . '`';
+	}
+	
 	public function escape($string)
 	{
 		return '`' . (string) $string . '`';
@@ -613,43 +700,45 @@ $this->log(__METHOD__);
 	
 	public function escapeString($string)
 	{
-		$string = !empty($string) ? (string) $string : '';
+		//$string = !empty($string) ? (string) $string : '';
 		
-		return '`' . $string . '`';
+		//return '`' . $string . '`';
+		
+		return '`' . (string) $string . '`';
 	}
 	
 	
-	public function handleSqlInputTypes($val, $params = array())
+	public function handleSqlInputTypes($value, $params = array())
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 
-$this->dump('val: ' . $this->val);
+$this->dump('val: ' . $val);
 		
 		$p            = array_merge(array(
-			'resource'   => null,
+			'resource'   => $this->_resource->name,
 			'column'     => null,
 			'operator'   => null,
 		), $params);
+		$v = $value;
 		
-		// TODO: get column type in datamodel
-		$type 		= 'string';
+$this->dump($p);
+		
+		// Get column type in datamodel
+		$realtype = DataModel::getColumnRealType($p['resource'],$p['column']);
 		
 		// TODO
-		$valPrefix = '';
-		$valSuffix = '';
+		$pref = ''; 	// prefix
+		$suf = ''; 		// suffix
 		
 		/*
-		$res          = $p['resource'];
-		$col          = $p['column'];
-		$colModel     = !empty($res) && !empty($col) && !empty($this->application->dataModel[$res][$col]) ? $this->application->dataModel[$res][$col] : null;
-		$type      		= !empty($colModel['type']) ? $colModel['type'] : null;
-		$valPrefix    = !empty($p['operator']) && in_array($p['operator'], array('contains','like','doesnotcontains','notlike','endsby','doesnotendsby','doesnotendby')) ? '%' : '';
-		$valSuffix    = !empty($p['operator']) && in_array($p['operator'], array('contains','like','doesnotcontains','notlike','startsby','doesnotstartsby','doesnotstartby')) ? '%' : '';
+		$pref    = !empty($p['operator']) && in_array($p['operator'], array('contains','like','doesnotcontains','notlike','endsby','doesnotendsby','doesnotendby')) ? '%' : '';
+		$suf    = !empty($p['operator']) && in_array($p['operator'], array('contains','like','doesnotcontains','notlike','startsby','doesnotstartsby','doesnotstartby')) ? '%' : '';
 		 */
 		
 		// TODO
 		// Handle this depending of the column type (in dataModel) 
+		/*
 		if 		( $type === 'timestamp' && !is_null($val) ) 		{ $val = "FROM_UNIXTIME('" . $this->escapeString($val) . "')"; }
 		else if ( $type === 'bool'  ) 								{ $val = in_array($val, array(1,true,'1','true','t'), true) ? 1 : 0; }
 		else if ( is_int($val) ) 									{ $val = (int) $val; }
@@ -657,6 +746,15 @@ $this->dump('val: ' . $this->val);
 		else if ( is_bool($val) ) 									{ $val = (int) $val; }
 		else if ( is_null($val) || strtolower($val === 'null') ) 	{ $val = 'NULL'; }
 		else if ( is_string($val) ) 								{ $val = "'" . $valPrefix . $this->escapeString($val) . $valSuffix . "'"; }
+		else 														{ $val = "'" . $valPrefix . $this->escapeString($val) . $valSuffix . "'"; }
+		*/
+		
+		if 		( $realtype === 'string' ) 		{ $val = "'" . $pref . $this->escapeString($v) . $suff . "'"; }
+		elseif 	( $realtype === 'int' ) 		{ $val = (int) $v; }
+		elseif 	( $realtype === 'float' ) 		{ $val = (float) $v; }
+		elseif 	( $realtype === 'boolean' ) 	{ $val = in_array($v, array(1,true,'1','true','t'), true) ? 1 : 0; }
+		elseif 	( $realtype === 'timestamp' ) 	{ $val = "FROM_UNIXTIME('" . $this->escapeString($v) . "')"; }
+		else 									{ $val = "'" . $pref . $this->escapeString($v) . $suff . "'"; }
 		
 		return $val;
 	}
