@@ -60,19 +60,17 @@ footer.menu .toggler.active .plus { display:block; }
 
 
 /* Buttons (start) */
-.action { background-repeat:no-repeat; }
-.action.primary {}
-.action.secondary {}
+.view { background-repeat:no-repeat; }
 
-section.resources .action.view { min-width:16px; min-height:16px; display:block; background-position:50% 50%; }
-section.resources .action.view .value { display:inline-block; text-indent:-9999em; }
+section.resources .view { min-width:16px; min-height:16px; display:block; background-position:50% 50%; }
+section.resources .view .value { display:inline-block; text-indent:-9999em; }
 /* Buttons (end) */
 
 
 /* Start Icons */
-.action.view 					{ background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAANCAQAAAA6PjeOAAAAZklEQVR4Xl3PAQaAQBCF4QGdYYmIpWN0gOhu7zpdIoAllugSgWmf9dTmZ5gPw5gbAnasbm+GHgmOWyzM8JbNGxa2vFQUH2KieC7EMjpRxEUqM+rmJMLI/Usnif1IGJBEqv6+YSCoB93zkPtcZh7dAAAAAElFTkSuQmCC"); }
-.action.view:hover,
-.action.view.selected			{ background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAANCAQAAAA6PjeOAAAAXklEQVR4XlXNAQaAQBSE4QGdYYmI6BgdIDpwlwhgiSX2EoE/WePZGeAzjBCJiwNFxUgGXrOxgNnYsbHnvaH5DhbuRkthMC1UACqLl6uJ2UempxHqScZENgX+fDKh6AckVq8PruH8XAAAAABJRU5ErkJggg=="); }
+.view 					{ background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAANCAQAAAA6PjeOAAAAZklEQVR4Xl3PAQaAQBCF4QGdYYmIpWN0gOhu7zpdIoAllugSgWmf9dTmZ5gPw5gbAnasbm+GHgmOWyzM8JbNGxa2vFQUH2KieC7EMjpRxEUqM+rmJMLI/Usnif1IGJBEqv6+YSCoB93zkPtcZh7dAAAAAElFTkSuQmCC"); }
+.view:hover,
+.view.active			{ background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAANCAQAAAA6PjeOAAAAXklEQVR4XlXNAQaAQBSE4QGdYYmI6BgdIDpwlwhgiSX2EoE/WePZGeAzjBCJiwNFxUgGXrOxgNnYsbHnvaH5DhbuRkthMC1UACqLl6uJ2UempxHqScZENgX+fDKh6AckVq8PruH8XAAAAABJRU5ErkJggg=="); }
 
 .toggle.plus 					{ background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAQAAABuBnYAAAAALklEQVR42mNgAAPf/wH/GZCB939fnAK+/71RIIPPf08g9ABCTzCEqvNAMAkKAACOWiQIZVi92AAAAABJRU5ErkJggg=="); } 
 .toggle.minus 					{ background-image:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAQAAABuBnYAAAAAE0lEQVR42mNgIB3k/UeFmAKkAwALmhbRFDdxEwAAAABJRU5ErkJggg=="); }

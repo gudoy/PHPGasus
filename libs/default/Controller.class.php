@@ -7,8 +7,8 @@ interface ControllerInterface
 
 class Controller extends Core implements ControllerInterface
 {
-	public $request 	= null;
-	public $response 	= null;
+	//public $request 	= null;
+	//public $response 	= null;
 	public $view 		= array();
 	public $data 		= array();
 	
@@ -275,7 +275,10 @@ class Controller extends Core implements ControllerInterface
 		$_rq 	= &$this->request;
 		$_rqc 	= &$this->request->controller; 			// request controller
 		$rName 	= &$this->_resource->name; 				// resource
-		$params = &$_rqc->params;
+		$params 		= &$_rqc->params;
+		
+		// Default request pattern
+		$_rq->pattern 	= 'rows';
 
 //var_dump($_r);
 //var_dump('params');
@@ -316,10 +319,13 @@ class Controller extends Core implements ControllerInterface
 					// ==> add filters/conditions + go to next()
 					//$_rq->filters['id'] = $item;
 //var_dump($_rq->filters);
-					$_rq->filters['id'] = !empty($_rq->filters['id']) ? (array) $_rq->filters['id'] : array();
-					$_rq->filters['id'][] = $item;
+					$_rq->filters['id'] 	= !empty($_rq->filters['id']) ? (array) $_rq->filters['id'] : array();
+					$_rq->filters['id'][] 	= $item;
 					
 					// TODO: remove duplicates? (ex, /users/1,3,1)
+					
+					// Set pattern type
+					$_rq->pattern 			= count($_rq->filters['id']) > 1 ? 'rows' : 'row';  
 				}
 				// If the current resource is defined and the current item is one of it's columns
 				elseif ( !empty($rName) && DataModel::isColumn($rName, (string) $item) )
@@ -331,6 +337,8 @@ class Controller extends Core implements ControllerInterface
 //var_dump('case resource column with values: ' . $item);
 						$_rq->filters[$item] = !empty($rName->filters[$item]) ? (array) $rName->filters[$item] : array();
 						$_rq->filters[$item][] = Tools::toArray($values);
+						
+						$_rq->pattern 	= 'rows';
 					}
 					else
 					{
@@ -339,6 +347,9 @@ class Controller extends Core implements ControllerInterface
 						// Restrict gotten columns to passed one(s) 
 						//$_rq->restricters[] = 'distinct';
 						$_rq->columns[] 	= $item;
+						
+						// Set pattern type
+						$_rq->pattern 		= 'columns';
 					}
 				}
 				// If the current resource is defined and has a nameField

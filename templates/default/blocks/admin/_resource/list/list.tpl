@@ -2,7 +2,8 @@
 {$rProps 	= $_resources.items[$rName]}
 {$rModel 	= $_columns[$rName].items}
 
-{foreach $data[$rName] as $item}
+{foreach array_keys($data[$rName]) as $key}
+{$item = $data[$rName][$key]}
 <article class="resource" id="{$rName}{$item.id}">
 	<div class="meta">
 		<input type="checkbox" name="selectedResources" value="{$item.id}" />	

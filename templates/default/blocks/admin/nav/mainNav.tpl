@@ -3,7 +3,7 @@
 	<ul class="resourceGroups">
 		{foreach $_groups.items as $rGpName => $rGpProps}
 		<li class="resourceGroup" id="adminNav{$rGpName|ucfirst}Group">
-			<a class="action" href="#"><span class="value name">{$rGpName}</span></a>
+			<a href="#"><span class="value name">{$rGpName}</span></a>
 			{include file='default/blocks/admin/nav/resources.tpl' resourcesNames=$_groups.items[$rGpName]['resources']}			
 		</li>
 		{/foreach}

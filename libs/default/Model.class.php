@@ -326,19 +326,41 @@ $this->log(__METHOD__);
 	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
+
+		foreach($this->results as $row)
+		{
+			//$row = $this->results[$key];
+			$this->fixRow($row);
+			
+			if ( $o['indexByUnique'] && isset($row[$o['indexByUnique']]) )
+			{
+				$this->data[$o['indexByUnique']] = $row;
+			}
+			else if ( $o['indexBy'] && isset($row[$o['indexBy']]) )
+			{
+				$this->data[$o['indexBy']][] = $row;
+			}
+			else
+			{
+				$this->data = $row;	
+			}
+			
+			$i++;
+		}
+
 	}
 	public function fetchRows()
 	{
-		$o 	= &$this->options;
-		
-//var_dump($this);
-				
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
-		$i = 0;
+		
+		$o 	= &$this->options;
+		$i 	= 0;
+		
 		foreach($this->results as $row)
+		//foreach(array_keys((array) $this->results) as $key)
 		{
-//var_dump($row);			
+			//$row = $this->results[$key];
 			$this->fixRow($row);
 			
 			if ( $o['indexByUnique'] && isset($row[$o['indexByUnique']]) )
@@ -360,13 +382,13 @@ $this->log(__METHOD__);
 	}
 	
 	public function fixRow(&$row)
-	{
+	{		
 		foreach($row as $column => $value)
 		{
 			$row[$column] = $this->fixColumn($column, $value);
 		}
 		
-		return $row;
+		//return $row;
 	}
 	
 	public function fixColumn($column, $value, array $params = array())

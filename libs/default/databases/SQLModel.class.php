@@ -404,6 +404,11 @@ $this->log(__METHOD__);
 	
 	public function buildWhere()
 	{
+		return $this->buildConditions();
+	}
+	
+	public function buildConditions($params = array())
+	{
 //var_dump(__METHOD__);
 $this->log(__METHOD__);
 
@@ -574,12 +579,12 @@ $this->dump($values);
 		{
 			// TODO:
 			// Get proper column name with using proper alias (or not)
-			$output .= $alias . '.' . $this->escapeColName($column) . ' ' . $p['operator'] . ' ' . $p['prefix'] . $fVal . $p['prefix'];
+			$output .= $this->escapeColName($alias) . '.' . $this->escapeColName($column) . ' ' . $p['operator'] . ' ' . $p['prefix'] . $fVal . $p['prefix'];
 		}
 		else
 		{
 			// Get proper column name with using proper alias (or not)
-			$output .= $alias . '.' . $this->escapeColName($column) . ' = ' . $fVal; 
+			$output .= $this->escapeColName($alias) . '.' . $this->escapeColName($column) . ' = ' . $fVal; 
 		}
 		
 		return $output;
