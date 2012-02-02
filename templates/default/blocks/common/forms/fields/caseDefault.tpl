@@ -1,0 +1,1 @@
+<input type="text" name="{$colPostName}{$useArray}" id="{$colPostName}{$itemIndex}"{if $colProps.length} maxlength="{$colProps.length}"{/if} class="" value="{$value}" {if $disabled}disabled="disabled"{/if}{if $required} required="required"{/if}{if $readonly} readonly="readonly"{/if} {if $colProps.pattern} pattern="{$colProps.pattern}"{/if} />

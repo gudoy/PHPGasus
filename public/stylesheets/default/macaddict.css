@@ -215,6 +215,12 @@ section.resources .resource .actions .view { min-height:43px; }
 .resources.editMode .resource header .id { display:inline-block; }
 
 
+.resourceForm {}
+.resourceForm .column { clear:both; text-indent:-4px; }
+.resourceForm div.label { width:50%; display:inline-block; text-indent:4px; text-align:left; }
+.resourceForm div.field { width:50%; display:inline-block; text-indent:4px; text-align:right; }
+
+
 #poweredBy {  }
 #poweredBy,
 #poweredBy a { color:#4c566c; }
