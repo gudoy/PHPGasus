@@ -35,6 +35,8 @@ $_resources = array(
 'tasks' 			=> array(),
 'users' 			=> array('searchable' => 1),
 'users groups' 		=> array(),
+
+'datatypes samples' => array(),
 );
 
 ?>

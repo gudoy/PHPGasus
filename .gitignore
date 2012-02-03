@@ -19,3 +19,4 @@ config/yours/htaccess/*
 public/stylesheets/default/macaddict.old.css
 public/stylesheets/default/phpgasus.old.css
 PHPGasus-v1.esproj
+controllers/default/admin/CDatatypessamples.class.php

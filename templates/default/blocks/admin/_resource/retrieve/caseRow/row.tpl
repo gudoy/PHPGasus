@@ -14,7 +14,7 @@
 		<fieldset>
 			<legend><span class="value">{t 1="{$rSingular}"}edit %1 data{/t}</span></legend>
 			
-			{foreach array_keys($rModel) as $column}
+			{foreach array_keys((array) $rModel) as $column}
 			
 				{$row 			= $data[$rName]}
 				{$value 		= $row[$column]}

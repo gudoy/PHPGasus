@@ -396,11 +396,11 @@ $this->log(__METHOD__);
 		//$type 	= null;
 		$v 		= &$value;
 		
-//var_dump(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$column]['type']);
-$this->log(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$column]['type']);
+//var_dump(__METHOD__  . ' : ' . $column . ' : ' . $this->_columns[$column]['type']);
+$this->log(__METHOD__  . ' : ' . $column . ' : ' . $this->_columns[$column]['type']);
 //$this->log(__METHOD__);
 		
-        switch($this->_resourcecolumns[$column]['type'])
+        switch($this->_columns[$column]['type'])
         {
         	# Texts
 			case 'string':
@@ -453,12 +453,13 @@ $this->log(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$colu
 			case 'float':
 			case 'real':
 			case 'double':
-				$v = (float) $v;
+				$v = (float) $v; break;
 				
 			# Dates & times
             case 'timestamp':
 //var_dump(is_numeric($v));
             	$v = is_numeric($v) ? (int) $v : (int) DateTime::createFromFormat('Y-m-d H:i:s', $v, new DateTimeZone('UTC'))->format('U'); break;
+$this->dump($v);
             //case 'datetime':
             //case 'time':
             //case 'year':
@@ -470,9 +471,9 @@ $this->log(__METHOD__  . ' : ' . $column . ' : ' . $this->_resourcecolumns[$colu
 			
 			# 
 			case 'set':
-				$v = !empty($v) ? explode(',', (string) $v) : array();
+				$v = !empty($v) ? explode(',', (string) $v) : array(); break;
             case 'enum':
-				$v = $v;
+				$v = $v; break;
 				
 			/*
             case 'onetomany':

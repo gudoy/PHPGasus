@@ -2,7 +2,7 @@
 {$rProps 	= $_resources.items[$rName]}
 {$rModel 	= $_columns[$rName].items}
 
-{foreach array_keys($data[$rName]) as $key}
+{foreach array_keys((array) $data[$rName]) as $key}
 {$item = $data[$rName][$key]}
 <article class="resource" id="{$rName}{$item.id}">
 	<div class="meta">

@@ -6,6 +6,8 @@ $_groups = array(
 'items' => array(
     'users'         => array('resources' => array('users', 'usersgroups', 'groups', 'groupsauths', 'sessions')),
     'config'        => array('resources' => array('adminlogs', 'bans', 'resources', 'resourcescolumns', 'tasks',)),
+    
+	'samples' 		=> array('resources' => array('datatypessamples')),
 ));
 
 $_resources = array(
@@ -24,6 +26,12 @@ $_resources = array(
 	'tasks' 			=> array('name' => 'tasks', 'type' => 'native', 'singular' => 'task', 'plural' => 'tasks', 'displayName' => 'tasks', 'database' => 'default', 'table' => 'tasks', 'alias' => 'tsk', 'defaultNameField' => 'admin_title', 'nameField' => '', 'extends' => null, 'searchable' => false, 'exposed' => false, 'crudability' => 'CRUD',),
 	'users' 			=> array('name' => 'users', 'type' => 'native', 'singular' => 'user', 'plural' => 'users', 'displayName' => 'users', 'database' => 'default', 'table' => 'users', 'alias' => 'u', 'defaultNameField' => 'email', 'nameField' => '', 'extends' => null, 'searchable' => true, 'exposed' => false, 'crudability' => 'CRUD',),
 	'usersgroups' 		=> array('name' => 'usersgroups', 'type' => 'relation', 'singular' => 'usersgroup', 'plural' => 'usersgroups', 'displayName' => 'user groups', 'database' => 'default', 'table' => 'users_groups', 'alias' => 'ugp', 'defaultNameField' => '', 'nameField' => '', 'extends' => null, 'searchable' => false, 'exposed' => false, 'crudability' => 'CRUD',),
+	
+	'datatypessamples' 		=> array(
+		'name' => 'datatypessamples', 'type' => 'native', 'singular' => 'datatypesample', 'plural' => 'datatypessamples', 
+		'displayName' => 'datatypes samples', 'database' => 'default', 'table' => 'datatypes_samples', 'alias' => 'dtpsmpl', 
+		'nameField' => 'slug', 'extends' => null, 'searchable' => false, 'exposed' => false, 'crudability' => 'CRUD',
+	),
 ),
 '_aliases' 		=> array(),
 '_searchable' 	=> array('users'),
@@ -52,9 +60,9 @@ $_columns = array(
 		'type' 					=> array('type' => 'enum', 'values' => array('native','relation','filter'), 'default' => 'native',),
 		'alias'                 => array('type' => 'varchar', 'length' => 8),
 		'extends' 				=> array('type' => 'varchar', 'length' => 8),
-		'displayName' 			=> array('type' => 'varchar', 'length' => 32),
+		'display_name' 			=> array('type' => 'varchar', 'length' => 32),
 		'searchable' 			=> array('type' => 'bool', 'default' => false),
-		'nameField' 			=> array('type' => 'varchar', 'length' => 32),
+		'name_field' 			=> array('type' => 'varchar', 'length' => 32),
 		'creation_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
 		'update_date'			=> array('type' => 'timestamp', 'editable' => 0, 'default' => 'now'),
 	),
@@ -94,6 +102,42 @@ $_columns = array(
 	'_exposed' 		=> array(),
 	'_searchable' 	=> array(),
 	'_related' 		=> array(),
+),
+
+'datatypes_samples' => array(
+	'id' 					=> array(),
+	'varchar' 				=> array(),
+	'email' 				=> array(),
+	'password' 				=> array(),
+	'url' 					=> array(),
+	'tel' 					=> array(),
+	'color' 				=> array(),
+	'meta' 					=> array(),
+	'ip' 					=> array(),
+	'slug' 					=> array(),
+	'tag' 					=> array(),
+	'text' 					=> array(),
+	'int' 					=> array(),
+	'integer' 				=> array(),
+	'numeric' 				=> array(),
+	'tinyint' 				=> array(),
+	'smallint' 				=> array(),
+	'mediumint' 			=> array(),
+	'bigint' 				=> array(),
+	'float' 				=> array(),
+	'real' 					=> array(),
+	'decimal' 				=> array(),
+	'double' 				=> array(),
+	'bool' 					=> array(),
+	'boolean' 				=> array(),
+	'timestamp' 			=> array(),
+	'datetime' 				=> array(),
+	'date' 					=> array(),
+	'time' 					=> array(),
+	'year' 					=> array(),
+	'enum' 					=> array(),
+	'choice' 				=> array(),
+	'set' 					=> array(),
 ),
 );
 

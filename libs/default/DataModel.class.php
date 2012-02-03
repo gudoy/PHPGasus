@@ -70,11 +70,11 @@ class DataModel extends Core
 			'string', 'varchar', 
 			'email', 'password', 'url', 'tel', 'color', 'meta', 'ip',
 			'slug', 
-			'tag', 
+			//'tag', 
 			'text', 'html', 'code',
 			
 			# Numbers
-			'int', 'integer', 'numeric',
+			'int', 'integer', 'numeric', 'decimal',
 			'tinyint', 'smallint', 'mediumint', 'bigint',
 			'float', 'real', 'double',
 			
@@ -83,7 +83,10 @@ class DataModel extends Core
 			
 			# Dates & times
 			'timestamp', 'datetime', 'date', 'time', 'year', 
-			//'month', 'week', 'day', 'hour', 'minutes', 'seconds', 
+			//'month', 'week', 'day', 'hour', 'minutes', 'seconds',
+			
+			# Arrays
+			'enum', 'choice', 'set',
 			
 			# Relations
 			'1-1', 'onetoone', 'one2one', '121', '1to1', '12one',
@@ -95,8 +98,8 @@ class DataModel extends Core
 			'file', 'image', 'video', 'sound', 'file',
 			
 			# Misc
-			'pk', 'id', 'serial',
-			'enum', 'choice', 'set',
+			//'pk', 'id', 'serial',
+			'id', 'serial',
 		),
 		'realtypes' => array(
 			# Texts
@@ -130,16 +133,16 @@ class DataModel extends Core
 				'num'			=> 'int', 			// + min = -2147483648, + max = 2147483648
 				'number'		=> 'int', 			// + min = -2147483648, + max = 2147483648
 				
-				'tinyint' 		=> 'tinyint', 		// + min = -128, + max = 128 
-				'smallint' 		=> 'smallint', 		// + min = -32768, + max = 32768
-				'mediumint' 	=> 'mediumint', 	// + min = -8388608, + max = 8388608
-				'bigint' 		=> 'bigint', 		// + min = -9223372036854775808, + max = 9223372036854775808
+				'tinyint' 		=> 'tinyint', 		// + length = 4, + min = -128, + max = 128 
+				'smallint' 		=> 'smallint', 		// + length = 6, + min = -32768, + max = 32768
+				'mediumint' 	=> 'mediumint', 	// + length = 9, + min = -8388608, + max = 8388608
+				'bigint' 		=> 'bigint', 		// + length = 20, + min = -9223372036854775808, + max = 9223372036854775808
 				
 				// floats
-				'decimal' 		=> 'float',
+				'decimal' 		=> 'decimal', 		// + length = length(10,0)????
 				'float' 		=> 'float',
 				'real' 			=> 'float',
-				'double'		=> 'float',		
+				'double'		=> 'double',		
 				
 			# Booleans
 				'bit' 			=> 'boolean',
@@ -195,12 +198,15 @@ class DataModel extends Core
 				'nton' 			=> 'manytomany',
 				 */
 				
-				'onetoone' 		=> 'int', 			// + fk = 1 + handle relations props
+				// TODO: if relColumn type is int
+				'onetoone' 		=> 'int', 				// + fk = 1 + handle relations props
+				// TODO: if relColumn type is serial
+				'onetoone' 		=> 'serial', 			// + fk = 1 + handle relations props
 			
 			# Misc				
-				'pk' 			=> 'int', 			// Pk + length = 11, pk = 1, editable = 0 
-				'id' 			=> 'int', 			// Pk + length = 11, pk = 1, editable = 0
-				'serial' 		=> 'int', 			// Pk + length = 11, pk = 1, editable = 0
+				//'pk' 			=> 'int', 			// Pk + length = 11, pk = 1, ai = 1, unsigned = 1, null = 0, unique = 1, editable = 0
+				'id' 			=> 'int', 			// Pk + length = 11, pk = 1, ai = 1, unsigned = 1, null = 0, unique = 1, editable = 0
+				'serial' 		=> 'int', 			// Pk + length = 20, pk = 1, ai = 1, unsigned = 1, null = 0, unique = 1, editable = 0
 		),
 	);
 	

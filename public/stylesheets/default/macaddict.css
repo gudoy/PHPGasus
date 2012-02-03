@@ -129,6 +129,7 @@ nav.main .resources { margin:0 10px 25px 10px; display:block; background:#f7f7f7
 nav.main .resource { width:100%; min-height:43px; display:inline-block; border-bottom:1px solid #bbb; box-shadow:0 1px 0 rgba(255,255,255,0.75); vertical-align:middle; }
 nav.main .resource:first-child { border-radius:10px 10px 0 0; }
 nav.main .resource:last-child { border-radius:0 0 10px 10px; border-bottom-color:transparent; box-shadow:none; }
+nav.main .resource:first-child:last-child { border-radius:10px; }
 nav.main .resource > a { width:100%; min-height:43px; display:inline-block; background-position:98% 50%; color:#000; text-decoration:none; vertical-align:middle; }
 nav.main .resource .name { /*margin-top:14px; padding-left:30px;*/ display:inline-block; text-transform:capitalize; font-size:17px; font-weight:bold; text-overflow:ellipsis; vertical-align:middle; }
 nav.main .resource:hover,
@@ -216,9 +217,9 @@ section.resources .resource .actions .view { min-height:43px; }
 
 
 .resourceForm {}
-.resourceForm .column { clear:both; text-indent:-4px; }
-.resourceForm div.label { width:50%; display:inline-block; text-indent:4px; text-align:left; }
-.resourceForm div.field { width:50%; display:inline-block; text-indent:4px; text-align:right; }
+.resourceForm .column { clear:both; letter-spacing:-4px; }
+.resourceForm div.label { width:50%; display:inline-block; letter-spacing:normal; text-align:left; }
+.resourceForm div.field { width:50%; display:inline-block; letter-spacing:normal; text-align:right; }
 
 
 #poweredBy {  }
