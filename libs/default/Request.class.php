@@ -303,6 +303,7 @@ class Request
 			'Opera' 		=> array('versionPattern' => '/.*(Version|Opera)\/([0-9\.]*)\s?.*/'),
 			'Konqueror' 	=> array('versionPattern' => '/.*(Konqueror)\/([0-9\.]*)\s.*/'),
             'BlackBerry' 	=> array('versionPattern' => '/.*(BlackBerry[a-zA-Z0-9]*)\/([0-9\.]*)\s.*/'),
+			'Dolphin' 		=> array('versionPattern' => '/.*(Dolfin)\/([0-9\.]*)\s.*/'),
 		);
 				
 		// Try to get the browser data looking in the User Agent for knonw browser keys

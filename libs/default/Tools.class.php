@@ -248,7 +248,7 @@ class Tools
         }
         
         return $data;
-    } 
+    }
 
 	// sanitize() moved to DataModel
 	// validate() moved to DataModel

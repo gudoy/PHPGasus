@@ -145,7 +145,7 @@ class Core
 				'till_after_data' 	=> null,
 				'data_retrieval' 	=> null,
 				'till_render' 		=> null,
-				'total' 			=> round(microtime(true) - $_phpgasus['tstart'] *1000,3), 
+				'total' 			=> round((microtime(true) - $_phpgasus['tstart']) *1000,3), 
 			), 2),
 			// Memory: in ko
 			'memory' 		=> new ArrayObject(array(
