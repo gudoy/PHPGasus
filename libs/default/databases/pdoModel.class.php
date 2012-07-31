@@ -22,6 +22,8 @@ $this->log('dsn: ' . $dsn);
 		
 		try
 		{
+			// Setting character encoding as an init command only works in mysql
+		    //$this->db = new PDO($dsn, _DB_USER, _DB_PASSWORD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8") );
 		    $this->db = new PDO($dsn, _DB_USER, _DB_PASSWORD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8") );
 		}
 		catch (PDOException $e)
@@ -38,7 +40,11 @@ $this->log('dsn: ' . $dsn);
 		return $this;	
 	}
 	
-	public function setEncoding(){} // nothing since this is done on connection opening;
+	public function setEncoding()
+	{
+		// Tell the db we are sending already utf8 encoded data
+		$this->db->query("SET CHARACTER SET utf8'");
+	}
 	
 	public function escapeString($string)
 	{

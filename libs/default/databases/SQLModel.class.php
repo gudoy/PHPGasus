@@ -59,7 +59,7 @@ $this->log(__METHOD__);
 	
 	public function setEncoding()
 	{
-		// Tell mysql we are sending already utf8 encoded data
+		// Tell the db we are sending already utf8 encoded data
 		$this->db->query("SET NAMES 'UTF8'");
 	}
 	
