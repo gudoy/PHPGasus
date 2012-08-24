@@ -335,8 +335,10 @@ class Controller extends Core implements ControllerInterface
 					if ( $values !== false )
 					{
 //var_dump('case resource column with values: ' . $item);
-						$_rq->filters[$item] = !empty($rName->filters[$item]) ? (array) $rName->filters[$item] : array();
-						$_rq->filters[$item][] = Tools::toArray($values);
+						//$_rq->filters[$item] = !empty($rName->filters[$item]) ? (array) $rName->filters[$item] : array();
+						$_rq->filters[$item] = !empty($_rq->filters[$item]) ? (array) $_rq->filters[$item] : array();
+						//$_rq->filters[$item][] = Tools::toArray($values);
+						$_rq->filters[$item] = array_merge($_rq->filters[$item], Tools::toArray($values));
 						
 						$_rq->pattern 	= 'rows';
 					}
@@ -353,7 +355,8 @@ class Controller extends Core implements ControllerInterface
 					}
 				}
 				// If the current resource is defined and has a nameField
-				// but the current item is NOT one of it's columns 
+				// but the current item is NOT one of it's columns
+				// TODO: only allow this for first param (=> search) 
 				elseif ( !empty($this->_resource) && !empty($this->_resource->nameField) )
 				{
 					// Assume that the current item is a {$nameField} value to check against

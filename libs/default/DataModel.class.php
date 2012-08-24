@@ -15,7 +15,7 @@ class DataModel extends Core
 		'type',
 		'name', 'singular', 'plural', 
 		'displayName', 'nameField',
-		//'defaultNameField', 					// Deprecated: use nameField instead 
+		'defaultNameField', 					// Deprecated: use nameField instead 
 		
 		# Database
 		'database', 'engine', 
@@ -1176,7 +1176,7 @@ die();
 		// using levenshtein()
 		
 		// If not found at this point, return false
-		return $false;
+		return false;
 	}
 	
 	static function columns($resource)
@@ -1399,7 +1399,7 @@ die();
 	// Try to gess column type using it's name
 	static function guessColumnType($colName)
 	{
-Core::log(__METHOD__ . ' -> ' . $colName);
+//Core::log(__METHOD__ . ' -> ' . $colName);
 
 		// Init type
 		$type 		= null;

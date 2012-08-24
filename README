@@ -78,6 +78,29 @@ GET /users/42,43,44/email                   => /CUsers->index('42,43,44','email'
 GET /users/42,43,44/email,birthday          => /CUsers->index('42,43,44','email,birthday')     
 GET /users/42,43,foo/email,birthday         => /CUsers->index('42,43,foo','email,birthday')    
 
+FILTERING GOTTEN COLUMNS
+GET /products/  							=> SELECT * FROM products LIMIT 100
+GET /products/nonexistingcol 				=> SELECT * color FROM products LIMIT 100 [nonexistingcol is ignored]
+GET /products/  							=> SELECT * FROM products LIMIT 100
+GET /products/id,color 						=> SELECT id, color FROM products LIMIT 100
+GET /products/color,id 						=> SELECT color, id FROM products LIMIT 100
+GET /products/color?distinct 				=> SELECT DISTINCT(color) FROM products LIMIT 100 [distinct value not passed, will use the first column filter found if any ("color" in this case)]
+GET /products/?distinct  					=> SELECT DISTINCT(id) FROM products LIMIT 100 [no colum passed: will use id or pk or first found column in datamodel]
+GET /products/?distinct=nonexistingcol  	=> SELECT * FROM products LIMIT 100 [nonexistingcol is ignored]
+GET /products/?distinct=color 				=> SELECT DISTINCT(color) FROM products LIMIT 100
+GET /products/id?distinct=color 			=> SELECT DISTINCT(color), CAST(GROUP_CONCAT(id) as CHAR) FROM products GROUP BY color LIMIT 100
+GET /products/color,id?distinct 			=> SELECT DISTINCT(color), CAST(GROUP_CONCAT(id) as CHAR) FROM products GROUP BY color LIMIT 100 [no colum passed: will use id or pk or first found column in datamodel]
+
+// ADVANCED CONDITIONS
+GET /products/manufacturer/Apple				=> SELECT * FROM products WHERE manufacturer = 'Apple'
+GET /products/?manufacturer=Apple				=> SELECT * FROM products WHERE manufacturer = 'Apple'
+GET /products/manufacturer/Apple,Google			=> SELECT * FROM products WHERE manufacturer IN ('Apple', 'Google')
+GET /products/?manufacturer=Apple,Google		=> SELECT * FROM products WHERE manufacturer IN ('Apple', 'Google')
+GET /products/manufacturer/Apple				=> SELECT * FROM products WHERE manufacturer = 'Apple'
+GET /products/?manufacturer=contains|pl			=> SELECT * FROM products WHERE manufacturer LIKE '%pl%'
+GET /products/?manufacturer=startsby|go			=> SELECT * FROM products WHERE manufacturer LIKE 'go%'
+GET /products/?manufacturer=endsby|le			=> SELECT * FROM products WHERE manufacturer LIKE '%le'
+
 
 CONTROLLER to MODEL/DATABASE (sample magic methods);
 (unless explicitely specified, all request use "LIMIT 100" clause)
