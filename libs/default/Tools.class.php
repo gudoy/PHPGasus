@@ -57,6 +57,19 @@ class Tools
     }
 
 
+	// TODO
+	static function camelize(){ }
+	static function dasherize(){ }
+	static function parameterize(){ }
+	static function tableize(){ }
+	static function titleize(){ }
+	
+	// Remove special cars and lowerize
+	static function resourcize($string)
+	{
+		return preg_replace('/[^a-z]/', '', strtolower(self::deaccentize($string)));
+	}
+
 	static function plural($singular)
 	{
 		return self::pluralize($singular);

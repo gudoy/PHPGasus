@@ -1156,6 +1156,8 @@ die();
 	// Search for a mispelled resource
 	static function searchResource($name)
 	{
+		global $_resources;
+		
 		// Do not continue any longer if the $name as is is an existing resource
 		if 	( self::isResource($name) ){ return $name; }
 		
@@ -1164,16 +1166,24 @@ die();
 		$sing = Tools::singular($name);
 		$plur = Tools::plural($name);
 		
-//var_dump('sing' . ' : ' . $sing);
-//var_dump('plur' . ' : ' . $plur);
-		
 		// Check if any of them is a resource
 		if 		( self::isResource($sing) ){ return $sing; }
 		elseif 	( self::isResource($plur) ){ return $plur; }
 		
-		// TODO
-		// Compare string with resource name and return if matching is XX%?
-		// using levenshtein()
+		// Compare string with resource names
+		// TODO: use levenshtein(), similar_text(), soundex(), metaphone() ???
+		$results = array();
+		foreach (array_keys($_resources) as $rName)
+		{
+			$percent 			= null;
+			similar_text($name, $rName, $percent);
+			$results[$rName] 	= $percent;
+		}
+		// Sort results by top percentage
+		arsort($results);
+		
+		// Return the first result if it exceed 80% of similarity
+		if ( !empty($results) && $results[key($results)] >= 80 ){ return key($results); } 
 		
 		// If not found at this point, return false
 		return false;
@@ -1274,6 +1284,16 @@ die();
 		}
 		
 		return $tableName;
+	}
+
+	static function getResourceFromDbColumn($column)
+	{
+		// TODO
+	}
+	
+	static function getResourceFromDbTable($table)
+	{
+		// TODO
 	}
 	
 	
