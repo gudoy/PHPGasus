@@ -270,7 +270,7 @@ class Response extends Core
 				$this->Template->compile_check 			= _TEMPLATES_COMPILE_CHECK;
 				$this->Template->force_compile 			= _TEMPLATES_FORCE_COMPILE;
 				$this->Template->caching 				= isset($this->view['cache']) 			? $this->view['cache'] : _TEMPLATES_CACHING;
-				$this->Template->cache_lifetime 		= isset($this->view['cacheLifetime']) 	? $this->view['cache'] : _TEMPLATES_CACHE_LIFETIME;
+				$this->Template->cache_lifetime 		= isset($this->view['cacheLifetime']) 	? $this->view['cacheLifetime'] : _TEMPLATES_CACHE_LIFETIME;
 				$this->Template->template_dir 			= _PATH_TEMPLATES;
 				$this->Template->compile_dir 			= _PATH_TEMPLATES_PRECOMPILED;
 				$this->Template->cache_dir 				= _PATH_TEMPLATES_CACHE;
@@ -314,7 +314,7 @@ $this->log($this->templateData);
 			case 'Smarty':
 			default:
 				$this->Template->assign($this->templateData);
-				$this->Template->display($this->view['template'], $cacheId);
+				$this->Template->display($this->view['template'], $this->view['cacheId']);
 				break;
 		}
 	}
